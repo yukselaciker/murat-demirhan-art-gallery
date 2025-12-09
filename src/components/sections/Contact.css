@@ -122,7 +122,7 @@
     min-width: 200px;
     margin-top: var(--space-md);
     background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-dark) 100%);
-    color: white;
+    color: #fff;
     font-size: var(--text-sm);
     font-weight: 600;
     padding: var(--space-md) var(--space-xl);
@@ -166,7 +166,7 @@
     border: 1px solid var(--color-success);
     border-radius: var(--radius-md);
     text-align: center;
-    color: #276749;
+    color: var(--color-success);
     animation: fadeIn 0.3s ease;
 }
 

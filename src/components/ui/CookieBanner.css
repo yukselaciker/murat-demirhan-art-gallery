@@ -68,7 +68,7 @@
 
 .cookie-btn--accept {
     background-color: var(--color-accent);
-    color: white;
+    color: #fff;
 }
 
 .cookie-btn--accept:hover {

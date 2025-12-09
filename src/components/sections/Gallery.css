@@ -180,13 +180,13 @@
 }
 
 .artwork-card__view-text {
-    color: white;
+    color: #fff;
     font-size: var(--text-sm);
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     padding: var(--space-sm) var(--space-lg);
-    border: 1px solid white;
+    border: 1px solid #fff;
     border-radius: var(--radius-full);
 }
 
