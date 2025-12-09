@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useSiteData } from '../data/siteData.js';
 
 export default function SettingsPanel() {
-    const { data, updateContactInfo } = useSiteData();
+    const { data, updateContactInfo, resetData } = useSiteData();
     const [email, setEmail] = useState(data.contactInfo.email || '');
     const [location, setLocation] = useState(data.contactInfo.location || '');
     const [phone, setPhone] = useState(data.contactInfo.phone || '');
@@ -61,6 +61,18 @@ export default function SettingsPanel() {
                 <div className="form-actions">
                     <button className="btn primary" onClick={handleSave}>
                         Kaydet
+                    </button>
+                </div>
+
+                <div className="spacer" style={{ height: '2rem' }}></div>
+
+                <div className="alert alert-error">
+                    <strong>Tehlikeli Bölge</strong>
+                    <p className="tiny" style={{ margin: '0.5rem 0' }}>
+                        Tüm verileri silip varsayılan başlangıç verilerine döndürür. Bu işlem geri alınamaz.
+                    </p>
+                    <button className="btn danger tiny" onClick={resetData}>
+                        Verileri Sıfırla
                     </button>
                 </div>
             </div>
