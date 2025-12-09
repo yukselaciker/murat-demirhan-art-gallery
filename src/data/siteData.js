@@ -181,8 +181,13 @@ const ApiDataService = {
       };
     } catch (e) {
       console.error('[ApiDataService] Load error:', e);
-      console.warn('Falling back to LocalStorage due to API error.');
-      return LocalDataService.load();
+      // LocalStorage'a FALLBACK YAPMA! Bu cross-device sync'i bozar.
+      // Boş veri döndür, kullanıcı API durumunu görsün.
+      console.warn('[ApiDataService] API failed, returning empty data. Check your API endpoint.');
+      return {
+        ...DEFAULT_DATA,
+        artworks: [], // API hatası, eser listesi boş
+      };
     }
   },
 
