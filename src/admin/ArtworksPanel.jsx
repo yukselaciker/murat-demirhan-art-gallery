@@ -15,11 +15,26 @@ const emptyArtwork = {
 };
 
 export default function ArtworksPanel() {
-  const { data, addArtwork, updateArtwork, deleteArtwork, setFeaturedArtwork } = useSiteData();
+  const { data, addArtwork, updateArtwork, deleteArtwork, setFeaturedArtwork, isInitialized } = useSiteData();
   const [form, setForm] = useState(emptyArtwork);
   const [editingId, setEditingId] = useState(null);
   const [message, setMessage] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+
+  // Debug log
+  console.log('[ArtworksPanel] isInitialized:', isInitialized, 'artworks count:', data?.artworks?.length);
+
+  // Loading state
+  if (!isInitialized) {
+    return (
+      <div className="panel">
+        <div className="panel-header">
+          <h2>Eserler Yükleniyor...</h2>
+          <p className="muted">API'den veri çekiliyor, lütfen bekleyin.</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target;
