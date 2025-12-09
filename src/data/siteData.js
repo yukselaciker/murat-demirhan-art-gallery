@@ -156,6 +156,11 @@ const DataService = {
       const parsed = JSON.parse(raw);
 
       // Validation / Merging Strategy
+      if (!parsed || typeof parsed !== 'object') {
+        // If parsed is null (e.g. from "null" string) or not an object
+        return DEFAULT_DATA;
+      }
+
       // Bozuk veri gelirse, uygulamanın çökmemesi için default veri ile birleştiriyoruz.
       const safeData = {
         artworks: Array.isArray(parsed.artworks) ? parsed.artworks : DEFAULT_DATA.artworks,

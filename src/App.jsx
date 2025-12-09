@@ -50,7 +50,20 @@ function App() {
     };
 
     // DOM yüklendikten sonra observer'ı başlat
-    setTimeout(observeElements, 100);
+    const timer = setTimeout(observeElements, 100);
+
+    // [SAFETY NET] Fallback for visibility
+    // Eğer 1 saniye içinde animasyonlar çalışmazsa, hepsini görünür yap.
+    // Bu, JS hatası veya observer sorunu durumunda içeriğin kaybolmasını önler.
+    const fallbackTimer = setTimeout(() => {
+      const elements = document.querySelectorAll('.fade-in, .slide-in-left, .slide-in-right');
+      elements.forEach(el => el.classList.add('visible'));
+    }, 1000);
+
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(fallbackTimer);
+    };
   }, []);
 
   return (
