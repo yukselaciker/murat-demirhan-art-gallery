@@ -143,40 +143,34 @@ const STORAGE_KEY = 'md-site-data';
 // ============================================
 // 2. DATA SERVICE LAYER (Abstraction)
 // ============================================
-// API varsayılan olarak AÇIK - Vercel'de Supabase kullanılıyor
-const USE_API = import.meta.env.VITE_USE_API !== 'false';
+// API modu sadece açıkça "true" girilirse aktif olsun; aksi halde LocalStorage kullanılır
+const USE_API = import.meta.env.VITE_USE_API === 'true';
 
 // ============================================
 // 2. DATA SERVICE LAYER (Abstraction)
 // ============================================
 
 // LocalStorage Implementation (Mevcut)
+const mergeWithDefaults = (raw) => {
+  if (!raw || typeof raw !== 'object') return DEFAULT_DATA;
+
+  return {
+    artworks: Array.isArray(raw.artworks) ? raw.artworks : DEFAULT_DATA.artworks,
+    exhibitions: Array.isArray(raw.exhibitions) ? raw.exhibitions : DEFAULT_DATA.exhibitions,
+    cv: raw.cv ? { ...DEFAULT_DATA.cv, ...raw.cv } : DEFAULT_DATA.cv,
+    contactInfo: raw.contactInfo ? { ...DEFAULT_DATA.contactInfo, ...raw.contactInfo } : DEFAULT_DATA.contactInfo,
+    featuredArtworkId: raw.featuredArtworkId !== undefined ? raw.featuredArtworkId : DEFAULT_DATA.featuredArtworkId,
+  };
+};
+
 const LocalDataService = {
   load: async () => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) {
-        console.log('[LocalDataService] No data found, using defaults.');
-        return DEFAULT_DATA;
-      }
+      if (!raw) return DEFAULT_DATA;
 
       const parsed = JSON.parse(raw);
-
-      // Validation / Merging Strategy
-      if (!parsed || typeof parsed !== 'object') {
-        return DEFAULT_DATA;
-      }
-
-      // Bozuk veri gelirse, uygulamanın çökmemesi için default veri ile birleştiriyoruz.
-      const safeData = {
-        artworks: Array.isArray(parsed.artworks) ? parsed.artworks : DEFAULT_DATA.artworks,
-        exhibitions: Array.isArray(parsed.exhibitions) ? parsed.exhibitions : DEFAULT_DATA.exhibitions,
-        cv: parsed.cv ? { ...DEFAULT_DATA.cv, ...parsed.cv } : DEFAULT_DATA.cv,
-        contactInfo: parsed.contactInfo ? { ...DEFAULT_DATA.contactInfo, ...parsed.contactInfo } : DEFAULT_DATA.contactInfo,
-        featuredArtworkId: parsed.featuredArtworkId !== undefined ? parsed.featuredArtworkId : DEFAULT_DATA.featuredArtworkId,
-      };
-
-      return safeData;
+      return mergeWithDefaults(parsed);
     } catch (e) {
       console.error('[LocalDataService] Error loading data, falling back to defaults:', e);
       return DEFAULT_DATA;
@@ -212,54 +206,41 @@ const ApiDataService = {
     try {
       console.log('[ApiDataService] Fetching from API...');
 
-      // Artworks endpoint'i hazır (User sağladı)
-      const resArt = await fetch('/api/artworks');
+      const res = await fetch('/api/site-data');
+      if (!res.ok) throw new Error(`API Error (${res.status})`);
 
-      // Diğerleri için şimdilik mock veya boş dönebiliriz.
-      // const resExh = await fetch('/api/exhibitions'); 
-
-      if (!resArt.ok) throw new Error('API Error');
-
-      const artworks = await resArt.json();
-
-      // Merge with defaults for other missing parts since we only have artworks API yet
-      return {
-        ...DEFAULT_DATA,
-        artworks: Array.isArray(artworks) ? artworks : [],
-        // exhibitions: ... (TODO)
-      };
+      const payload = await res.json();
+      return mergeWithDefaults(payload);
     } catch (e) {
       console.error('[ApiDataService] Load error:', e);
-      console.warn('Falling back to LocalStorage due to API error.');
-      return LocalDataService.load();
+      throw e;
     }
   },
 
   save: async (data) => {
     try {
-      // API modunda genellikle saveSiteData tüm veriyi post etmez,
-      // ama demo için basit tutuyoruz.
-      // Eser ekleme vb. işlemler kendi metodlarını kullanmalı.
-      console.warn('[ApiDataService] Toplu kaydetme desteklenmiyor, endpointleri kullanın.');
+      const res = await fetch('/api/site-data', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) throw new Error(`API save failed (${res.status})`);
       return true;
     } catch (e) {
+      console.error('[ApiDataService] Save error:', e);
       return false;
     }
   },
 
   reset: async () => {
-    return false; // API'de reset tehlikeli olabilir
-  },
-
-  // CRUD Override (API modunda hooks bunları kullanır)
-  addArtwork: async (artwork) => {
-    const res = await fetch('/api/artworks', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(artwork)
-    });
-    if (!res.ok) throw new Error('Failed to add artwork');
-    return await res.json();
+    try {
+      await fetch('/api/site-data', { method: 'DELETE' });
+      return true;
+    } catch (e) {
+      console.error('[ApiDataService] Reset error:', e);
+      return false;
+    }
   }
 };
 
@@ -273,19 +254,14 @@ const ApiDataService = {
 
 const DataService = {
   load: () => {
-    if (USE_API) {
-      // Senkron wrapper hacks (bunu asenkrona çevirmek büyük refactor gerektirir)
-      // Bu yüzden şimdilik API modunda bile LocalStorage'dan "başlangıç" verisi okuyoruz,
-      // sonra useEffect ile API'den güncelliyoruz.
-      return LocalDataService.load();
-    }
-    return LocalDataService.load(); // LocalService aslında senkron çalışabilir (await kaldırırsak)
+    if (USE_API) return ApiDataService.load();
+    return Promise.resolve(LocalDataService.load());
   },
   save: (data) => {
     if (USE_API) return ApiDataService.save(data);
     return LocalDataService.save(data);
   },
-  reset: () => LocalDataService.reset()
+  reset: () => (USE_API ? ApiDataService.reset() : LocalDataService.reset())
 };
 
 // LocalDataService metodlarını senkron hale getirelim (orijinal kod senkrondu)
@@ -297,13 +273,7 @@ LocalDataService.load = () => {
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== 'object') return DEFAULT_DATA;
 
-    return {
-      artworks: Array.isArray(parsed.artworks) ? parsed.artworks : DEFAULT_DATA.artworks,
-      exhibitions: Array.isArray(parsed.exhibitions) ? parsed.exhibitions : DEFAULT_DATA.exhibitions,
-      cv: parsed.cv ? { ...DEFAULT_DATA.cv, ...parsed.cv } : DEFAULT_DATA.cv,
-      contactInfo: parsed.contactInfo ? { ...DEFAULT_DATA.contactInfo, ...parsed.contactInfo } : DEFAULT_DATA.contactInfo,
-      featuredArtworkId: parsed.featuredArtworkId !== undefined ? parsed.featuredArtworkId : DEFAULT_DATA.featuredArtworkId,
-    };
+    return mergeWithDefaults(parsed);
   } catch (e) {
     return DEFAULT_DATA;
   }
@@ -325,10 +295,7 @@ LocalDataService.save = (data) => {
 // Admin Hook - Veriyi okur ve yazar
 export function useSiteData() {
   // Başlangıçta güvenli/boş veri veya LocalStorage (senkron ise)
-  const [data, setData] = useState(() => {
-    if (USE_API) return DEFAULT_DATA; // API async olduğu için bekleyeceğiz
-    return LocalDataService.load();
-  });
+  const [data, setData] = useState(DEFAULT_DATA);
 
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -336,13 +303,8 @@ export function useSiteData() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        let validData;
-        if (USE_API) {
-          validData = await ApiDataService.load();
-        } else {
-          validData = LocalDataService.load();
-        }
-        setData(validData);
+        const validData = await DataService.load();
+        setData(mergeWithDefaults(validData));
         setIsInitialized(true);
       } catch (err) {
         console.error("Data load failed:", err);
@@ -353,9 +315,14 @@ export function useSiteData() {
 
   // Save on change (Sadece LocalStorage modunda otomatik kaydet)
   useEffect(() => {
-    if (!USE_API && isInitialized) {
-      LocalDataService.save(data);
+    if (!isInitialized) return;
+
+    if (USE_API) {
+      ApiDataService.save(data);
+      return;
     }
+
+    LocalDataService.save(data);
   }, [data, isInitialized]);
 
   // Helpers (CRUD Operations)
@@ -363,52 +330,22 @@ export function useSiteData() {
 
   const helpers = useMemo(
     () => ({
-      addArtwork: async (payload) => {
-        if (USE_API) {
-          try {
-            await ApiDataService.addArtwork(payload);
-            // DOĞRU YÖNTEM: Ekleme sonrası veriyi sunucudan tazeleyin
-            const freshData = await ApiDataService.load();
-            setData(freshData);
-            return true;
-          } catch (e) {
-            console.error('Add failed', e);
-            alert('Eser eklenirken hata oluştu');
-            return false;
-          }
-        } else {
-          setData((prev) => ({
-            ...prev,
-            artworks: [...prev.artworks, { ...payload, id: nextId(prev.artworks) }],
-          }));
-        }
-      },
+      addArtwork: (payload) =>
+        setData((prev) => ({
+          ...prev,
+          artworks: [...prev.artworks, { ...payload, id: nextId(prev.artworks) }],
+        })),
       updateArtwork: (id, payload) =>
         setData((prev) => ({
           ...prev,
           artworks: prev.artworks.map((a) => (a.id === id ? { ...a, ...payload } : a)),
         })),
 
-      deleteArtwork: async (id) => {
-        if (USE_API) {
-          try {
-            // DELETE /api/artworks?id=...
-            const res = await fetch(`/api/artworks?id=${id}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error('Delete failed');
-
-            // DOĞRU YÖNTEM: Silme sonrası veriyi tazeleyin
-            const freshData = await ApiDataService.load();
-            setData(freshData);
-          } catch (e) {
-            alert('Silme işlemi başarısız');
-          }
-        } else {
-          setData((prev) => ({
-            ...prev,
-            artworks: prev.artworks.filter((a) => a.id !== id),
-          }));
-        }
-      },
+      deleteArtwork: (id) =>
+        setData((prev) => ({
+          ...prev,
+          artworks: prev.artworks.filter((a) => a.id !== id),
+        })),
       addExhibition: (payload) =>
         setData((prev) => ({
           ...prev,
@@ -454,20 +391,35 @@ export function useSiteData() {
 
 // Public Hook - Sadece okur (ve değişiklikleri dinler)
 export function usePublicData() {
-  const [data, setData] = useState(() => DataService.load());
+  const [data, setData] = useState(DEFAULT_DATA);
 
   useEffect(() => {
+    let isMounted = true;
+    DataService.load()
+      .then((loaded) => {
+        if (isMounted) setData(mergeWithDefaults(loaded));
+      })
+      .catch((err) => console.error('Public data load failed:', err));
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (USE_API) return undefined;
+
     const handleStorage = (e) => {
       // Başka sekmelerden gelen değişiklikleri dinle
       if (e.key === STORAGE_KEY) {
-        setData(DataService.load());
+        DataService.load().then((loaded) => setData(mergeWithDefaults(loaded)));
       }
     };
 
     // Aynı sekme içindeki değişiklikleri dinle (DataService.save'de tetiklenir)
     const handleLocalUpdate = () => {
-      setData(DataService.load());
-    }
+      DataService.load().then((loaded) => setData(mergeWithDefaults(loaded)));
+    };
 
     window.addEventListener('storage', handleStorage);
     window.addEventListener('local-data-update', handleLocalUpdate);
