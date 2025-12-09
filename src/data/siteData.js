@@ -26,68 +26,9 @@ const imagePath = (fileName) => `${import.meta.env.BASE_URL}images/${fileName}`;
 // 1. DATA SCHEMA & DEFAULTS
 // ============================================
 const DEFAULT_DATA = {
-  artworks: [
-    {
-      id: 1,
-      title: 'Bisikletli Çocuk',
-      year: 2024,
-      technique: 'Tuval üzerine yağlı boya',
-      size: '60x80 cm',
-      category: 'figuratif',
-      tags: ['çocuk', 'bisiklet', 'deniz', 'duvar', 'masumiyet'],
-      description: 'Deniz kenarındaki taş duvarın önünde, mavi bisikletiyle duran ve parmağıyla ufku işaret eden bir çocuk.',
-      status: 'collection',
-      image: imagePath('bisikletli-cocuk.jpg'),
-    },
-    {
-      id: 2,
-      title: 'Tandır Başında',
-      year: 2023,
-      technique: 'Tuval üzerine yağlı boya',
-      size: '100x70 cm',
-      category: 'figuratif',
-      tags: ['gelenek', 'anadolu', 'ekmek', 'köy', 'kadın', 'ateş'],
-      description: 'Karanlık bir mekanda tandırın sıcak ışığıyla aydınlanan, ekmek pişiren Anadolu kadınları.',
-      status: 'available',
-      image: imagePath('tandir-basinda.jpg'),
-    },
-    {
-      id: 3,
-      title: 'Misket Oynayan Çocuklar',
-      year: 2024,
-      technique: 'Tuval üzerine yağlı boya',
-      size: '80x100 cm',
-      category: 'figuratif',
-      tags: ['çocuk', 'oyun', 'misket', 'sokak', 'arkadaşlık', 'renkler'],
-      description: 'Sokakta yere çömelmiş, dikkatle misket oynayan üç çocuk. Turkuaz kapı ve duvar dokusu sahneye canlılık katıyor.',
-      status: 'collection',
-      image: imagePath('misket-oynayan.jpg'),
-    },
-    {
-      id: 4,
-      title: "Efe'nin Duruşu",
-      year: 2023,
-      technique: 'Tuval üzerine yağlı boya',
-      size: '70x90 cm',
-      category: 'figuratif',
-      tags: ['efe', 'zeybek', 'gelenek'],
-      description: 'Geleneksel Efe kıyafetleri içinde, elinde tüfeğiyle mağrur bir duruş sergileyen figür.',
-      status: 'available',
-      image: imagePath('efe-zeybek.jpg'),
-    },
-    {
-      id: 5,
-      title: 'Mavi Kuşlar',
-      year: 2024,
-      technique: 'Tuval üzerine yağlı boya',
-      size: '50x60 cm',
-      category: 'peyzaj',
-      tags: ['kuş', 'doğa', 'bahar'],
-      description: 'Çiçek açmış bir ağacın dallarına tünemiş iki mavi kuş.',
-      status: 'available',
-      image: imagePath('mavi-kuslar.jpg'),
-    },
-  ],
+  // ARTWORKS: Artık hardcoded/seed data YOK!
+  // Tüm eserler sadece Supabase API'den geliyor.
+  artworks: [],
   exhibitions: [
     {
       id: 1,
@@ -220,12 +161,22 @@ const ApiDataService = {
 
       if (!resArt.ok) throw new Error('API Error');
 
-      const artworks = await resArt.json();
+      const rawArtworks = await resArt.json();
+
+      // NORMALIZE: Supabase'den image_url geliyor, Frontend'de image bekleniyor
+      const artworks = Array.isArray(rawArtworks)
+        ? rawArtworks.map(a => ({
+          ...a,
+          image: a.image_url || a.image || a.imageUrl, // Tüm varyasyonları destekle
+        }))
+        : [];
+
+      console.log('[ApiDataService] Loaded', artworks.length, 'artworks from API');
 
       // Merge with defaults for other missing parts since we only have artworks API yet
       return {
         ...DEFAULT_DATA,
-        artworks: Array.isArray(artworks) ? artworks : [],
+        artworks,
         // exhibitions: ... (TODO)
       };
     } catch (e) {
