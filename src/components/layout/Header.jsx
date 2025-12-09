@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useScrollSpy } from '../../hooks/useScrollSpy';
-import ThemeToggle from '../ui/ThemeToggle';
+// import ThemeToggle from '../ui/ThemeToggle';
 import LanguageSwitcher from '../ui/LanguageSwitcher';
 import './Header.css';
 
@@ -89,10 +89,10 @@ export function Header() {
                         </ul>
                     </nav>
 
-                    {/* Sağ Taraf: Tema, Dil, Menü Butonu */}
+                    {/* Sağ Taraf: Dil, Menü Butonu */}
                     <div className="header__right">
                         <LanguageSwitcher />
-                        <ThemeToggle />
+                        {/* ThemeToggle removed */}
 
                         {/* Mobil Menü Butonu */}
                         <button

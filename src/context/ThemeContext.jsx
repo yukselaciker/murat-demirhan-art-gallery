@@ -8,36 +8,24 @@ import { createContext, useContext, useState, useEffect } from 'react';
 const ThemeContext = createContext(undefined);
 
 export function ThemeProvider({ children }) {
-    const [theme, setTheme] = useState(() => {
-        // localStorage'dan tema tercihini oku
-        if (typeof window !== 'undefined') {
-            const saved = localStorage.getItem('theme');
-            if (saved) return saved;
-
-            // Sistem tercihini kontrol et
-            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                return 'dark';
-            }
-        }
-        return 'light';
-    });
+    // Koyu modu kaldırdık, her zaman 'light' teması.
+    const [theme, setTheme] = useState('light');
 
     useEffect(() => {
-        // HTML'e data-theme attribute ekle
-        document.documentElement.setAttribute('data-theme', theme);
-        // localStorage'a kaydet
-        localStorage.setItem('theme', theme);
-    }, [theme]);
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+    }, []);
 
     const toggleTheme = () => {
-        setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+        // No-op (veya console log)
+        console.log('Dark mode is disabled by design.');
     };
 
     const value = {
-        theme,
-        setTheme,
+        theme: 'light',
+        setTheme: () => { },
         toggleTheme,
-        isDark: theme === 'dark'
+        isDark: false
     };
 
     return (
