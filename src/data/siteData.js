@@ -302,6 +302,8 @@ export function useSiteData() {
         setIsInitialized(true);
       } catch (err) {
         console.error("Data load failed:", err);
+        // API hata alsa bile isInitialized true yapılmalı, yoksa sonsuz yükleme ekranı olur!
+        setIsInitialized(true);
       }
     };
     loadData();
