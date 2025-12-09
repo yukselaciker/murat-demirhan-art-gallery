@@ -273,24 +273,89 @@ textarea {
   border: 1px solid #bfdbfe;
 }
 
+/* Modal Overlay & Card for Delete Confirmations */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 440px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: scaleIn 0.2s ease;
+}
+
+.modal-card h3 {
+  margin: 0 0 0.75rem;
+  color: var(--admin-text);
+}
+
+.modal-card p {
+  margin: 0 0 1.25rem;
+  color: var(--admin-muted);
+  line-height: 1.6;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 @media (max-width: 960px) {
   .admin-shell {
     grid-template-columns: 1fr;
   }
+
   .admin-sidebar {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
   }
+
   .admin-nav {
     flex-direction: row;
     flex-wrap: wrap;
   }
+
   .table-head,
   .table-row {
     grid-template-columns: 1.6fr 0.8fr 0.8fr 1fr;
   }
 }
-
-

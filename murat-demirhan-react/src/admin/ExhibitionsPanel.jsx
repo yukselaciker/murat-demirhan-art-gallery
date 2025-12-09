@@ -15,6 +15,7 @@ export default function ExhibitionsPanel() {
   const [form, setForm] = useState(emptyExhibition);
   const [editingId, setEditingId] = useState(null);
   const [message, setMessage] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -45,14 +46,23 @@ export default function ExhibitionsPanel() {
   };
 
   const handleDelete = (id) => {
-    if (confirm('Bu sergiyi silmek istediğinize emin misiniz?')) {
-      deleteExhibition(id);
+    setDeleteConfirm(id);
+  };
+
+  const confirmDelete = () => {
+    if (deleteConfirm) {
+      deleteExhibition(deleteConfirm);
       setMessage('Sergi silindi.');
-      if (editingId === id) {
+      if (editingId === deleteConfirm) {
         setEditingId(null);
         setForm(emptyExhibition);
       }
+      setDeleteConfirm(null);
     }
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirm(null);
   };
 
   const sorted = useMemo(() => [...data.exhibitions].sort((a, b) => Number(b.year) - Number(a.year)), [data.exhibitions]);
@@ -145,6 +155,24 @@ export default function ExhibitionsPanel() {
           </div>
         ))}
       </div>
+
+      {/* Silme Onay Dialog */}
+      {deleteConfirm && (
+        <div className="modal-overlay" onClick={cancelDelete}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <h3>Emin misiniz?</h3>
+            <p>Bu sergiyi silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</p>
+            <div className="modal-actions">
+              <button className="btn ghost" onClick={cancelDelete}>
+                İptal
+              </button>
+              <button className="btn danger" onClick={confirmDelete}>
+                Evet, Sil
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

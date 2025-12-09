@@ -71,7 +71,6 @@ export function Footer() {
                         <a href="/gizlilik-politikasi.html" className="footer__link">{t('footer.privacy')}</a>
                         <a href="/kullanim-sartlari.html" className="footer__link">{t('footer.terms')}</a>
                         <a href="/cerez-politikasi.html" className="footer__link">Çerez Politikası</a>
-                        <a href="/admin" className="footer__link" style={{ opacity: 0.3 }}>·</a>
                     </div>
                 </div>
             </div>

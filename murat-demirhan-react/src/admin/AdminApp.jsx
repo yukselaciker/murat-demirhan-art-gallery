@@ -10,11 +10,13 @@ import AdminLayout from './AdminLayout.jsx';
 import ArtworksPanel from './ArtworksPanel.jsx';
 import ExhibitionsPanel from './ExhibitionsPanel.jsx';
 import CvPanel from './CvPanel.jsx';
+import SettingsPanel from './SettingsPanel.jsx';
 import '../styles/admin.css';
 
 const STORAGE_KEY = 'md-admin-session';
-const USERNAME = 'admin';
-const PASSWORD = 'murat2025!'; // GERÇEK PROJEDE ŞİFRE SABİT TUTULMAMALIDIR, ORTAM DEĞİŞKENİNE ALINMALIDIR.
+// Environment variables'dan kullanıcı adı ve şifre okunur
+const USERNAME = import.meta.env.VITE_ADMIN_USERNAME || 'admin';
+const PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'murat2025!';
 
 export default function AdminApp() {
   const [session, setSession] = useState(() => {
@@ -53,6 +55,7 @@ export default function AdminApp() {
       { key: 'artworks', label: 'Eserler' },
       { key: 'exhibitions', label: 'Sergiler' },
       { key: 'cv', label: 'Özgeçmiş / CV' },
+      { key: 'settings', label: 'Ayarlar' },
     ],
     []
   );
@@ -66,8 +69,7 @@ export default function AdminApp() {
       {activeTab === 'artworks' && <ArtworksPanel />}
       {activeTab === 'exhibitions' && <ExhibitionsPanel />}
       {activeTab === 'cv' && <CvPanel />}
+      {activeTab === 'settings' && <SettingsPanel />}
     </AdminLayout>
   );
 }
-
-

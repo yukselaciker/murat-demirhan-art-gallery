@@ -20,13 +20,16 @@ export function About() {
                 <div className="about__content">
                     {/* Sol Taraf: Portre */}
                     <div className="about__image-wrapper slide-in-left">
-                        {/* Sanatçı portresi placeholder */}
-                        <div className="placeholder-image placeholder-image--portrait">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                            <span>Sanatçı Portresi</span>
-                        </div>
+                        {cv?.artistPhoto ? (
+                            <img src={cv.artistPhoto} alt="Murat Demirhan" />
+                        ) : (
+                            <div className="placeholder-image placeholder-image--portrait">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <span>Sanatçı Portresi</span>
+                            </div>
+                        )}
                     </div>
 
                     {/* Sağ Taraf: Biyografi Metni */}
@@ -48,21 +51,39 @@ export function About() {
                             <div className="about__info">
                                 <div className="about__info-item">
                                     <p className="about__info-label">Eğitim</p>
-                                    <p className="about__info-value">
-                                        {cv.education?.map((e) => e.school).join(' • ') || '-'}
-                                    </p>
+                                    {cv.education && cv.education.length > 0 ? (
+                                        <ul className="about__info-list">
+                                            {cv.education.map((e, idx) => (
+                                                <li key={idx}>{e.school} ({e.year})</li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className="about__info-value">-</p>
+                                    )}
                                 </div>
                                 <div className="about__info-item">
                                     <p className="about__info-label">Ödüller</p>
-                                    <p className="about__info-value">
-                                        {cv.awards?.map((a) => a.title).join(' • ') || '-'}
-                                    </p>
+                                    {cv.awards && cv.awards.length > 0 ? (
+                                        <ul className="about__info-list">
+                                            {cv.awards.map((a, idx) => (
+                                                <li key={idx}>{a.title} - {a.org} ({a.year})</li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className="about__info-value">-</p>
+                                    )}
                                 </div>
                                 <div className="about__info-item">
                                     <p className="about__info-label">Öne Çıkanlar</p>
-                                    <p className="about__info-value">
-                                        {cv.highlights?.[0] || 'Güncel başarılar yakında'}
-                                    </p>
+                                    {cv.highlights && cv.highlights.length > 0 ? (
+                                        <ul className="about__info-list">
+                                            {cv.highlights.map((h, idx) => (
+                                                <li key={idx}>{h}</li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className="about__info-value">Güncel başarılar yakında</p>
+                                    )}
                                 </div>
                             </div>
                         )}

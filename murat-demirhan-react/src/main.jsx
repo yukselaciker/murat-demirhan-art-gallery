@@ -8,7 +8,9 @@ import { createRoot } from 'react-dom/client';
 import App from './App.jsx';
 import AdminApp from './admin/AdminApp.jsx';
 
-const isAdmin = window.location.pathname.startsWith('/admin');
+// Admin paneli güvenli bir route'ta render et
+// Güvenlik için tahmin edilemez bir path kullanılıyor
+const isAdmin = window.location.pathname.startsWith('/studio-md-2024');
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

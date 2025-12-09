@@ -28,7 +28,7 @@ export default function AdminLogin({ onLogin }) {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="murat2025!"
+              placeholder="Şifrenizi girin"
               required
             />
           </label>
@@ -37,10 +37,6 @@ export default function AdminLogin({ onLogin }) {
             Giriş Yap
           </button>
         </form>
-
-        <p className="muted tiny">
-          // GERÇEK PROJEDE ŞİFRE SABİT TUTULMAMALIDIR, ORTAM DEĞİŞKENİNE ALINMALIDIR.
-        </p>
       </div>
     </div>
   );

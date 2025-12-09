@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useSiteData } from '../data/siteData.js';
+import ImageUploader from './ImageUploader.jsx';
 
 const emptyArtwork = {
   title: '',
@@ -14,10 +15,11 @@ const emptyArtwork = {
 };
 
 export default function ArtworksPanel() {
-  const { data, addArtwork, updateArtwork, deleteArtwork } = useSiteData();
+  const { data, addArtwork, updateArtwork, deleteArtwork, setFeaturedArtwork } = useSiteData();
   const [form, setForm] = useState(emptyArtwork);
   const [editingId, setEditingId] = useState(null);
   const [message, setMessage] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -59,14 +61,28 @@ export default function ArtworksPanel() {
   };
 
   const handleDelete = (id) => {
-    if (confirm('Bu eseri silmek istediğinize emin misiniz?')) {
-      deleteArtwork(id);
+    setDeleteConfirm(id);
+  };
+
+  const confirmDelete = () => {
+    if (deleteConfirm) {
+      deleteArtwork(deleteConfirm);
       setMessage('Eser silindi.');
-      if (editingId === id) {
+      if (editingId === deleteConfirm) {
         setEditingId(null);
         setForm(emptyArtwork);
       }
+      setDeleteConfirm(null);
     }
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirm(null);
+  };
+
+  const handleSetFeatured = (id) => {
+    setFeaturedArtwork(id);
+    setMessage('Öne çıkan eser ayarlandı.');
   };
 
   const sorted = useMemo(() => [...data.artworks].sort((a, b) => Number(b.year) - Number(a.year)), [data.artworks]);
@@ -76,7 +92,7 @@ export default function ArtworksPanel() {
       <div className="panel-header">
         <div>
           <h2>{editingId ? 'Eseri Düzenle' : 'Yeni Eser Ekle'}</h2>
-          <p className="muted">Tüm alanları eksiksiz doldurun. Görsel için URL kullanabilirsiniz.</p>
+          <p className="muted">Tüm alanları eksiksiz doldurun. Cihazınızdan direkt resim yükleyebilirsiniz.</p>
         </div>
         {message && <div className="alert alert-success">{message}</div>}
       </div>
@@ -128,18 +144,13 @@ export default function ArtworksPanel() {
             <option value="museum">Müze Koleksiyonu</option>
           </select>
         </label>
-        <label className="full">
-          Görsel URL’si
-          <input
-            name="image"
-            value={form.image}
-            onChange={handleChange}
-            placeholder="https://... veya /images/... "
-          />
-          <small className="muted">
-            // TODO: Gerçek projede görsel yükleme entegrasyonu (S3 / backend) eklenmeli.
-          </small>
-        </label>
+
+        <ImageUploader
+          value={form.image}
+          onChange={(dataUrl) => setForm(prev => ({ ...prev, image: dataUrl }))}
+          label="Eser Görseli *"
+        />
+
         <div className="form-actions">
           <button type="submit" className="btn primary">
             {editingId ? 'Güncelle' : 'Kaydet'}
@@ -171,12 +182,27 @@ export default function ArtworksPanel() {
             <div>
               <strong>{art.title}</strong>
               <p className="muted tiny">{art.technique}</p>
+              {data.featuredArtworkId === art.id && (
+                <span className="badge" style={{ backgroundColor: '#10b981', color: 'white', marginTop: '4px' }}>
+                  ⭐ Öne Çıkan
+                </span>
+              )}
             </div>
             <span>{art.year}</span>
             <span className="badge">{art.category}</span>
             <div className="row-actions">
               <button className="btn tiny" onClick={() => handleEdit(art)}>
                 Düzenle
+              </button>
+              <button
+                className="btn tiny"
+                onClick={() => handleSetFeatured(art.id)}
+                style={{
+                  backgroundColor: data.featuredArtworkId === art.id ? '#10b981' : 'transparent',
+                  color: data.featuredArtworkId === art.id ? 'white' : 'inherit'
+                }}
+              >
+                ⭐ Öne Çıkar
               </button>
               <button className="btn danger tiny" onClick={() => handleDelete(art.id)}>
                 Sil
@@ -185,8 +211,24 @@ export default function ArtworksPanel() {
           </div>
         ))}
       </div>
+
+      {/* Silme Onay Dialog */}
+      {deleteConfirm && (
+        <div className="modal-overlay" onClick={cancelDelete}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <h3>Emin misiniz?</h3>
+            <p>Bu eseri silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</p>
+            <div className="modal-actions">
+              <button className="btn ghost" onClick={cancelDelete}>
+                İptal
+              </button>
+              <button className="btn danger" onClick={confirmDelete}>
+                Evet, Sil
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
-

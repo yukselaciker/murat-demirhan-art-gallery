@@ -53,7 +53,7 @@ const DEFAULT_DATA = {
     },
     {
       id: 4,
-      title: 'Efe’nin Duruşu',
+      title: "Efe'nin Duruşu",
       year: 2023,
       technique: 'Tuval üzerine yağlı boya',
       size: '70x90 cm',
@@ -108,16 +108,23 @@ const DEFAULT_DATA = {
   ],
   cv: {
     bio: 'Murat Demirhan, hafıza ve renkler arasındaki ilişkileri tuvalde yeniden kuran çağdaş bir ressamdır.',
+    artistPhoto: '', // Sanatçı portresi (base64 data URL veya image URL)
     education: [
       { school: 'MSGSÜ, Resim', year: '2002' },
       { school: 'Atölye Çalışmaları, Avrupa', year: '2004-2006' },
     ],
     awards: [{ title: 'Genç Ressamlar Ödülü', org: 'X Sanat Derneği', year: '2010' }],
     highlights: [
-      'Pera Müzesi’nde kişisel sergi (2024)',
-      'Berlin’de karma sergi katılımı (2023)',
+      "Pera Müzesi'nde kişisel sergi (2024)",
+      "Berlin'de karma sergi katılımı (2023)",
     ],
   },
+  contactInfo: {
+    email: 'info@muratdemirhan.com',
+    location: 'İstanbul, Türkiye',
+    phone: '', // Opsiyonel
+  },
+  featuredArtworkId: null, // Öne çıkan eser ID'si (gelecekte kullanılacak)
 };
 
 const STORAGE_KEY = 'md-site-data';
@@ -133,6 +140,8 @@ export function loadSiteData() {
       artworks: parsed.artworks || DEFAULT_DATA.artworks,
       exhibitions: parsed.exhibitions || DEFAULT_DATA.exhibitions,
       cv: parsed.cv || DEFAULT_DATA.cv,
+      contactInfo: parsed.contactInfo || DEFAULT_DATA.contactInfo,
+      featuredArtworkId: parsed.featuredArtworkId ?? DEFAULT_DATA.featuredArtworkId,
     };
   } catch (e) {
     console.warn('Veri okunamadı, varsayılanlar kullanılacak', e);
@@ -198,6 +207,16 @@ export function useSiteData() {
           ...prev,
           cv: { ...prev.cv, ...payload },
         })),
+      updateContactInfo: (payload) =>
+        setData((prev) => ({
+          ...prev,
+          contactInfo: { ...prev.contactInfo, ...payload },
+        })),
+      setFeaturedArtwork: (artworkId) =>
+        setData((prev) => ({
+          ...prev,
+          featuredArtworkId: artworkId,
+        })),
     }),
     []
   );
@@ -228,5 +247,3 @@ export default {
   loadSiteData,
   saveSiteData,
 };
-
-

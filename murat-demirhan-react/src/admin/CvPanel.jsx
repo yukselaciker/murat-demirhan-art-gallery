@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useSiteData } from '../data/siteData.js';
+import ImageUploader from './ImageUploader.jsx';
 
 const emptyEducation = { school: '', year: '' };
 const emptyAward = { title: '', org: '', year: '' };
@@ -7,13 +8,14 @@ const emptyAward = { title: '', org: '', year: '' };
 export default function CvPanel() {
   const { data, updateCv } = useSiteData();
   const [bio, setBio] = useState(data.cv.bio || '');
+  const [artistPhoto, setArtistPhoto] = useState(data.cv.artistPhoto || '');
   const [education, setEducation] = useState(data.cv.education || []);
   const [awards, setAwards] = useState(data.cv.awards || []);
   const [highlights, setHighlights] = useState(data.cv.highlights || []);
   const [message, setMessage] = useState('');
 
   const save = () => {
-    updateCv({ bio, education, awards, highlights });
+    updateCv({ bio, artistPhoto, education, awards, highlights });
     setMessage('Özgeçmiş güncellendi.');
   };
 
@@ -32,7 +34,7 @@ export default function CvPanel() {
       <div className="panel-header">
         <div>
           <h2>Özgeçmiş / CV</h2>
-          <p className="muted">Kısa biyografi, eğitim, ödül ve öne çıkan sergi bilgilerini güncelleyin.</p>
+          <p className="muted">Kısa biyografi, sanatçı portresi, eğitim, ödül ve öne çıkan sergi bilgilerini güncelleyin.</p>
         </div>
         {message && <div className="alert alert-success">{message}</div>}
       </div>
@@ -42,6 +44,12 @@ export default function CvPanel() {
           Kısa Biyografi
           <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={4} />
         </label>
+
+        <ImageUploader
+          value={artistPhoto}
+          onChange={setArtistPhoto}
+          label="Sanatçı Portresi"
+        />
 
         <section>
           <div className="section-header">
@@ -139,5 +147,3 @@ export default function CvPanel() {
     </div>
   );
 }
-
-
