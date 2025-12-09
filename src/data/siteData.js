@@ -164,7 +164,30 @@ export function useSiteData() {
   // State her değiştiğinde localStorage'a yaz
   useEffect(() => {
     saveSiteData(data);
-    // TODO: GERÇEK PROJEDE VERİTABANINA YAZILMALI.
+
+    // ============================================
+    // TODO: BACKEND ENTEGRASYONU
+    // ============================================
+    // Şu anda veriler sadece localStorage'da saklanıyor (tek cihaz/tarayıcı).
+    // Gerçek cross-device persistence için backend API gereklidir.
+    // 
+    // Önerilen implementasyon:
+    // 1. Backend API endpoint'leri oluştur:
+    //    - GET  /api/site-data
+    //    - POST /api/artworks
+    //    - PUT  /api/artworks/:id
+    //    - DELETE /api/artworks/:id
+    //    (Exhibitions ve CV için de benzer)
+    //
+    // 2. Bu useEffect içinde API çağrısı yap:
+    //    await fetch('/api/site-data', {
+    //      method: 'PUT',
+    //      headers: { 'Content-Type': 'application/json' },
+    //      body: JSON.stringify(data)
+    //    });
+    //
+    // 3. İlk yüklemede loadSiteData() fonksiyonunda API'den çek
+    // ============================================
   }, [data]);
 
   // Basit id üretici
