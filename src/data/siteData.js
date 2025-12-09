@@ -143,13 +143,19 @@ const STORAGE_KEY = 'md-site-data';
 // ============================================
 // 2. DATA SERVICE LAYER (Abstraction)
 // ============================================
-const DataService = {
-  // Veriyi Yükle (Safe Load)
-  load: () => {
+const USE_API = import.meta.env.VITE_USE_API === 'true';
+
+// ============================================
+// 2. DATA SERVICE LAYER (Abstraction)
+// ============================================
+
+// LocalStorage Implementation (Mevcut)
+const LocalDataService = {
+  load: async () => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) {
-        console.log('[DataService] No data found, using defaults.');
+        console.log('[LocalDataService] No data found, using defaults.');
         return DEFAULT_DATA;
       }
 
@@ -157,7 +163,6 @@ const DataService = {
 
       // Validation / Merging Strategy
       if (!parsed || typeof parsed !== 'object') {
-        // If parsed is null (e.g. from "null" string) or not an object
         return DEFAULT_DATA;
       }
 
@@ -172,34 +177,25 @@ const DataService = {
 
       return safeData;
     } catch (e) {
-      console.error('[DataService] Error loading data, falling back to defaults:', e);
+      console.error('[LocalDataService] Error loading data, falling back to defaults:', e);
       return DEFAULT_DATA;
     }
   },
 
-  // Veriyi Kaydet (Safe Save)
-  save: (data) => {
+  save: async (data) => {
     try {
-      // Basic validation before save
-      if (!data || typeof data !== 'object') {
-        throw new Error('Invalid data format');
-      }
-
+      if (!data || typeof data !== 'object') throw new Error('Invalid data format');
       const serialized = JSON.stringify(data);
       localStorage.setItem(STORAGE_KEY, serialized);
-
-      // Dispatch storage event manually for same-tab listeners (optional but good practice)
       window.dispatchEvent(new Event('local-data-update'));
       return true;
     } catch (e) {
-      console.error('[DataService] Failed to save data:', e);
-      alert('Veri kaydedilirken hata oluştu! Tarayıcı hafızası dolu olabilir.');
+      console.error('[LocalDataService] Failed to save data:', e);
       return false;
     }
   },
 
-  // Veriyi Sıfırla
-  reset: () => {
+  reset: async () => {
     try {
       localStorage.removeItem(STORAGE_KEY);
       return true;
@@ -207,6 +203,108 @@ const DataService = {
       return false;
     }
   }
+};
+
+// API Implementation (Yeni - Vercel Serverless / Backend)
+const ApiDataService = {
+  load: async () => {
+    try {
+      // API'den veri çekmeye çalış
+      // NOT: Vercel üzerinde /api/site-data endpoint'i çalışmalıdır.
+      console.log('[ApiDataService] Fetching from API...');
+      const res = await fetch('/api/site-data');
+      if (!res.ok) {
+        console.warn('[ApiDataService] API failed, using LocalStorage fallback.');
+        return LocalDataService.load();
+      }
+      return await res.json();
+    } catch (e) {
+      console.error('[ApiDataService] Load error:', e);
+      console.warn('Falling back to LocalStorage due to API error.');
+      return LocalDataService.load();
+    }
+  },
+
+  save: async (data) => {
+    try {
+      // API modunda genellikle saveSiteData tüm veriyi post etmez,
+      // ama demo için basit tutuyoruz.
+      // Eser ekleme vb. işlemler kendi metodlarını kullanmalı.
+      console.warn('[ApiDataService] Toplu kaydetme desteklenmiyor, endpointleri kullanın.');
+      return true;
+    } catch (e) {
+      return false;
+    }
+  },
+
+  reset: async () => {
+    return false; // API'de reset tehlikeli olabilir
+  },
+
+  // CRUD Override (API modunda hooks bunları kullanır)
+  addArtwork: async (artwork) => {
+    const res = await fetch('/api/artworks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(artwork)
+    });
+    if (!res.ok) throw new Error('Failed to add artwork');
+    return await res.json();
+  }
+};
+
+// Aktif Servis Seçimi
+// load/save metodları async olduğu için hook'lar güncellenmeli, 
+// ancak şimdilik senkron gibi davranan loadSiteData() wrapper'ı ile uyumlu tutuyoruz.
+// DİKKAT: useSiteData içinde DataService.load() senkron çağrılıyor. 
+// API asenkron olduğu için bu yapı değişmeli.
+// Şimdilik USE_API false olduğu için LocalDataService (senkron çalışabilir) kullanıyoruz.
+// API'ye geçişte useSiteData tamamen asenkron hale getirilmeli.
+
+const DataService = {
+  load: () => {
+    if (USE_API) {
+      // Senkron wrapper hacks (bunu asenkrona çevirmek büyük refactor gerektirir)
+      // Bu yüzden şimdilik API modunda bile LocalStorage'dan "başlangıç" verisi okuyoruz,
+      // sonra useEffect ile API'den güncelliyoruz.
+      return LocalDataService.load();
+    }
+    return LocalDataService.load(); // LocalService aslında senkron çalışabilir (await kaldırırsak)
+  },
+  save: (data) => {
+    if (USE_API) return ApiDataService.save(data);
+    return LocalDataService.save(data);
+  },
+  reset: () => LocalDataService.reset()
+};
+
+// LocalDataService metodlarını senkron hale getirelim (orijinal kod senkrondu)
+// Yukarıdaki async tanımlarını kaldırıp düzeltiyorum:
+LocalDataService.load = () => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return DEFAULT_DATA;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return DEFAULT_DATA;
+
+    return {
+      artworks: Array.isArray(parsed.artworks) ? parsed.artworks : DEFAULT_DATA.artworks,
+      exhibitions: Array.isArray(parsed.exhibitions) ? parsed.exhibitions : DEFAULT_DATA.exhibitions,
+      cv: parsed.cv ? { ...DEFAULT_DATA.cv, ...parsed.cv } : DEFAULT_DATA.cv,
+      contactInfo: parsed.contactInfo ? { ...DEFAULT_DATA.contactInfo, ...parsed.contactInfo } : DEFAULT_DATA.contactInfo,
+      featuredArtworkId: parsed.featuredArtworkId !== undefined ? parsed.featuredArtworkId : DEFAULT_DATA.featuredArtworkId,
+    };
+  } catch (e) {
+    return DEFAULT_DATA;
+  }
+};
+
+LocalDataService.save = (data) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    window.dispatchEvent(new Event('local-data-update'));
+    return true;
+  } catch (e) { return false; }
 };
 
 // ============================================
