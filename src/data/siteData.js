@@ -209,15 +209,24 @@ const LocalDataService = {
 const ApiDataService = {
   load: async () => {
     try {
-      // API'den veri çekmeye çalış
-      // NOT: Vercel üzerinde /api/site-data endpoint'i çalışmalıdır.
       console.log('[ApiDataService] Fetching from API...');
-      const res = await fetch('/api/site-data');
-      if (!res.ok) {
-        console.warn('[ApiDataService] API failed, using LocalStorage fallback.');
-        return LocalDataService.load();
-      }
-      return await res.json();
+
+      // Artworks endpoint'i hazır (User sağladı)
+      const resArt = await fetch('/api/artworks');
+
+      // Diğerleri için şimdilik mock veya boş dönebiliriz.
+      // const resExh = await fetch('/api/exhibitions'); 
+
+      if (!resArt.ok) throw new Error('API Error');
+
+      const artworks = await resArt.json();
+
+      // Merge with defaults for other missing parts since we only have artworks API yet
+      return {
+        ...DEFAULT_DATA,
+        artworks: Array.isArray(artworks) ? artworks : [],
+        // exhibitions: ... (TODO)
+      };
     } catch (e) {
       console.error('[ApiDataService] Load error:', e);
       console.warn('Falling back to LocalStorage due to API error.');
@@ -338,21 +347,54 @@ export function useSiteData() {
 
   const helpers = useMemo(
     () => ({
-      addArtwork: (payload) =>
-        setData((prev) => ({
-          ...prev,
-          artworks: [...prev.artworks, { ...payload, id: nextId(prev.artworks) }],
-        })),
+      addArtwork: async (payload) => {
+        if (USE_API) {
+          try {
+            const savedArtwork = await ApiDataService.addArtwork(payload);
+            setData(prev => ({
+              ...prev,
+              artworks: [savedArtwork, ...prev.artworks]
+            }));
+            return true;
+          } catch (e) {
+            console.error('Add failed', e);
+            alert('Eser eklenirken hata oluştu');
+            return false;
+          }
+        } else {
+          setData((prev) => ({
+            ...prev,
+            artworks: [...prev.artworks, { ...payload, id: nextId(prev.artworks) }],
+          }));
+        }
+      },
       updateArtwork: (id, payload) =>
         setData((prev) => ({
           ...prev,
           artworks: prev.artworks.map((a) => (a.id === id ? { ...a, ...payload } : a)),
         })),
-      deleteArtwork: (id) =>
-        setData((prev) => ({
-          ...prev,
-          artworks: prev.artworks.filter((a) => a.id !== id),
-        })),
+
+      deleteArtwork: async (id) => {
+        if (USE_API) {
+          try {
+            // DELETE /api/artworks?id=...
+            const res = await fetch(`/api/artworks?id=${id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Delete failed');
+
+            setData(prev => ({
+              ...prev,
+              artworks: prev.artworks.filter(a => a.id !== id)
+            }));
+          } catch (e) {
+            alert('Silme işlemi başarısız');
+          }
+        } else {
+          setData((prev) => ({
+            ...prev,
+            artworks: prev.artworks.filter((a) => a.id !== id),
+          }));
+        }
+      },
       addExhibition: (payload) =>
         setData((prev) => ({
           ...prev,

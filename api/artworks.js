@@ -1,78 +1,57 @@
-// api/artworks.js
-// Vercel Serverless Function
-// Not: Bu fonksiyon her çalıştığında bellek sıfırlanır. Kalıcılık için bir veritabanına (Supabase, MongoDB) bağlanmalıdır.
+import { Pool } from "pg";
 
-// DEMO: Bellek içi veri (Serverless ortamında istekler arası korunmaz!)
-let artworks = [
-    {
-        id: 1,
-        title: 'Bisikletli Çocuk',
-        year: 2024,
-        technique: 'Tuval üzerine yağlı boya',
-        size: '60x80 cm',
-        category: 'figuratif',
-        tags: ['çocuk', 'bisiklet', 'deniz', 'duvar', 'masumiyet'],
-        description: 'Deniz kenarındaki taş duvarın önünde, mavi bisikletiyle duran ve parmağıyla ufku işaret eden bir çocuk.',
-        status: 'collection',
-        // image: ... (URL olmalı)
-    },
-    // Diğer varsayılan veriler...
-];
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+});
 
-export default function handler(req, res) {
-    const method = req.method;
-
-    // CORS headers
+export default async function handler(req, res) {
+    // CORS Headers
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
 
-    if (method === 'OPTIONS') {
+    if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
 
-    // GET: Tüm eserleri getir
-    if (method === 'GET') {
-        // TODO: const { data } = await supabase.from('artworks').select('*');
-        return res.status(200).json(artworks);
+    if (req.method === "GET") {
+        try {
+            const result = await pool.query("SELECT * FROM artworks ORDER BY id DESC");
+            return res.status(200).json(result.rows);
+        } catch (e) {
+            console.error(e);
+            return res.status(500).json({ error: e.message });
+        }
     }
 
-    // POST: Yeni eser ekle
-    if (method === 'POST') {
-        const body = req.body || {};
-        const newArtwork = {
-            id: Date.now(), // Basit ID
-            ...body
-        };
+    if (req.method === "POST") {
+        try {
+            const { title, year, technique, size, image_url, category, description, status, tags } = req.body;
 
-        // TODO: await supabase.from('artworks').insert([newArtwork]);
-        artworks.push(newArtwork);
+            // Note: tags is TEXT[] in Postgres, passing array directly usually works with pg
+            // But let's be safe. If table has tags TEXT[], passing JS array is fine.
 
-        return res.status(201).json(newArtwork);
+            const result = await pool.query(
+                "INSERT INTO artworks(title, year, technique, size, image_url, category, description, status) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *",
+                [title, year, technique, size, image_url, category, description, status]
+            );
+
+            return res.status(201).json(result.rows[0]);
+        } catch (e) {
+            console.error(e);
+            return res.status(500).json({ error: e.message });
+        }
     }
 
-    // PUT: Eser güncelle
-    if (method === 'PUT') {
-        const { id } = req.query; // /api/artworks?id=123
-        const body = req.body || {};
-        const numericId = Number(id);
-
-        // TODO: await supabase.from('artworks').update(body).eq('id', numericId);
-        artworks = artworks.map(a => (a.id === numericId ? { ...a, ...body } : a));
-
-        return res.status(200).json({ success: true });
+    if (req.method === "DELETE") {
+        try {
+            const { id } = req.query;
+            await pool.query("DELETE FROM artworks WHERE id=$1", [id]);
+            return res.status(200).json({ ok: true });
+        } catch (e) {
+            return res.status(500).json({ error: e.message });
+        }
     }
 
-    // DELETE: Eser sil
-    if (method === 'DELETE') {
-        const { id } = req.query;
-        const numericId = Number(id);
-
-        // TODO: await supabase.from('artworks').delete().eq('id', numericId);
-        artworks = artworks.filter(a => a.id !== numericId);
-
-        return res.status(200).json({ success: true });
-    }
-
-    return res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).json({ error: "Method Not Allowed" });
 }
