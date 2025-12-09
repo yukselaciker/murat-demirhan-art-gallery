@@ -410,30 +410,30 @@ export function useSiteData() {
   return { data, setData, ...helpers, isInitialized };
 }
 
-// Public Hook - Sadece okur (ve değişiklikleri dinler)
+// Public Hook - Sadece okur (API'den async olarak)
 export function usePublicData() {
-  const [data, setData] = useState(() => DataService.load());
+  // USE_API true ise boş veri ile başla, async olarak yüklenecek
+  const [data, setData] = useState(() => {
+    if (USE_API) return DEFAULT_DATA;
+    return DataService.load();
+  });
 
+  // API'den veri yükle (useSiteData ile aynı mantık)
   useEffect(() => {
-    const handleStorage = (e) => {
-      // Başka sekmelerden gelen değişiklikleri dinle
-      if (e.key === STORAGE_KEY) {
-        setData(DataService.load());
+    const loadData = async () => {
+      try {
+        let validData;
+        if (USE_API) {
+          validData = await ApiDataService.load();
+        } else {
+          validData = DataService.load();
+        }
+        setData(validData);
+      } catch (err) {
+        console.error("[usePublicData] Data load failed:", err);
       }
     };
-
-    // Aynı sekme içindeki değişiklikleri dinle (DataService.save'de tetiklenir)
-    const handleLocalUpdate = () => {
-      setData(DataService.load());
-    }
-
-    window.addEventListener('storage', handleStorage);
-    window.addEventListener('local-data-update', handleLocalUpdate);
-
-    return () => {
-      window.removeEventListener('storage', handleStorage);
-      window.removeEventListener('local-data-update', handleLocalUpdate);
-    };
+    loadData();
   }, []);
 
   return data;
