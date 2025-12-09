@@ -68,6 +68,11 @@
 
 .filter-btn {
     padding: var(--space-sm) var(--space-lg);
+    min-height: 44px;
+    /* Touch target size */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     font-size: var(--text-sm);
     font-weight: 500;
     background-color: transparent;
@@ -76,6 +81,7 @@
     cursor: pointer;
     transition: all var(--transition-base);
     color: var(--color-text-secondary);
+    white-space: nowrap;
 }
 
 .filter-btn:hover {

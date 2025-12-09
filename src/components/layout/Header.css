@@ -131,14 +131,21 @@
 @media (max-width: 768px) {
     .nav {
         position: fixed;
-        top: var(--header-height);
+        top: 80px;
+        /* Fixed header height */
         left: 0;
         right: 0;
         bottom: 0;
+        height: calc(100vh - 80px);
+        /* Fallback */
+        height: calc(100dvh - 80px);
+        /* Dynamic viewport height */
         background-color: var(--color-bg-primary);
         opacity: 0;
         visibility: hidden;
         transition: all var(--transition-base);
+        overflow-y: auto;
+        /* Enable scrolling if menu is tall */
     }
 
     .nav--open {

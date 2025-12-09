@@ -29,9 +29,7 @@ export default function AdminLayout({ tabs, activeTab, onSelectTab, onLogout, ch
       <main className="admin-main">
         <header className="admin-header">
           <h1>{tabs.find((t) => t.key === activeTab)?.label}</h1>
-          <p className="muted tiny">
-            // GERÇEK PROJEDE VERİLER BİR VERİTABANINDA SAKLANMALIDIR.
-          </p>
+
         </header>
         <section className="admin-content">{children}</section>
       </main>
