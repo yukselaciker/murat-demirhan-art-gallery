@@ -1,0 +1,119 @@
+/* ============================================
+   ABOUT SECTION STİLLERİ
+   ============================================ */
+
+.about {
+    background-color: var(--color-bg-secondary);
+}
+
+.about__content {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: var(--space-4xl);
+    align-items: start;
+}
+
+/* Portre Alanı */
+.about__image-wrapper {
+    position: sticky;
+    top: calc(var(--header-height) + var(--space-xl));
+}
+
+.about__image-wrapper .placeholder-image {
+    aspect-ratio: 3 / 4;
+    max-width: 400px;
+}
+
+.about__image-wrapper img {
+    width: 100%;
+    max-width: 400px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Metin Alanı */
+.about__text p {
+    font-size: var(--text-lg);
+    line-height: var(--leading-relaxed);
+    margin-bottom: var(--space-lg);
+}
+
+/* Sanatçı Notu */
+.about__quote {
+    margin: var(--space-2xl) 0;
+    padding: var(--space-xl);
+    background-color: var(--color-bg-primary);
+    border-left: 4px solid var(--color-accent);
+    border-radius: var(--radius-md);
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-size: var(--text-xl);
+    line-height: var(--leading-relaxed);
+    color: var(--color-text-primary);
+}
+
+/* Bilgi Kutuları */
+.about__info {
+    display: flex;
+    gap: var(--space-xl);
+    margin-top: var(--space-2xl);
+    padding-top: var(--space-xl);
+    border-top: 1px solid var(--color-border);
+}
+
+.about__info-item {
+    flex: 1;
+    text-align: center;
+    padding: var(--space-md);
+    background-color: var(--color-bg-primary);
+    border-radius: var(--radius-md);
+}
+
+.about__info-label {
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-light);
+    margin-bottom: var(--space-xs);
+}
+
+.about__info-value {
+    font-size: var(--text-lg);
+    font-weight: 500;
+    color: var(--color-text-primary);
+    margin-bottom: 0;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .about__content {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-2xl);
+    }
+}
+
+@media (max-width: 768px) {
+    .about__content {
+        grid-template-columns: 1fr;
+    }
+
+    .about__image-wrapper {
+        position: relative;
+        top: 0;
+        display: flex;
+        justify-content: center;
+    }
+
+    .about__image-wrapper .placeholder-image {
+        max-width: 280px;
+    }
+
+    .about__info {
+        flex-wrap: wrap;
+    }
+
+    .about__info-item {
+        flex: 1 1 calc(50% - var(--space-md));
+        min-width: 120px;
+    }
+}

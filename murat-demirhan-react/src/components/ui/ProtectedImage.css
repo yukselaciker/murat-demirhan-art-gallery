@@ -1,0 +1,79 @@
+/* ============================================
+   PROTECTED IMAGE STİLLERİ
+   Canvas tabanlı korumalı görsel
+   ============================================ */
+
+.protected-image {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    /* Seçim ve sürükleme engelle */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.protected-image__canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.protected-image__canvas.hidden {
+    opacity: 0;
+    position: absolute;
+}
+
+/* Skeleton loading */
+.protected-image__skeleton {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg,
+            var(--color-bg-secondary) 25%,
+            var(--color-bg-tertiary) 50%,
+            var(--color-bg-secondary) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+/* Hata durumu */
+.protected-image__error {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-light);
+    gap: var(--space-sm);
+}
+
+.protected-image__error svg {
+    width: 48px;
+    height: 48px;
+    opacity: 0.5;
+}
+
+.protected-image__error span {
+    font-size: var(--text-sm);
+}
+
+/* Görünmez koruma katmanı - sağ tık ve inspect engellemek için */
+.protected-image__shield {
+    position: absolute;
+    inset: 0;
+    background: transparent;
+    z-index: 1;
+    pointer-events: none;
+    /* Tıklamayı engelleme, sadece koruma */
+}
+
+/* Hover durumunda shield'ı aktifleştir */
+.protected-image:hover .protected-image__shield {
+    pointer-events: auto;
+}

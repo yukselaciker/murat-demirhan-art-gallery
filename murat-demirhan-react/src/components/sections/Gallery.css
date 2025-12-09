@@ -1,0 +1,262 @@
+/* ============================================
+   GALLERY SECTION STİLLERİ
+   ============================================ */
+
+.gallery {
+    background-color: var(--color-bg-primary);
+}
+
+.gallery__header {
+    text-align: center;
+    margin-bottom: var(--space-2xl);
+}
+
+/* Arama ve Filtreler */
+.gallery__controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-lg);
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-2xl);
+}
+
+.gallery__search {
+    position: relative;
+    flex: 1;
+    max-width: 400px;
+}
+
+.gallery__search-icon {
+    position: absolute;
+    left: var(--space-md);
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    color: var(--color-text-light);
+    pointer-events: none;
+}
+
+.gallery__search-input {
+    width: 100%;
+    padding: var(--space-md) var(--space-md) var(--space-md) calc(var(--space-md) * 2 + 20px);
+    font-size: var(--text-base);
+    background-color: var(--color-bg-secondary);
+    border: 2px solid transparent;
+    border-radius: var(--radius-full);
+    transition: all var(--transition-base);
+    color: var(--color-text-primary);
+}
+
+.gallery__search-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    background-color: var(--color-bg-card);
+}
+
+.gallery__search-input::placeholder {
+    color: var(--color-text-light);
+}
+
+/* Filtreler */
+.gallery__filters {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: var(--space-sm) var(--space-lg);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    background-color: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    color: var(--color-text-secondary);
+}
+
+.filter-btn:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+.filter-btn--active {
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-text-inverse);
+}
+
+/* Galeri Grid */
+.gallery__grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-xl);
+}
+
+/* Kartların başlangıçta görünür olması için (stagger animasyonu olsa bile) */
+/* Daha yüksek özgüllük ile animations.css'deki .stagger>* kuralını geçersiz kıl */
+.gallery__grid.stagger>.artwork-card {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* İçerideki görsel de her zaman görünür olmalı */
+.gallery__grid .artwork-card__image {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.gallery__no-results {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: var(--space-4xl);
+    color: var(--color-text-light);
+}
+
+/* Eser Kartı */
+.artwork-card {
+    background-color: var(--color-bg-card);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    box-shadow: var(--shadow-sm);
+}
+
+.artwork-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-lg);
+}
+
+.artwork-card:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.artwork-card__image-wrapper {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+}
+
+.artwork-card__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--transition-slow);
+    display: block;
+    opacity: 1;
+    visibility: visible;
+}
+
+.artwork-card:hover .artwork-card__image {
+    transform: scale(1.05);
+}
+
+.artwork-card__image-wrapper .placeholder-image {
+    height: 100%;
+    min-height: auto;
+    border-radius: 0;
+}
+
+.artwork-card__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity var(--transition-base);
+}
+
+.artwork-card:hover .artwork-card__overlay {
+    opacity: 1;
+}
+
+.artwork-card__view-text {
+    color: white;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: var(--space-sm) var(--space-lg);
+    border: 1px solid white;
+    border-radius: var(--radius-full);
+}
+
+.artwork-card__info {
+    padding: var(--space-lg);
+}
+
+.artwork-card__title {
+    font-size: var(--text-lg);
+    font-weight: 500;
+    margin-bottom: var(--space-xs);
+    color: var(--color-text-primary);
+}
+
+.artwork-card__details {
+    font-size: var(--text-sm);
+    color: var(--color-text-light);
+    margin-bottom: var(--space-xs);
+}
+
+.artwork-card__status {
+    display: inline-block;
+    margin-top: var(--space-sm);
+    padding: var(--space-xs) var(--space-sm);
+    font-size: var(--text-xs);
+    background-color: var(--color-accent-muted);
+    color: var(--color-accent);
+    border-radius: var(--radius-sm);
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .gallery__grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .gallery__controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .gallery__search {
+        max-width: none;
+    }
+
+    .gallery__filters {
+        justify-content: center;
+    }
+
+    .gallery__grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-md);
+    }
+}
+
+@media (max-width: 480px) {
+    .gallery__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .gallery__filters {
+        width: 100%;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: var(--space-sm);
+    }
+
+    .filter-btn {
+        flex-shrink: 0;
+    }
+}

@@ -1,0 +1,158 @@
+/* ============================================
+   CONTACT SECTION STİLLERİ
+   ============================================ */
+
+.contact {
+    background-color: var(--color-bg-primary);
+}
+
+.contact__content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4xl);
+    align-items: start;
+}
+
+/* Bilgi Alanı */
+.contact__info {
+    position: sticky;
+    top: calc(var(--header-height) + var(--space-xl));
+}
+
+.contact__description {
+    font-size: var(--text-lg);
+    line-height: var(--leading-relaxed);
+    margin-bottom: var(--space-2xl);
+}
+
+.contact__details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.contact__detail-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.contact__detail-icon {
+    width: 24px;
+    height: 24px;
+    color: var(--color-accent);
+    flex-shrink: 0;
+}
+
+.contact__detail-text {
+    font-size: var(--text-base);
+    color: var(--color-text-secondary);
+}
+
+/* Form */
+.contact__form-wrapper {
+    background-color: var(--color-bg-card);
+    padding: var(--space-2xl);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+}
+
+.contact__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.form__group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.form__label {
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--color-text-primary);
+}
+
+.form__input,
+.form__textarea {
+    width: 100%;
+    padding: var(--space-md);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-secondary);
+    border: 2px solid transparent;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-base);
+}
+
+.form__input:focus,
+.form__textarea:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    background-color: var(--color-bg-card);
+}
+
+.form__input::placeholder,
+.form__textarea::placeholder {
+    color: var(--color-text-light);
+}
+
+.form__textarea {
+    min-height: 150px;
+    resize: vertical;
+}
+
+/* Hata Durumu */
+.form__group--error .form__input,
+.form__group--error .form__textarea {
+    border-color: var(--color-error);
+}
+
+.form__error {
+    font-size: var(--text-sm);
+    color: var(--color-error);
+}
+
+/* Submit Butonu */
+.form__submit {
+    width: auto;
+    min-width: 180px;
+    margin-top: var(--space-md);
+    align-self: flex-end;
+}
+
+/* Başarı Mesajı */
+.form__success {
+    padding: var(--space-lg);
+    background-color: rgba(72, 187, 120, 0.1);
+    border: 1px solid var(--color-success);
+    border-radius: var(--radius-md);
+    text-align: center;
+    color: #276749;
+    animation: fadeIn 0.3s ease;
+}
+
+[data-theme="dark"] .form__success {
+    background-color: rgba(72, 187, 120, 0.15);
+    color: #68D391;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .contact__content {
+        grid-template-columns: 1fr;
+        gap: var(--space-2xl);
+    }
+
+    .contact__info {
+        position: relative;
+        top: 0;
+    }
+
+    .contact__form-wrapper {
+        padding: var(--space-xl);
+    }
+}

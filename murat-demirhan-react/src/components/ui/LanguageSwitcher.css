@@ -1,0 +1,35 @@
+/* ============================================
+   LANGUAGE SWITCHER STİLLERİ
+   ============================================ */
+
+.language-switcher {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-md);
+    background-color: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    transition: all var(--transition-base);
+}
+
+.language-switcher:hover {
+    border-color: var(--color-accent);
+}
+
+.language-switcher__option {
+    color: var(--color-text-light);
+    transition: color var(--transition-fast);
+}
+
+.language-switcher__option.active {
+    color: var(--color-accent);
+    font-weight: 600;
+}
+
+.language-switcher__divider {
+    color: var(--color-border);
+}

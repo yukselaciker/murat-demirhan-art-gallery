@@ -1,0 +1,179 @@
+/* ============================================
+   HERO SECTION STİLLERİ
+   ============================================ */
+
+.hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding-top: calc(var(--header-height) + var(--space-3xl));
+    padding-bottom: var(--space-3xl);
+    position: relative;
+    overflow: hidden;
+}
+
+.hero__content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4xl);
+    align-items: center;
+}
+
+/* Metin Alanı */
+.hero__text {
+    max-width: 600px;
+}
+
+.hero__subtitle {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--color-accent);
+    margin-bottom: var(--space-md);
+}
+
+.hero__title {
+    font-size: var(--text-6xl);
+    font-weight: 500;
+    line-height: 1.1;
+    margin-bottom: var(--space-lg);
+    color: var(--color-text-primary);
+}
+
+.hero__description {
+    font-size: var(--text-xl);
+    line-height: var(--leading-relaxed);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-2xl);
+}
+
+.hero__buttons {
+    display: flex;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+}
+
+/* Görsel Alanı */
+.hero__image-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hero__image-frame {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    aspect-ratio: 3 / 4;
+    background-color: var(--color-bg-secondary);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    overflow: hidden;
+}
+
+.hero__image-frame::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 100%;
+    height: 100%;
+    border: 2px solid var(--color-accent);
+    border-radius: var(--radius-lg);
+    z-index: -1;
+}
+
+.hero__image-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.hero__image-frame .placeholder-image {
+    height: 100%;
+    min-height: auto;
+}
+
+/* Dekorasyon */
+.hero__decoration {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(135deg,
+            transparent 0%,
+            var(--color-accent-muted) 100%);
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .hero__title {
+        font-size: var(--text-5xl);
+    }
+
+    .hero__image-frame {
+        max-width: 400px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero {
+        min-height: auto;
+        padding-top: calc(var(--header-height) + var(--space-2xl));
+    }
+
+    .hero__content {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .hero__text {
+        max-width: 100%;
+    }
+
+    .hero__title {
+        font-size: var(--text-4xl);
+    }
+
+    .hero__description {
+        font-size: var(--text-lg);
+    }
+
+    .hero__buttons {
+        justify-content: center;
+    }
+
+    .hero__image-wrapper {
+        order: -1;
+        margin-bottom: var(--space-xl);
+    }
+
+    .hero__image-frame {
+        max-width: 300px;
+        aspect-ratio: 1;
+    }
+
+    .hero__image-frame::before {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero__title {
+        font-size: var(--text-3xl);
+    }
+
+    .hero__buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .hero__buttons .btn {
+        width: 100%;
+    }
+}
