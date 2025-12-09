@@ -26,7 +26,11 @@ export default async function handler(req, res) {
 
     if (req.method === "POST") {
         try {
-            const { title, year, technique, size, image_url, category, description, status, tags } = req.body;
+            const { title, year, technique, size, category, description, status, tags } = req.body;
+
+            // Frontend 'image' gönderiyor, Backend 'image_url' bekliyor.
+            // Bu yüzden farklı varyasyonları kontrol edip doğru olana atıyoruz.
+            const image_url = req.body.image_url || req.body.imageUrl || req.body.image;
 
             // Note: tags is TEXT[] in Postgres, passing array directly usually works with pg
             // But let's be safe. If table has tags TEXT[], passing JS array is fine.
