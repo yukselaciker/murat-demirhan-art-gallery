@@ -21,10 +21,17 @@ export default function ArtworksPanel() {
   const [message, setMessage] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
+  // IMPORTANT: Tüm hook'lar early return'den ÖNCE çağrılmalı!
+  // React Hooks Kuralı: Hook'lar koşulsuz ve aynı sırada çağrılmalı
+  const sorted = useMemo(
+    () => (data?.artworks ? [...data.artworks].sort((a, b) => Number(b.year) - Number(a.year)) : []),
+    [data?.artworks]
+  );
+
   // Debug log
   console.log('[ArtworksPanel] isInitialized:', isInitialized, 'artworks count:', data?.artworks?.length);
 
-  // Loading state
+  // Loading state (hook'lardan SONRA early return!)
   if (!isInitialized) {
     return (
       <div className="panel">
@@ -100,7 +107,7 @@ export default function ArtworksPanel() {
     setMessage('Öne çıkan eser ayarlandı.');
   };
 
-  const sorted = useMemo(() => [...data.artworks].sort((a, b) => Number(b.year) - Number(a.year)), [data.artworks]);
+  // sorted artık yukarıda tanımlandı, burada tekrar tanımlamaya gerek yok
 
   return (
     <div className="panel">
