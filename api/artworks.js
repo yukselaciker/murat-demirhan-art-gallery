@@ -1,12 +1,11 @@
-// Vercel Serverless Function - Updated 2024-12-09 23:07
-import { createClient } from "@supabase/supabase-js";
+const { createClient } = require("@supabase/supabase-js");
 
 const supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_ANON_KEY
 );
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
     // CORS Headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -34,29 +33,32 @@ export default async function handler(req, res) {
 
         // POST - Yeni eser ekle
         if (req.method === "POST") {
-            const { title, year, technique, size, category, description, status, tags } = req.body;
+            const { title, year, technique, size, category, description, status } = req.body;
 
             // Handle all image field variations
             const imageUrl = req.body.image_url || req.body.imageUrl || req.body.image;
 
-            const { data, error } = await supabase.from("artworks").insert([
-                {
-                    title,
-                    year: year ? parseInt(year) : null,
-                    technique,
-                    size,
-                    image_url: imageUrl,
-                    category,
-                    description,
-                    status: status || 'available'
-                },
-            ]).select();
+            const insertData = {
+                title,
+                year: year ? parseInt(year) : null,
+                technique,
+                size,
+                image_url: imageUrl,
+                category,
+                description: description || null,
+                status: status || 'available'
+            };
+
+            console.log("POST /api/artworks - inserting:", insertData);
+
+            const { data, error } = await supabase.from("artworks").insert([insertData]).select();
 
             if (error) {
                 console.error("POST /api/artworks error:", error);
                 return res.status(500).json({ error: error.message });
             }
 
+            console.log("POST /api/artworks - success:", data);
             return res.status(201).json(data);
         }
 
@@ -84,6 +86,6 @@ export default async function handler(req, res) {
 
     } catch (e) {
         console.error("UNEXPECTED /api/artworks error:", e);
-        return res.status(500).json({ error: "Unexpected server error" });
+        return res.status(500).json({ error: "Unexpected server error", details: e.message });
     }
-}
+};
