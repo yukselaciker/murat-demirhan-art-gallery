@@ -69,21 +69,7 @@ function App() {
 
           <Footer />
 
-          {/* Telif Hakkı Uyarısı Overlay - Kopyalama girişimlerinde gösterilir */}
-          <div id="copyright-overlay" className="copyright-overlay">
-            <p>© Murat Demirhan - İzinsiz Kopyalanamaz</p>
-          </div>
-
-          {/* Screenshot koruma overlay */}
-          <div id="screenshot-overlay" className="screenshot-overlay">
-            <div className="screenshot-overlay__content">
-              <p>© Murat Demirhan</p>
-              <p>Bu görsel telif hakkı ile korunmaktadır</p>
-            </div>
-
-            {/* Çerez Onay Bildirimi */}
-            <CookieBanner />
-          </div>
+          <CookieBanner />
         </div>
       </LanguageProvider>
     </ThemeProvider>
