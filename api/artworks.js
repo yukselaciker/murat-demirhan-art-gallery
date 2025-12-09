@@ -1,3 +1,4 @@
+// Vercel Serverless Function - Updated 2024-12-09 23:07
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
