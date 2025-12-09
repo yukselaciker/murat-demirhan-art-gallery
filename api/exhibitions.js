@@ -9,64 +9,60 @@ module.exports = async function handler(req, res) {
     // CORS Headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
 
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
 
     try {
-        // GET - Tüm eserleri getir
+        // GET - Fetch all exhibitions
         if (req.method === "GET") {
             const { data, error } = await supabase
-                .from("artworks")
+                .from("exhibitions")
                 .select("*")
-                .order("id", { ascending: false });
+                .order("year", { ascending: false });
 
             if (error) {
-                console.error("GET /api/artworks error:", error);
+                console.error("GET /api/exhibitions error:", error);
                 return res.status(500).json({ error: error.message });
             }
 
-            return res.status(200).json(data);
+            return res.status(200).json(data || []);
         }
 
-        // POST - Yeni eser ekle
+        // POST - Add new exhibition
         if (req.method === "POST") {
-            const { title, year, technique, size, category, description, status } = req.body;
-
-            // Handle all image field variations
-            const imageUrl = req.body.image_url || req.body.imageUrl || req.body.image;
+            const { title, year, city, venue, type, description } = req.body;
 
             const insertData = {
                 title,
                 year: year ? parseInt(year) : null,
-                technique,
-                size,
-                image_url: imageUrl,
-                category,
-                description: description || null,
-                status: status || 'available'
+                city,
+                venue,
+                type: type || 'Kişisel Sergi',
+                description: description || null
             };
 
-            console.log("POST /api/artworks - inserting:", insertData);
+            console.log("POST /api/exhibitions - inserting:", insertData);
 
-            const { data, error } = await supabase.from("artworks").insert([insertData]).select();
+            const { data, error } = await supabase
+                .from("exhibitions")
+                .insert([insertData])
+                .select();
 
             if (error) {
-                console.error("POST /api/artworks error:", error);
+                console.error("POST /api/exhibitions error:", error);
                 return res.status(500).json({ error: error.message });
             }
 
-            console.log("POST /api/artworks - success:", data);
             return res.status(201).json(data);
         }
 
-        // PUT - Update artwork
+        // PUT - Update exhibition
         if (req.method === "PUT") {
             const { id } = req.query;
-            const { title, year, technique, size, category, description, status } = req.body;
-            const imageUrl = req.body.image_url || req.body.imageUrl || req.body.image;
+            const { title, year, city, venue, type, description } = req.body;
 
             if (!id) {
                 return res.status(400).json({ error: "id parameter required" });
@@ -75,31 +71,27 @@ module.exports = async function handler(req, res) {
             const updateData = {
                 title,
                 year: year ? parseInt(year) : null,
-                technique,
-                size,
-                image_url: imageUrl,
-                category,
-                description: description || null,
-                status: status || 'available'
+                city,
+                venue,
+                type,
+                description
             };
 
-            console.log("PUT /api/artworks - updating:", id, updateData);
-
             const { data, error } = await supabase
-                .from("artworks")
+                .from("exhibitions")
                 .update(updateData)
                 .eq("id", id)
                 .select();
 
             if (error) {
-                console.error("PUT /api/artworks error:", error);
+                console.error("PUT /api/exhibitions error:", error);
                 return res.status(500).json({ error: error.message });
             }
 
             return res.status(200).json(data);
         }
 
-        // DELETE - Eser sil
+        // DELETE - Remove exhibition
         if (req.method === "DELETE") {
             const { id } = req.query;
 
@@ -107,10 +99,13 @@ module.exports = async function handler(req, res) {
                 return res.status(400).json({ error: "id parameter required" });
             }
 
-            const { error } = await supabase.from("artworks").delete().eq("id", id);
+            const { error } = await supabase
+                .from("exhibitions")
+                .delete()
+                .eq("id", id);
 
             if (error) {
-                console.error("DELETE /api/artworks error:", error);
+                console.error("DELETE /api/exhibitions error:", error);
                 return res.status(500).json({ error: error.message });
             }
 
@@ -122,7 +117,7 @@ module.exports = async function handler(req, res) {
         return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
 
     } catch (e) {
-        console.error("UNEXPECTED /api/artworks error:", e);
+        console.error("UNEXPECTED /api/exhibitions error:", e);
         return res.status(500).json({ error: "Unexpected server error", details: e.message });
     }
 };

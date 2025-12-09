@@ -26,54 +26,19 @@ const imagePath = (fileName) => `${import.meta.env.BASE_URL}images/${fileName}`;
 // 1. DATA SCHEMA & DEFAULTS
 // ============================================
 const DEFAULT_DATA = {
-  // ARTWORKS: Artık hardcoded/seed data YOK!
-  // Tüm eserler sadece Supabase API'den geliyor.
+  // Tüm veriler Supabase API'den geliyor - hardcoded data YOK!
   artworks: [],
-  exhibitions: [
-    {
-      id: 1,
-      year: '2024',
-      title: 'Hafızanın Renkleri',
-      venue: 'Pera Müzesi',
-      city: 'İstanbul',
-      type: 'Kişisel Sergi',
-      description: '35 eserden oluşan retrospektif',
-    },
-    {
-      id: 2,
-      year: '2023',
-      title: 'Çağdaş Türk Sanatı',
-      venue: 'Galerie Kunst',
-      city: 'Berlin',
-      type: 'Karma Sergi',
-      description: 'Uluslararası karma sergi - 5 eser',
-    },
-    {
-      id: 3,
-      year: '2022',
-      title: 'Şehir ve Yalnızlık',
-      venue: 'CerModern',
-      city: 'Ankara',
-      type: 'Grup Sergisi',
-      description: 'Tematik grup sergisi - 8 eser',
-    },
-  ],
+  exhibitions: [],
   cv: {
-    bio: 'Murat Demirhan, hafıza ve renkler arasındaki ilişkileri tuvalde yeniden kuran çağdaş bir ressamdır.',
+    bio: '',
     artistPhoto: '',
-    education: [
-      { school: 'MSGSÜ, Resim', year: '2002' },
-      { school: 'Atölye Çalışmaları, Avrupa', year: '2004-2006' },
-    ],
-    awards: [{ title: 'Genç Ressamlar Ödülü', org: 'X Sanat Derneği', year: '2010' }],
-    highlights: [
-      "Pera Müzesi'nde kişisel sergi (2024)",
-      "Berlin'de karma sergi katılımı (2023)",
-    ],
+    education: [],
+    awards: [],
+    highlights: [],
   },
   contactInfo: {
-    email: 'info@muratdemirhan.com',
-    location: 'İstanbul, Türkiye',
+    email: '',
+    location: '',
     phone: '',
   },
   featuredArtworkId: null,
@@ -147,74 +112,156 @@ const LocalDataService = {
   }
 };
 
-// API Implementation (Yeni - Vercel Serverless / Backend)
+// API Implementation (Vercel Serverless + Supabase)
 const ApiDataService = {
   load: async () => {
     try {
-      console.log('[ApiDataService] Fetching from API...');
+      console.log('[ApiDataService] Fetching all data from API...');
 
-      // Artworks endpoint'i hazır (User sağladı)
-      const resArt = await fetch('/api/artworks');
+      // Fetch all entities in parallel
+      const [resArt, resExh, resSettings] = await Promise.all([
+        fetch('/api/artworks'),
+        fetch('/api/exhibitions'),
+        fetch('/api/settings')
+      ]);
 
-      // Diğerleri için şimdilik mock veya boş dönebiliriz.
-      // const resExh = await fetch('/api/exhibitions'); 
+      // Parse responses
+      const [rawArtworks, rawExhibitions, settings] = await Promise.all([
+        resArt.ok ? resArt.json() : [],
+        resExh.ok ? resExh.json() : [],
+        resSettings.ok ? resSettings.json() : {}
+      ]);
 
-      if (!resArt.ok) throw new Error('API Error');
-
-      const rawArtworks = await resArt.json();
-
-      // NORMALIZE: Supabase'den image_url geliyor, Frontend'de image bekleniyor
+      // NORMALIZE: Supabase column names to frontend names
       const artworks = Array.isArray(rawArtworks)
         ? rawArtworks.map(a => ({
           ...a,
-          image: a.image_url || a.image || a.imageUrl, // Tüm varyasyonları destekle
+          image: a.image_url || a.image || a.imageUrl,
         }))
         : [];
 
-      console.log('[ApiDataService] Loaded', artworks.length, 'artworks from API');
+      const exhibitions = Array.isArray(rawExhibitions) ? rawExhibitions : [];
+      const cv = settings.cv || DEFAULT_DATA.cv;
+      const contactInfo = settings.contact || DEFAULT_DATA.contactInfo;
 
-      // Merge with defaults for other missing parts since we only have artworks API yet
+      console.log('[ApiDataService] Loaded:', artworks.length, 'artworks,', exhibitions.length, 'exhibitions');
+
       return {
-        ...DEFAULT_DATA,
         artworks,
-        // exhibitions: ... (TODO)
+        exhibitions,
+        cv,
+        contactInfo,
+        featuredArtworkId: null, // TODO: could store in settings
       };
     } catch (e) {
       console.error('[ApiDataService] Load error:', e);
-      // LocalStorage'a FALLBACK YAPMA! Bu cross-device sync'i bozar.
-      // Boş veri döndür, kullanıcı API durumunu görsün.
-      console.warn('[ApiDataService] API failed, returning empty data. Check your API endpoint.');
-      return {
-        ...DEFAULT_DATA,
-        artworks: [], // API hatası, eser listesi boş
-      };
+      return DEFAULT_DATA;
     }
   },
 
-  save: async (data) => {
-    try {
-      // API modunda genellikle saveSiteData tüm veriyi post etmez,
-      // ama demo için basit tutuyoruz.
-      // Eser ekleme vb. işlemler kendi metodlarını kullanmalı.
-      console.warn('[ApiDataService] Toplu kaydetme desteklenmiyor, endpointleri kullanın.');
-      return true;
-    } catch (e) {
-      return false;
-    }
+  save: async () => {
+    console.warn('[ApiDataService] Use specific CRUD methods instead of save()');
+    return true;
   },
 
-  reset: async () => {
-    return false; // API'de reset tehlikeli olabilir
-  },
+  reset: async () => false,
 
-  // CRUD Override (API modunda hooks bunları kullanır)
+  // ===== ARTWORKS CRUD =====
   addArtwork: async (artwork) => {
     const res = await fetch('/api/artworks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(artwork)
     });
-    if (!res.ok) throw new Error('Failed to add artwork');
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to add artwork');
+    }
+    return await res.json();
+  },
+
+  updateArtwork: async (id, artwork) => {
+    const res = await fetch(`/api/artworks?id=${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(artwork)
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to update artwork');
+    }
+    return await res.json();
+  },
+
+  deleteArtwork: async (id) => {
+    const res = await fetch(`/api/artworks?id=${id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to delete artwork');
+    }
+    return await res.json();
+  },
+
+  // ===== EXHIBITIONS CRUD =====
+  addExhibition: async (exhibition) => {
+    const res = await fetch('/api/exhibitions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(exhibition)
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to add exhibition');
+    }
+    return await res.json();
+  },
+
+  updateExhibition: async (id, exhibition) => {
+    const res = await fetch(`/api/exhibitions?id=${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(exhibition)
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to update exhibition');
+    }
+    return await res.json();
+  },
+
+  deleteExhibition: async (id) => {
+    const res = await fetch(`/api/exhibitions?id=${id}`, { method: 'DELETE' });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to delete exhibition');
+    }
+    return await res.json();
+  },
+
+  // ===== SETTINGS (CV, Contact) =====
+  updateCv: async (cv) => {
+    const res = await fetch('/api/settings?key=cv', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cv)
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to update CV');
+    }
+    return await res.json();
+  },
+
+  updateContactInfo: async (contact) => {
+    const res = await fetch('/api/settings?key=contact', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(contact)
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to update contact info');
+    }
     return await res.json();
   }
 };
@@ -367,31 +414,102 @@ export function useSiteData() {
           }));
         }
       },
-      addExhibition: (payload) =>
-        setData((prev) => ({
-          ...prev,
-          exhibitions: [...prev.exhibitions, { ...payload, id: nextId(prev.exhibitions) }],
-        })),
-      updateExhibition: (id, payload) =>
-        setData((prev) => ({
-          ...prev,
-          exhibitions: prev.exhibitions.map((e) => (e.id === id ? { ...e, ...payload } : e)),
-        })),
-      deleteExhibition: (id) =>
-        setData((prev) => ({
-          ...prev,
-          exhibitions: prev.exhibitions.filter((e) => e.id !== id),
-        })),
-      updateCv: (payload) =>
-        setData((prev) => ({
-          ...prev,
-          cv: { ...prev.cv, ...payload },
-        })),
-      updateContactInfo: (payload) =>
-        setData((prev) => ({
-          ...prev,
-          contactInfo: { ...prev.contactInfo, ...payload },
-        })),
+      addExhibition: async (payload) => {
+        if (USE_API) {
+          try {
+            await ApiDataService.addExhibition(payload);
+            const freshData = await ApiDataService.load();
+            setData(freshData);
+            return true;
+          } catch (e) {
+            console.error('Add exhibition failed', e);
+            alert('Sergi eklenirken hata oluştu: ' + e.message);
+            return false;
+          }
+        } else {
+          setData((prev) => ({
+            ...prev,
+            exhibitions: [...prev.exhibitions, { ...payload, id: nextId(prev.exhibitions) }],
+          }));
+        }
+      },
+      updateExhibition: async (id, payload) => {
+        if (USE_API) {
+          try {
+            await ApiDataService.updateExhibition(id, payload);
+            const freshData = await ApiDataService.load();
+            setData(freshData);
+            return true;
+          } catch (e) {
+            console.error('Update exhibition failed', e);
+            alert('Sergi güncellenirken hata oluştu: ' + e.message);
+            return false;
+          }
+        } else {
+          setData((prev) => ({
+            ...prev,
+            exhibitions: prev.exhibitions.map((e) => (e.id === id ? { ...e, ...payload } : e)),
+          }));
+        }
+      },
+      deleteExhibition: async (id) => {
+        if (USE_API) {
+          try {
+            await ApiDataService.deleteExhibition(id);
+            const freshData = await ApiDataService.load();
+            setData(freshData);
+          } catch (e) {
+            console.error('Delete exhibition failed', e);
+            alert('Sergi silinirken hata oluştu: ' + e.message);
+          }
+        } else {
+          setData((prev) => ({
+            ...prev,
+            exhibitions: prev.exhibitions.filter((e) => e.id !== id),
+          }));
+        }
+      },
+      updateCv: async (payload) => {
+        if (USE_API) {
+          try {
+            // Merge with current CV data
+            const newCv = { ...data.cv, ...payload };
+            await ApiDataService.updateCv(newCv);
+            const freshData = await ApiDataService.load();
+            setData(freshData);
+            return true;
+          } catch (e) {
+            console.error('Update CV failed', e);
+            alert('CV güncellenirken hata oluştu: ' + e.message);
+            return false;
+          }
+        } else {
+          setData((prev) => ({
+            ...prev,
+            cv: { ...prev.cv, ...payload },
+          }));
+        }
+      },
+      updateContactInfo: async (payload) => {
+        if (USE_API) {
+          try {
+            const newContact = { ...data.contactInfo, ...payload };
+            await ApiDataService.updateContactInfo(newContact);
+            const freshData = await ApiDataService.load();
+            setData(freshData);
+            return true;
+          } catch (e) {
+            console.error('Update contact failed', e);
+            alert('İletişim bilgileri güncellenirken hata oluştu: ' + e.message);
+            return false;
+          }
+        } else {
+          setData((prev) => ({
+            ...prev,
+            contactInfo: { ...prev.contactInfo, ...payload },
+          }));
+        }
+      },
       setFeaturedArtwork: (artworkId) =>
         setData((prev) => ({
           ...prev,
