@@ -143,7 +143,8 @@ const STORAGE_KEY = 'md-site-data';
 // ============================================
 // 2. DATA SERVICE LAYER (Abstraction)
 // ============================================
-const USE_API = import.meta.env.VITE_USE_API === 'true';
+// API varsayılan olarak AÇIK - Vercel'de Supabase kullanılıyor
+const USE_API = import.meta.env.VITE_USE_API !== 'false';
 
 // ============================================
 // 2. DATA SERVICE LAYER (Abstraction)
