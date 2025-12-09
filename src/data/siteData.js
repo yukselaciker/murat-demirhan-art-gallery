@@ -321,24 +321,39 @@ LocalDataService.save = (data) => {
 // ============================================
 
 // Admin Hook - Veriyi okur ve yazar
+// Admin Hook - Veriyi okur ve yazar
 export function useSiteData() {
-  // Lazy initialization to avoid reading localStorage on every render
-  const [data, setData] = useState(() => DataService.load());
+  // Başlangıçta güvenli/boş veri veya LocalStorage (senkron ise)
+  const [data, setData] = useState(() => {
+    if (USE_API) return DEFAULT_DATA; // API async olduğu için bekleyeceğiz
+    return LocalDataService.load();
+  });
+
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initial load effect (double check)
+  // Veri Yükleme (Async & Sync Desteği)
   useEffect(() => {
-    const validData = DataService.load();
-    setData(validData);
-    setIsInitialized(true);
+    const loadData = async () => {
+      try {
+        let validData;
+        if (USE_API) {
+          validData = await ApiDataService.load();
+        } else {
+          validData = LocalDataService.load();
+        }
+        setData(validData);
+        setIsInitialized(true);
+      } catch (err) {
+        console.error("Data load failed:", err);
+      }
+    };
+    loadData();
   }, []);
 
-  // Save on change
-  // WARNING: We must ensure we don't save DEFAULT_DATA overwriting user data due to a race condition.
-  // The 'isInitialized' flag helps ensure we only start saving after we've firmly loaded the data.
+  // Save on change (Sadece LocalStorage modunda otomatik kaydet)
   useEffect(() => {
-    if (isInitialized) {
-      DataService.save(data);
+    if (!USE_API && isInitialized) {
+      LocalDataService.save(data);
     }
   }, [data, isInitialized]);
 
@@ -350,11 +365,10 @@ export function useSiteData() {
       addArtwork: async (payload) => {
         if (USE_API) {
           try {
-            const savedArtwork = await ApiDataService.addArtwork(payload);
-            setData(prev => ({
-              ...prev,
-              artworks: [savedArtwork, ...prev.artworks]
-            }));
+            await ApiDataService.addArtwork(payload);
+            // DOĞRU YÖNTEM: Ekleme sonrası veriyi sunucudan tazeleyin
+            const freshData = await ApiDataService.load();
+            setData(freshData);
             return true;
           } catch (e) {
             console.error('Add failed', e);
@@ -381,10 +395,9 @@ export function useSiteData() {
             const res = await fetch(`/api/artworks?id=${id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Delete failed');
 
-            setData(prev => ({
-              ...prev,
-              artworks: prev.artworks.filter(a => a.id !== id)
-            }));
+            // DOĞRU YÖNTEM: Silme sonrası veriyi tazeleyin
+            const freshData = await ApiDataService.load();
+            setData(freshData);
           } catch (e) {
             alert('Silme işlemi başarısız');
           }
