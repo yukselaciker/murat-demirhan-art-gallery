@@ -104,9 +104,8 @@ export async function drawWatermarkedImage(imageSrc, canvas, options = {}) {
             ctx.save();
 
             // Filigran stili
-            // Filigran stili
-            // İSTEK: Normal modda filigran görünmez olacak (0), sadece güvenlik/düşük kalite modunda görünecek (0.4)
-            const watermarkOpacity = quality === 'low' ? 0.4 : 0;
+            // Filigran: Hafifçe görünür (caydırıcı), düşük kalite modunda belirgin
+            const watermarkOpacity = quality === 'low' ? 0.4 : 0.06;
             ctx.globalAlpha = watermarkOpacity;
             ctx.font = `${fontSize}px 'Inter', sans-serif`;
             ctx.fillStyle = '#8B4557';

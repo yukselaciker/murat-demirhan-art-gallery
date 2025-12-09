@@ -7,7 +7,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { usePublicData } from '../../data/siteData';
 import LightboxModal from '../gallery/LightboxModal';
-// import ProtectedImage from '../ui/ProtectedImage';
+import ProtectedImage from '../ui/ProtectedImage';
 import './Gallery.css';
 
 export function Gallery() {
@@ -162,12 +162,11 @@ export function Gallery() {
                                 >
                                     <div className="artwork-card__image-wrapper">
                                         {artwork.image ? (
-                                            <img
+                                            <ProtectedImage
                                                 src={artwork.image}
                                                 alt={`${title} - ${technique}`}
+                                                artworkTitle={title}
                                                 className="artwork-card__image"
-                                                loading="lazy"
-                                                onContextMenu={(e) => e.preventDefault()}
                                             />
                                         ) : (
                                             <div className="placeholder-image">

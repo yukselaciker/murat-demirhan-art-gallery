@@ -68,12 +68,13 @@
     position: absolute;
     inset: 0;
     background: transparent;
-    z-index: 1;
-    pointer-events: none;
-    /* Tıklamayı engelleme, sadece koruma */
+    z-index: 10;
+    pointer-events: auto;
+    /* HER ZAMAN aktif - koruma sürekli */
+    cursor: pointer;
 }
 
-/* Hover durumunda shield'ı aktifleştir */
-.protected-image:hover .protected-image__shield {
-    pointer-events: auto;
+/* Tıklama görsel geri bildirimi */
+.protected-image__shield:active {
+    background: rgba(0, 0, 0, 0.02);
 }
