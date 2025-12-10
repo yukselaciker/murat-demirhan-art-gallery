@@ -113,7 +113,7 @@ const LocalDataService = {
 let apiDataCache = null;
 let apiFetchPromise = null;
 let cacheTimestamp = null;
-const CACHE_TTL_MS = 60 * 1000; // 60 seconds cache TTL
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 dakika cache TTL (mobil için optimize)
 
 const ApiDataService = {
   // Invalidate cache - call after mutations
