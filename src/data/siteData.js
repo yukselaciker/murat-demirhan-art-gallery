@@ -588,14 +588,22 @@ export function useSiteData() {
 
 // Public Hook - Sadece okur (API'den async olarak)
 export function usePublicData() {
-  // USE_API true ise boş veri ile başla, async olarak yüklenecek
+  // Check if we have cached data immediately
+  const cachedData = apiDataCache;
+
+  // USE_API true ise: cache varsa kullan, yoksa DEFAULT_DATA
   const [data, setData] = useState(() => {
-    if (USE_API) return DEFAULT_DATA;
+    if (USE_API) {
+      // Cache'de veri varsa hemen kullan (loading yok!)
+      return cachedData || DEFAULT_DATA;
+    }
     return DataService.load();
   });
-  const [isLoading, setIsLoading] = useState(USE_API); // API modunda başlangıçta loading
 
-  // API'den veri yükle (useSiteData ile aynı mantık)
+  // Cache varsa loading yok, yoksa loading var
+  const [isLoading, setIsLoading] = useState(USE_API && !cachedData);
+
+  // API'den veri yükle (cache yoksa veya expire olduysa)
   useEffect(() => {
     const loadData = async () => {
       try {
