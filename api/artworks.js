@@ -41,7 +41,7 @@ export default async function handler(req, res) {
                 return res.status(400).json({ error: "Request body is empty" });
             }
 
-            const { title, year, technique, size } = req.body;
+            const { title, year, technique, size, category } = req.body;
 
             // Handle all image field variations
             const imageUrl = req.body.image_url || req.body.imageUrl || req.body.image;
@@ -62,7 +62,8 @@ export default async function handler(req, res) {
                 year: year ? parseInt(year) : null,
                 technique: technique || null,
                 size: size || null,
-                image_url: imageUrl || null
+                image_url: imageUrl || null,
+                category: category || null
             };
 
             console.log("POST /api/artworks - inserting:", {
@@ -90,7 +91,7 @@ export default async function handler(req, res) {
         // PUT - Update artwork
         if (req.method === "PUT") {
             const { id } = req.query;
-            const { title, year, technique, size } = req.body;
+            const { title, year, technique, size, category } = req.body;
             const imageUrl = req.body.image_url || req.body.imageUrl || req.body.image;
 
             if (!id) {
@@ -102,7 +103,8 @@ export default async function handler(req, res) {
                 year: year ? parseInt(year) : null,
                 technique,
                 size,
-                image_url: imageUrl
+                image_url: imageUrl,
+                category: category || null
             };
 
             console.log("PUT /api/artworks - updating:", id, updateData);
