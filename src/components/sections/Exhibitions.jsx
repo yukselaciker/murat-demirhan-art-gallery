@@ -80,8 +80,19 @@ export function Exhibitions() {
                 </div>
                 <div className="timeline">
                     {exhibitions.map((item, index) => {
-                        // Skip null items
-                        if (!item) return null;
+                        // Detailed debug log
+                        console.log('[Exhibitions] MAP item', index, ':', item);
+                        console.log('[Exhibitions] MAP item type:', typeof item);
+                        console.log('[Exhibitions] MAP item JSON:', JSON.stringify(item));
+
+                        // Don't skip - show something even if item is bad
+                        if (!item) {
+                            return (
+                                <div key={`null-${index}`} style={{ background: 'red', color: 'white', padding: '20px', margin: '10px 0' }}>
+                                    ❌ Item {index} is NULL or UNDEFINED
+                                </div>
+                            );
+                        }
 
                         // Safe field access with fallbacks
                         const id = item.id || `ex-${index}`;
