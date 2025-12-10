@@ -12,8 +12,17 @@ export function Exhibitions() {
     const { exhibitions } = usePublicData();
 
     const getTypeLabel = (type) => {
-        const typeKey = `exhibitions.types.${type}`;
-        return t(typeKey);
+        // Eğer type zaten Türkçe metin ise (veritabanından), direkt göster
+        // Çeviri anahtarı formatındaysa çevirmeyi dene
+        const knownTypes = ['solo', 'group', 'fair', 'invited'];
+
+        if (knownTypes.includes(type)) {
+            const typeKey = `exhibitions.types.${type}`;
+            return t(typeKey);
+        }
+
+        // Veritabanından gelen Türkçe metin ise direkt göster
+        return type;
     };
 
     return (
