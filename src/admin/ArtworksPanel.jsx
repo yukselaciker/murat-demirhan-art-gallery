@@ -7,10 +7,6 @@ const emptyArtwork = {
   year: '',
   technique: '',
   size: '',
-  category: 'figuratif',
-  tags: '',
-  description: '',
-  status: 'available',
   image: '',
 };
 
@@ -135,36 +131,6 @@ export default function ArtworksPanel() {
         <label>
           Ölçü *
           <input name="size" value={form.size} onChange={handleChange} required />
-        </label>
-        <label>
-          Kategori *
-          <select name="category" value={form.category} onChange={handleChange} required>
-            <option value="figuratif">Figüratif</option>
-            <option value="soyut">Soyut</option>
-            <option value="peyzaj">Peyzaj</option>
-            <option value="tarihsel">Tarihsel</option>
-          </select>
-        </label>
-        <label>
-          Etiketler
-          <input
-            name="tags"
-            value={form.tags}
-            onChange={handleChange}
-            placeholder="virgülle ayırın: çocuk, oyun"
-          />
-        </label>
-        <label className="full">
-          Açıklama
-          <textarea name="description" value={form.description} onChange={handleChange} rows={3} />
-        </label>
-        <label>
-          Durum
-          <select name="status" value={form.status} onChange={handleChange}>
-            <option value="available">Satışta</option>
-            <option value="collection">Özel Koleksiyon</option>
-            <option value="museum">Müze Koleksiyonu</option>
-          </select>
         </label>
 
         <ImageUploader

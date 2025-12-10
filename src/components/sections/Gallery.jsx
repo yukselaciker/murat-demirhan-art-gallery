@@ -13,33 +13,29 @@ import './Gallery.css';
 export function Gallery() {
     const { t, language } = useLanguage();
     const { artworks } = usePublicData();
-    const [activeFilter, setActiveFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
     const [lightboxIndex, setLightboxIndex] = useState(null);
     const gridRef = useRef(null);
 
-    // Filtreleme ve arama
+    // Arama filtresi
     const filteredArtworks = useMemo(() => {
         if (!Array.isArray(artworks)) {
             console.warn('Galeri verisi boş geldi!');
             return [];
         }
         return artworks.filter(artwork => {
-            // Kategori filtresi - category yoksa veya 'all' seçiliyse göster
-            const matchesCategory = activeFilter === 'all' || !artwork.category || artwork.category === activeFilter;
-
-            // Arama filtresi
+            // Sadece arama filtresi
             const searchLower = searchTerm.toLowerCase();
             const title = language === 'en' && artwork.titleEn ? artwork.titleEn : artwork.title;
             const tags = language === 'en' && artwork.tagsEn ? artwork.tagsEn : artwork.tags;
 
             const matchesSearch = searchTerm === '' ||
-                title.toLowerCase().includes(searchLower) ||
+                (title && title.toLowerCase().includes(searchLower)) ||
                 (tags && tags.some(tag => tag.toLowerCase().includes(searchLower)));
 
-            return matchesCategory && matchesSearch;
+            return matchesSearch;
         });
-    }, [activeFilter, searchTerm, language, artworks]);
+    }, [searchTerm, language, artworks]);
 
     // Scroll animasyonu
     useEffect(() => {
@@ -62,12 +58,7 @@ export function Gallery() {
         return () => observer.disconnect();
     }, [filteredArtworks]);
 
-    const filters = [
-        { key: 'all', label: t('gallery.filters.all') },
-        { key: 'soyut', label: t('gallery.filters.soyut') },
-        { key: 'figuratif', label: t('gallery.filters.figuratif') },
-        { key: 'peyzaj', label: t('gallery.filters.peyzaj') }
-    ];
+
 
     const getStatusLabel = (status) => {
         if (!status) return ''; // Status yoksa boş döndür
@@ -104,9 +95,8 @@ export function Gallery() {
                     <p>{t('gallery.subtitle')}</p>
                 </div>
 
-                {/* Arama ve Filtreler */}
+                {/* Arama */}
                 <div className="gallery__controls fade-in">
-                    {/* Arama Kutusu */}
                     <div className="gallery__search">
                         <svg className="gallery__search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -119,19 +109,6 @@ export function Gallery() {
                             onChange={(e) => setSearchTerm(e.target.value)}
                             aria-label={t('gallery.searchPlaceholder')}
                         />
-                    </div>
-
-                    {/* Filtre Butonları */}
-                    <div className="gallery__filters">
-                        {filters.map(filter => (
-                            <button
-                                key={filter.key}
-                                className={`filter-btn ${activeFilter === filter.key ? 'filter-btn--active' : ''}`}
-                                onClick={() => setActiveFilter(filter.key)}
-                            >
-                                {filter.label}
-                            </button>
-                        ))}
                     </div>
                 </div>
 
