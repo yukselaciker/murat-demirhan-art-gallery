@@ -109,50 +109,85 @@ const LocalDataService = {
 };
 
 // API Implementation (Vercel Serverless + Supabase)
+// Module-level cache to prevent duplicate requests
+let apiDataCache = null;
+let apiFetchPromise = null;
+
 const ApiDataService = {
+  // Invalidate cache - call after mutations
+  invalidateCache: () => {
+    apiDataCache = null;
+    apiFetchPromise = null;
+    console.log('[ApiDataService] Cache invalidated');
+  },
+
   load: async () => {
-    try {
-      console.log('[ApiDataService] Fetching all data from API...');
-
-      // Fetch all entities in parallel
-      const [resArt, resExh, resSettings] = await Promise.all([
-        fetch('/api/artworks'),
-        fetch('/api/exhibitions'),
-        fetch('/api/settings')
-      ]);
-
-      // Parse responses
-      const [rawArtworks, rawExhibitions, settings] = await Promise.all([
-        resArt.ok ? resArt.json() : [],
-        resExh.ok ? resExh.json() : [],
-        resSettings.ok ? resSettings.json() : {}
-      ]);
-
-      // NORMALIZE: Supabase column names to frontend names
-      const artworks = Array.isArray(rawArtworks)
-        ? rawArtworks.map(a => ({
-          ...a,
-          image: a.image_url || a.image || a.imageUrl,
-        }))
-        : [];
-
-      const exhibitions = Array.isArray(rawExhibitions) ? rawExhibitions : [];
-      const cv = settings.cv || DEFAULT_DATA.cv;
-      const contactInfo = settings.contact || DEFAULT_DATA.contactInfo;
-
-      console.log('[ApiDataService] Loaded:', artworks.length, 'artworks,', exhibitions.length, 'exhibitions');
-
-      return {
-        artworks,
-        exhibitions,
-        cv,
-        contactInfo,
-        featuredArtworkId: settings.featuredArtworkId || null,
-      };
-    } catch (e) {
-      console.error('[ApiDataService] Load error:', e);
-      return DEFAULT_DATA;
+    // Return cached data if available
+    if (apiDataCache) {
+      console.log('[ApiDataService] Returning cached data');
+      return apiDataCache;
     }
+
+    // If fetch in progress, wait for existing promise (prevents duplicate requests)
+    if (apiFetchPromise) {
+      console.log('[ApiDataService] Fetch in progress, waiting for existing promise...');
+      return apiFetchPromise;
+    }
+
+    // Start new fetch and store promise
+    apiFetchPromise = (async () => {
+      try {
+        console.log('[ApiDataService] Fetching all data from API...');
+
+        // Fetch all entities in parallel
+        const [resArt, resExh, resSettings] = await Promise.all([
+          fetch('/api/artworks'),
+          fetch('/api/exhibitions'),
+          fetch('/api/settings')
+        ]);
+
+        // Parse responses
+        const [rawArtworks, rawExhibitions, settings] = await Promise.all([
+          resArt.ok ? resArt.json() : [],
+          resExh.ok ? resExh.json() : [],
+          resSettings.ok ? resSettings.json() : {}
+        ]);
+
+        // NORMALIZE: Supabase column names to frontend names
+        const artworks = Array.isArray(rawArtworks)
+          ? rawArtworks.map(a => ({
+            ...a,
+            image: a.image_url || a.image || a.imageUrl,
+          }))
+          : [];
+
+        const exhibitions = Array.isArray(rawExhibitions) ? rawExhibitions : [];
+        const cv = settings.cv || DEFAULT_DATA.cv;
+        const contactInfo = settings.contact || DEFAULT_DATA.contactInfo;
+
+        console.log('[ApiDataService] Loaded:', artworks.length, 'artworks,', exhibitions.length, 'exhibitions');
+
+        const result = {
+          artworks,
+          exhibitions,
+          cv,
+          contactInfo,
+          featuredArtworkId: settings.featuredArtworkId || null,
+        };
+
+        // Store in cache
+        apiDataCache = result;
+        apiFetchPromise = null;
+
+        return result;
+      } catch (e) {
+        console.error('[ApiDataService] Load error:', e);
+        apiFetchPromise = null;
+        return DEFAULT_DATA;
+      }
+    })();
+
+    return apiFetchPromise;
   },
 
   save: async () => {
@@ -335,7 +370,8 @@ export function useSiteData() {
         if (USE_API) {
           try {
             await ApiDataService.addArtwork(payload);
-            // DOĞRU YÖNTEM: Ekleme sonrası veriyi sunucudan tazeleyin
+            // Ekleme sonrası cache temizle ve veriyi tazele
+            ApiDataService.invalidateCache();
             const freshData = await ApiDataService.load();
             setData(freshData);
             return true;
@@ -363,6 +399,7 @@ export function useSiteData() {
             if (!res.ok) throw new Error('Update failed');
 
             // Refresh data from server
+            ApiDataService.invalidateCache();
             const freshData = await ApiDataService.load();
             setData(freshData);
             return true;
@@ -386,7 +423,8 @@ export function useSiteData() {
             const res = await fetch(`/api/artworks?id=${id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Delete failed');
 
-            // DOĞRU YÖNTEM: Silme sonrası veriyi tazeleyin
+            // Silme sonrası cache temizle ve veriyi tazele
+            ApiDataService.invalidateCache();
             const freshData = await ApiDataService.load();
             setData(freshData);
           } catch (e) {
@@ -404,6 +442,7 @@ export function useSiteData() {
         if (USE_API) {
           try {
             await ApiDataService.addExhibition(payload);
+            ApiDataService.invalidateCache();
             const freshData = await ApiDataService.load();
             setData(freshData);
             return true;
@@ -423,6 +462,7 @@ export function useSiteData() {
         if (USE_API) {
           try {
             await ApiDataService.updateExhibition(id, payload);
+            ApiDataService.invalidateCache();
             const freshData = await ApiDataService.load();
             setData(freshData);
             return true;
@@ -442,6 +482,7 @@ export function useSiteData() {
         if (USE_API) {
           try {
             await ApiDataService.deleteExhibition(id);
+            ApiDataService.invalidateCache();
             const freshData = await ApiDataService.load();
             setData(freshData);
           } catch (e) {
@@ -461,6 +502,7 @@ export function useSiteData() {
             // Merge with current CV data
             const newCv = { ...data.cv, ...payload };
             await ApiDataService.updateCv(newCv);
+            ApiDataService.invalidateCache();
             const freshData = await ApiDataService.load();
             setData(freshData);
             return true;
@@ -481,6 +523,7 @@ export function useSiteData() {
           try {
             const newContact = { ...data.contactInfo, ...payload };
             await ApiDataService.updateContactInfo(newContact);
+            ApiDataService.invalidateCache();
             const freshData = await ApiDataService.load();
             setData(freshData);
             return true;
