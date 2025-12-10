@@ -1,9 +1,12 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_ANON_KEY
-);
+// Supabase URL'i POSTGRES_HOST'tan oluştur veya direkt SUPABASE_URL kullan
+const supabaseUrl = process.env.SUPABASE_URL ||
+    (process.env.POSTGRES_HOST ? `https://${process.env.POSTGRES_HOST.replace('db.', '').replace('.pooler', '')}.supabase.co` : null);
+
+const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.POSTGRES_SUPABASE_ANON_KEY;
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default async function handler(req, res) {
     // CORS Headers
