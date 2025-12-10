@@ -9,7 +9,9 @@ import './Exhibitions.css';
 
 export function Exhibitions() {
     const { t, language } = useLanguage();
-    const { exhibitions } = usePublicData();
+    const { exhibitions, isLoading } = usePublicData();
+
+    console.log('[Exhibitions] Data:', { exhibitions, isLoading, length: exhibitions?.length });
 
     const getTypeLabel = (type) => {
         // Eğer type zaten Türkçe metin ise (veritabanından), direkt göster
