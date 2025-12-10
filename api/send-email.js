@@ -1,48 +1,68 @@
 import { Resend } from 'resend';
+import { createClient } from '@supabase/supabase-js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
 
 export default async function handler(req, res) {
-    // CORS headers
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-    res.setHeader(
-        'Access-Control-Allow-Headers',
-        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-    );
+  // CORS headers
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+  );
 
-    // Handle OPTIONS request
-    if (req.method === 'OPTIONS') {
-        res.status(200).end();
-        return;
+  // Handle OPTIONS request
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
+  // Only allow POST
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    const { name, email, subject, message } = req.body;
+
+    // Validation
+    if (!name || !email || !message) {
+      return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Only allow POST
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
+    // Email regex validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Invalid email format' });
     }
 
+    // Save message to Supabase (for admin panel tracking)
     try {
-        const { name, email, subject, message } = req.body;
+      await supabase.from('messages').insert([{
+        name,
+        email,
+        subject: subject || 'Konu belirtilmedi',
+        message,
+        read: false,
+        replied: false
+      }]);
+    } catch (dbError) {
+      console.error('Failed to save message to database:', dbError);
+      // Continue anyway - don't block email sending
+    }
 
-        // Validation
-        if (!name || !email || !message) {
-            return res.status(400).json({ error: 'Missing required fields' });
-        }
-
-        // Email regex validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            return res.status(400).json({ error: 'Invalid email format' });
-        }
-
-        // Send email via Resend
-        const data = await resend.emails.send({
-            from: 'Portfolyo İletişim <onboarding@resend.dev>', // Resend verified domain
-            to: [process.env.CONTACT_EMAIL || 'info@muratdemirhan.com'],
-            subject: subject || 'Yeni İletişim Formu Mesajı',
-            html: `
+    // Send email via Resend
+    const data = await resend.emails.send({
+      from: 'Portfolyo İletişim <onboarding@resend.dev>', // Resend verified domain
+      to: [process.env.CONTACT_EMAIL || 'info@muratdemirhan.com'],
+      subject: subject || 'Yeni İletişim Formu Mesajı',
+      html: `
         <!DOCTYPE html>
         <html>
           <head>
@@ -145,8 +165,8 @@ export default async function handler(req, res) {
           </body>
         </html>
       `,
-            // Plain text fallback
-            text: `
+      // Plain text fallback
+      text: `
 Yeni İletişim Formu Mesajı
 
 Gönderen: ${name}
@@ -159,19 +179,19 @@ ${message}
 ---
 ${new Date().toLocaleString('tr-TR')}
       `
-        });
+    });
 
-        return res.status(200).json({
-            success: true,
-            message: 'Email sent successfully',
-            id: data.id
-        });
+    return res.status(200).json({
+      success: true,
+      message: 'Email sent successfully',
+      id: data.id
+    });
 
-    } catch (error) {
-        console.error('Email error:', error);
-        return res.status(500).json({
-            error: 'Failed to send email',
-            details: error.message
-        });
-    }
+  } catch (error) {
+    console.error('Email error:', error);
+    return res.status(500).json({
+      error: 'Failed to send email',
+      details: error.message
+    });
+  }
 }

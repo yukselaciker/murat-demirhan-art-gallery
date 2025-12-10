@@ -11,6 +11,7 @@ import ArtworksPanel from './ArtworksPanel.jsx';
 import ExhibitionsPanel from './ExhibitionsPanel.jsx';
 import CvPanel from './CvPanel.jsx';
 import SettingsPanel from './SettingsPanel.jsx';
+import MessagesPanel from './MessagesPanel.jsx';
 import '../styles/admin.css';
 
 const STORAGE_KEY = 'md-admin-session';
@@ -55,6 +56,7 @@ export default function AdminApp() {
       { key: 'artworks', label: 'Eserler' },
       { key: 'exhibitions', label: 'Sergiler' },
       { key: 'cv', label: 'Özgeçmiş / CV' },
+      { key: 'messages', label: 'Mesajlar' },
       { key: 'settings', label: 'Ayarlar' },
     ],
     []
@@ -69,6 +71,7 @@ export default function AdminApp() {
       {activeTab === 'artworks' && <ArtworksPanel />}
       {activeTab === 'exhibitions' && <ExhibitionsPanel />}
       {activeTab === 'cv' && <CvPanel />}
+      {activeTab === 'messages' && <MessagesPanel />}
       {activeTab === 'settings' && <SettingsPanel />}
     </AdminLayout>
   );

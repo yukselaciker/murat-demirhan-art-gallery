@@ -5,6 +5,7 @@
 
 /* CSS Değişkenleri */
 @import './variables.css';
+@import './design-tokens.css';
 @import './animations.css';
 
 /* Google Fonts */
