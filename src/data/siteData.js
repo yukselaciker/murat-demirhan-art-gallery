@@ -179,6 +179,8 @@ const ApiDataService = {
         const contactInfo = settings.contact || DEFAULT_DATA.contactInfo;
 
         console.log('[ApiDataService] Loaded:', artworks.length, 'artworks,', exhibitions.length, 'exhibitions');
+        console.log('[ApiDataService] Raw exhibitions response:', rawExhibitions);
+        console.log('[ApiDataService] Parsed exhibitions:', exhibitions);
 
         const result = {
           artworks,
