@@ -5,16 +5,15 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
-// import { usePublicData } from '../../data/siteData';
-import { usePublicDataQuery } from '../../data/useSiteQuery'; // NEW REACT QUERY
+import { usePublicData } from '../../data/siteData';
+// import { usePublicDataQuery } from '../../data/useSiteQuery'; // NEW REACT QUERY
 import LightboxModal from '../gallery/LightboxModal';
 import ProtectedImage from '../ui/ProtectedImage';
 import './Gallery.css';
 
 export function Gallery() {
     const { t, language } = useLanguage();
-    const { data: publicData, isLoading } = usePublicDataQuery();
-    const artworks = publicData?.artworks || [];
+    const { artworks } = usePublicData();
     const [searchTerm, setSearchTerm] = useState('');
     const [lightboxIndex, setLightboxIndex] = useState(null);
     const gridRef = useRef(null);

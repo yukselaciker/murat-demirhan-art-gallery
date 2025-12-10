@@ -4,17 +4,17 @@
 // ============================================
 
 import { useLanguage } from '../../context/LanguageContext';
-import { usePublicDataQuery } from '../../data/useSiteQuery';
+import { usePublicData } from '../../data/siteData';
 import Button from '../ui/Button';
 import ProtectedImage from '../ui/ProtectedImage';
 import './Hero.css';
 
 export function Hero() {
     const { t } = useLanguage();
-    const { data: siteData, isLoading } = usePublicDataQuery();
+    const siteData = usePublicData();
 
-    // Find featured artwork (safe access)
-    const featuredArtwork = siteData?.artworks?.find(art => art.id === siteData?.featuredArtworkId);
+    // Find featured artwork
+    const featuredArtwork = siteData.artworks.find(art => art.id === siteData.featuredArtworkId);
 
     const handleScroll = (e, sectionId) => {
         e.preventDefault();
