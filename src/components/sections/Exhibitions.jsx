@@ -74,6 +74,10 @@ export function Exhibitions() {
                     <h2 className="section-title section-title--center">{t('exhibitions.title')}</h2>
                     <p>{t('exhibitions.subtitle')}</p>
                 </div>
+                {/* DEBUG BANNER - Bu görünüyorsa render çalışıyor */}
+                <div style={{ background: '#10b981', color: 'white', padding: '20px', marginBottom: '20px', borderRadius: '8px', textAlign: 'center' }}>
+                    ✅ SERGILER YÜKLENDİ: {exhibitions.length} adet sergi bulundu
+                </div>
                 <div className="timeline">
                     {exhibitions.map((item, index) => {
                         // Skip null items
