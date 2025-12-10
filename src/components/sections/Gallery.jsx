@@ -25,8 +25,8 @@ export function Gallery() {
             return [];
         }
         return artworks.filter(artwork => {
-            // Kategori filtresi
-            const matchesCategory = activeFilter === 'all' || artwork.category === activeFilter;
+            // Kategori filtresi - category yoksa veya 'all' seçiliyse göster
+            const matchesCategory = activeFilter === 'all' || !artwork.category || artwork.category === activeFilter;
 
             // Arama filtresi
             const searchLower = searchTerm.toLowerCase();
