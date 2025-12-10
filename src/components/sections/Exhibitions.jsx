@@ -102,14 +102,14 @@ export function Exhibitions() {
                         console.log('[Exhibitions] Rendering item:', id, title);
 
                         return (
-                            <div key={id} className="timeline__item fade-in">
+                            <div key={id} className="timeline__item fade-in" style={{ background: '#fef3c7', border: '3px solid #f59e0b', padding: '20px', marginBottom: '20px' }}>
                                 <div className="timeline__marker"></div>
-                                <div className="timeline__date">{year}</div>
-                                <div className="timeline__content">
-                                    <h3 className="timeline__title">{title}</h3>
-                                    {location && <p className="timeline__location">{location}</p>}
-                                    {description && <p className="timeline__description">{description}</p>}
-                                    {type && <span className="timeline__type">{type}</span>}
+                                <div className="timeline__date" style={{ color: '#b45309', fontSize: '24px', fontWeight: 'bold' }}>{year || '2024'}</div>
+                                <div className="timeline__content" style={{ background: 'white', padding: '15px', borderRadius: '8px' }}>
+                                    <h3 className="timeline__title" style={{ color: '#1f2937', marginBottom: '8px' }}>{title}</h3>
+                                    {location && <p className="timeline__location" style={{ color: '#6b7280' }}>{location}</p>}
+                                    {description && <p className="timeline__description" style={{ color: '#9ca3af' }}>{description}</p>}
+                                    {type && <span className="timeline__type" style={{ background: '#dbeafe', color: '#1d4ed8', padding: '4px 8px', borderRadius: '4px' }}>{type}</span>}
                                 </div>
                             </div>
                         );
