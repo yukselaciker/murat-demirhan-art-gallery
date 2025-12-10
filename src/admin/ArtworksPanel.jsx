@@ -9,7 +9,6 @@ const emptyArtwork = {
   size: '',
   category: '',
   image: '',
-  category: '',
 };
 
 export default function ArtworksPanel() {
@@ -152,14 +151,6 @@ export default function ArtworksPanel() {
         <label>
           Ölçü (opsiyonel)
           <input name="size" value={form.size} onChange={handleChange} />
-        </label>
-        <label>
-          Kategori (opsiyonel)
-          <input name="category" value={form.category} onChange={handleChange} />
-        </label>
-        <label>
-          Kategori *
-          <input name="category" value={form.category} onChange={handleChange} required />
         </label>
         <label>
           Kategori *
