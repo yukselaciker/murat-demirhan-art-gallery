@@ -27,23 +27,29 @@ export function Exhibitions() {
 
                 {/* Timeline */}
                 <div className="timeline">
-                    {exhibitions.map((exhibition) => {
-                        const title = language === 'en' && exhibition.titleEn ? exhibition.titleEn : exhibition.title;
-                        const description = language === 'en' && exhibition.descriptionEn ? exhibition.descriptionEn : exhibition.description;
+                    {(!exhibitions || exhibitions.length === 0) ? (
+                        <div className="timeline__empty">
+                            <p>Henüz sergi bilgisi eklenmemiş.</p>
+                        </div>
+                    ) : (
+                        exhibitions.map((exhibition) => {
+                            const title = language === 'en' && exhibition.titleEn ? exhibition.titleEn : exhibition.title;
+                            const description = language === 'en' && exhibition.descriptionEn ? exhibition.descriptionEn : exhibition.description;
 
-                        return (
-                            <div key={exhibition.id} className="timeline__item fade-in">
-                                <div className="timeline__marker"></div>
-                                <div className="timeline__date">{exhibition.year}</div>
-                                <div className="timeline__content">
-                                    <h3 className="timeline__title">{title}</h3>
-                                    <p className="timeline__location">{exhibition.venue}, {exhibition.city}</p>
-                                    <p className="timeline__description">{description}</p>
-                                    <span className="timeline__type">{getTypeLabel(exhibition.type)}</span>
+                            return (
+                                <div key={exhibition.id} className="timeline__item fade-in">
+                                    <div className="timeline__marker"></div>
+                                    <div className="timeline__date">{exhibition.year}</div>
+                                    <div className="timeline__content">
+                                        <h3 className="timeline__title">{title}</h3>
+                                        <p className="timeline__location">{exhibition.venue}, {exhibition.city}</p>
+                                        {description && <p className="timeline__description">{description}</p>}
+                                        {exhibition.type && <span className="timeline__type">{getTypeLabel(exhibition.type)}</span>}
+                                    </div>
                                 </div>
-                            </div>
-                        );
-                    })}
+                            );
+                        })
+                    )}
                 </div>
             </div>
         </section>
