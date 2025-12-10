@@ -31,6 +31,9 @@ export default async function handler(req, res) {
                 return res.status(500).json({ error: error.message });
             }
 
+            // Vercel Edge Caching - 1 saat cache, 5 dk stale-while-revalidate
+            res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=300');
+
             return res.status(200).json(data || []);
         }
 
