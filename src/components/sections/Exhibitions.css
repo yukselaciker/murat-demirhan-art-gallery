@@ -124,37 +124,146 @@
     border-radius: var(--radius-sm);
 }
 
-/* Responsive */
+/* Responsive - Tablet */
 @media (max-width: 768px) {
+    .timeline {
+        max-width: 100%;
+        padding: 0 var(--space-md);
+    }
+
     .timeline::before {
-        left: 20px;
+        left: 16px;
     }
 
     .timeline__item {
-        display: block;
-        padding-left: 50px;
+        display: flex;
+        flex-direction: column;
+        padding-left: 40px;
+        padding-right: 0;
+        gap: var(--space-sm);
     }
 
     .timeline__marker {
-        left: 20px;
-        top: var(--space-xl);
+        left: 16px;
+        top: 24px;
         transform: translateX(-50%);
+        width: 12px;
+        height: 12px;
     }
 
     .timeline__item:hover .timeline__marker {
-        transform: translateX(-50%) scale(1.3);
+        transform: translateX(-50%) scale(1.2);
     }
 
     .timeline__date {
         text-align: left !important;
-        padding: 0 0 var(--space-sm) 0 !important;
+        padding: 0 !important;
         grid-column: auto !important;
+        font-size: var(--text-lg);
+        margin-bottom: var(--space-xs);
     }
 
     .timeline__content {
         text-align: left !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
+        padding: var(--space-md) !important;
+        padding-left: var(--space-md) !important;
+        padding-right: var(--space-md) !important;
         grid-column: auto !important;
+        margin-left: 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .timeline__title {
+        font-size: var(--text-lg);
+    }
+
+    .timeline__location {
+        font-size: var(--text-sm);
+    }
+}
+
+/* Responsive - Mobile */
+@media (max-width: 480px) {
+    .exhibitions {
+        padding: var(--space-xl) 0;
+    }
+
+    .exhibitions__header {
+        margin-bottom: var(--space-xl);
+        padding: 0 var(--space-md);
+    }
+
+    .exhibitions__header h2 {
+        font-size: var(--text-2xl);
+    }
+
+    .exhibitions__header p {
+        font-size: var(--text-sm);
+    }
+
+    .timeline {
+        padding: 0 var(--space-sm);
+    }
+
+    .timeline::before {
+        left: 12px;
+        width: 2px;
+    }
+
+    .timeline__item {
+        padding-left: 32px;
+        padding-top: var(--space-md);
+        padding-bottom: var(--space-md);
+    }
+
+    .timeline__marker {
+        left: 12px;
+        top: 20px;
+        width: 10px;
+        height: 10px;
+        border-width: 2px;
+    }
+
+    .timeline__date {
+        font-size: var(--text-base);
+        font-weight: 600;
+    }
+
+    .timeline__content {
+        padding: var(--space-sm) !important;
+        border-radius: var(--radius-sm);
+    }
+
+    .timeline__title {
+        font-size: var(--text-base);
+        margin-bottom: var(--space-xs);
+    }
+
+    .timeline__location {
+        font-size: var(--text-xs);
+        margin-bottom: var(--space-xs);
+    }
+
+    .timeline__description {
+        font-size: var(--text-xs);
+        margin-bottom: var(--space-sm);
+    }
+
+    .timeline__type {
+        font-size: 10px;
+        padding: 2px 6px;
+    }
+}
+
+/* Empty state mobile */
+@media (max-width: 768px) {
+    .timeline__empty {
+        padding: var(--space-xl);
+        text-align: center;
+    }
+
+    .timeline__empty p {
+        font-size: var(--text-sm);
     }
 }
