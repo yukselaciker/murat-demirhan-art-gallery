@@ -41,7 +41,7 @@ export default async function handler(req, res) {
                 return res.status(400).json({ error: "Request body is empty" });
             }
 
-            const { title, year, technique, size, category, description, status, tags } = req.body;
+            const { title, year, technique, size } = req.body;
 
             // Handle all image field variations
             const imageUrl = req.body.image_url || req.body.imageUrl || req.body.image;
@@ -90,7 +90,7 @@ export default async function handler(req, res) {
         // PUT - Update artwork
         if (req.method === "PUT") {
             const { id } = req.query;
-            const { title, year, technique, size, category, description, status } = req.body;
+            const { title, year, technique, size } = req.body;
             const imageUrl = req.body.image_url || req.body.imageUrl || req.body.image;
 
             if (!id) {

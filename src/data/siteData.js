@@ -17,10 +17,7 @@
 // Ancak "Gerçek Cross-Device Persistence" için mutlaka bir Backend gereklidir.
 // ============================================
 
-import { useEffect, useMemo, useState, useCallback } from 'react';
-
-// Görsel path yardımcı (build/base uyumlu)
-const imagePath = (fileName) => `${import.meta.env.BASE_URL}images/${fileName}`;
+import { useEffect, useMemo, useState } from 'react';
 
 // ============================================
 // 1. DATA SCHEMA & DEFAULTS
@@ -58,7 +55,7 @@ const USE_API = import.meta.env.VITE_USE_API !== 'false';
 
 // LocalStorage Implementation (Mevcut)
 const LocalDataService = {
-  load: async () => {
+  load: () => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) {
@@ -74,22 +71,20 @@ const LocalDataService = {
       }
 
       // Bozuk veri gelirse, uygulamanın çökmemesi için default veri ile birleştiriyoruz.
-      const safeData = {
+      return {
         artworks: Array.isArray(parsed.artworks) ? parsed.artworks : DEFAULT_DATA.artworks,
         exhibitions: Array.isArray(parsed.exhibitions) ? parsed.exhibitions : DEFAULT_DATA.exhibitions,
         cv: parsed.cv ? { ...DEFAULT_DATA.cv, ...parsed.cv } : DEFAULT_DATA.cv,
         contactInfo: parsed.contactInfo ? { ...DEFAULT_DATA.contactInfo, ...parsed.contactInfo } : DEFAULT_DATA.contactInfo,
         featuredArtworkId: parsed.featuredArtworkId !== undefined ? parsed.featuredArtworkId : DEFAULT_DATA.featuredArtworkId,
       };
-
-      return safeData;
     } catch (e) {
       console.error('[LocalDataService] Error loading data, falling back to defaults:', e);
       return DEFAULT_DATA;
     }
   },
 
-  save: async (data) => {
+  save: (data) => {
     try {
       if (!data || typeof data !== 'object') throw new Error('Invalid data format');
       const serialized = JSON.stringify(data);
@@ -102,11 +97,12 @@ const LocalDataService = {
     }
   },
 
-  reset: async () => {
+  reset: () => {
     try {
       localStorage.removeItem(STORAGE_KEY);
       return true;
     } catch (e) {
+      console.error('[LocalDataService] Reset failed:', e);
       return false;
     }
   }
@@ -267,57 +263,24 @@ const ApiDataService = {
 };
 
 // Aktif Servis Seçimi
-// load/save metodları async olduğu için hook'lar güncellenmeli, 
-// ancak şimdilik senkron gibi davranan loadSiteData() wrapper'ı ile uyumlu tutuyoruz.
-// DİKKAT: useSiteData içinde DataService.load() senkron çağrılıyor. 
-// API asenkron olduğu için bu yapı değişmeli.
-// Şimdilik USE_API false olduğu için LocalDataService (senkron çalışabilir) kullanıyoruz.
-// API'ye geçişte useSiteData tamamen asenkron hale getirilmeli.
+// LocalDataService tamamen senkron, ApiDataService ise asenkron çalışır.
+// useSiteData içinde DataService.load() senkron çağrıldığı için, API modunda
+// başlangıçta LocalStorage'dan veri okunur, useEffect içinde API'den tazelenir.
+// Tam asenkron akış için hook'lar yeniden düzenlenmelidir.
 
 const DataService = {
   load: () => {
+    // API modunda bile başlangıçta LocalStorage'dan hızlıca veri okuyup, useEffect içinde API'den güncelliyoruz.
     if (USE_API) {
-      // Senkron wrapper hacks (bunu asenkrona çevirmek büyük refactor gerektirir)
-      // Bu yüzden şimdilik API modunda bile LocalStorage'dan "başlangıç" verisi okuyoruz,
-      // sonra useEffect ile API'den güncelliyoruz.
       return LocalDataService.load();
     }
-    return LocalDataService.load(); // LocalService aslında senkron çalışabilir (await kaldırırsak)
+    return LocalDataService.load();
   },
   save: (data) => {
     if (USE_API) return ApiDataService.save(data);
     return LocalDataService.save(data);
   },
   reset: () => LocalDataService.reset()
-};
-
-// LocalDataService metodlarını senkron hale getirelim (orijinal kod senkrondu)
-// Yukarıdaki async tanımlarını kaldırıp düzeltiyorum:
-LocalDataService.load = () => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_DATA;
-    const parsed = JSON.parse(raw);
-    if (!parsed || typeof parsed !== 'object') return DEFAULT_DATA;
-
-    return {
-      artworks: Array.isArray(parsed.artworks) ? parsed.artworks : DEFAULT_DATA.artworks,
-      exhibitions: Array.isArray(parsed.exhibitions) ? parsed.exhibitions : DEFAULT_DATA.exhibitions,
-      cv: parsed.cv ? { ...DEFAULT_DATA.cv, ...parsed.cv } : DEFAULT_DATA.cv,
-      contactInfo: parsed.contactInfo ? { ...DEFAULT_DATA.contactInfo, ...parsed.contactInfo } : DEFAULT_DATA.contactInfo,
-      featuredArtworkId: parsed.featuredArtworkId !== undefined ? parsed.featuredArtworkId : DEFAULT_DATA.featuredArtworkId,
-    };
-  } catch (e) {
-    return DEFAULT_DATA;
-  }
-};
-
-LocalDataService.save = (data) => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    window.dispatchEvent(new Event('local-data-update'));
-    return true;
-  } catch (e) { return false; }
 };
 
 // ============================================
@@ -427,6 +390,7 @@ export function useSiteData() {
             const freshData = await ApiDataService.load();
             setData(freshData);
           } catch (e) {
+            console.error('Delete artwork failed', e);
             alert('Silme işlemi başarısız');
           }
         } else {
@@ -557,7 +521,7 @@ export function useSiteData() {
         }
       }
     }),
-    []
+    [data]
   );
 
   return { data, setData, ...helpers, isInitialized };

@@ -30,6 +30,7 @@ export default async function handler(req, res) {
 
             return res.status(200).json(data || []);
         } catch (error) {
+            console.error('GET /api/messages unexpected error:', error);
             return res.status(500).json({ error: 'Internal server error' });
         }
     }
@@ -61,6 +62,7 @@ export default async function handler(req, res) {
 
             return res.status(200).json(data[0]);
         } catch (error) {
+            console.error('PUT /api/messages unexpected error:', error);
             return res.status(500).json({ error: 'Internal server error' });
         }
     }
@@ -86,6 +88,7 @@ export default async function handler(req, res) {
 
             return res.status(200).json({ success: true });
         } catch (error) {
+            console.error('DELETE /api/messages unexpected error:', error);
             return res.status(500).json({ error: 'Internal server error' });
         }
     }

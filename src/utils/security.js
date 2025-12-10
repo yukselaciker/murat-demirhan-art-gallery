@@ -180,12 +180,14 @@ function onDevToolsClose() {
 /**
  * Console.log ile DevTools algılama (ek yöntem)
  */
+// eslint-disable-next-line no-unused-vars
 function setupConsoleDevToolsDetection() {
     const element = new Image();
     Object.defineProperty(element, 'id', {
         get: function () {
             devToolsOpen = true;
             onDevToolsOpen();
+            return 'devtools-check';
         }
     });
 

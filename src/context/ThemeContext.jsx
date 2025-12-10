@@ -2,14 +2,15 @@
 // THEME CONTEXT - MURAT DEMİRHAN PORTFOLYO
 // Light/Dark mode yönetimi
 // ============================================
+/* eslint-disable react-refresh/only-export-components */
 
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useEffect } from 'react';
 
 const ThemeContext = createContext(undefined);
 
 export function ThemeProvider({ children }) {
     // Koyu modu kaldırdık, her zaman 'light' teması.
-    const [theme, setTheme] = useState('light');
+    const theme = 'light';
 
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', 'light');
@@ -22,7 +23,7 @@ export function ThemeProvider({ children }) {
     };
 
     const value = {
-        theme: 'light',
+        theme,
         setTheme: () => { },
         toggleTheme,
         isDark: false
