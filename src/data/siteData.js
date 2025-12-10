@@ -22,7 +22,7 @@ import { useEffect, useMemo, useState } from 'react';
 // ============================================
 // 1. DATA SCHEMA & DEFAULTS
 // ============================================
-const DEFAULT_DATA = {
+export const DEFAULT_DATA = {
   // Tüm veriler Supabase API'den geliyor - hardcoded data YOK!
   artworks: [],
   exhibitions: [],
@@ -115,7 +115,7 @@ let apiFetchPromise = null;
 let cacheTimestamp = null;
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 dakika cache TTL (mobil için optimize)
 
-const ApiDataService = {
+export const ApiDataService = {
   // Invalidate cache - call after mutations
   invalidateCache: () => {
     apiDataCache = null;
