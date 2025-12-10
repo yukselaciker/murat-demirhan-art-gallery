@@ -112,17 +112,30 @@ const LocalDataService = {
 // Module-level cache to prevent duplicate requests
 let apiDataCache = null;
 let apiFetchPromise = null;
+let cacheTimestamp = null;
+const CACHE_TTL_MS = 60 * 1000; // 60 seconds cache TTL
 
 const ApiDataService = {
   // Invalidate cache - call after mutations
   invalidateCache: () => {
     apiDataCache = null;
     apiFetchPromise = null;
+    cacheTimestamp = null;
     console.log('[ApiDataService] Cache invalidated');
   },
 
   load: async () => {
-    // Return cached data if available
+    // Check if cache is still valid (within TTL)
+    const now = Date.now();
+    const cacheExpired = cacheTimestamp && (now - cacheTimestamp > CACHE_TTL_MS);
+
+    if (cacheExpired) {
+      console.log('[ApiDataService] Cache expired, fetching fresh data...');
+      apiDataCache = null;
+      apiFetchPromise = null;
+    }
+
+    // Return cached data if available and not expired
     if (apiDataCache) {
       console.log('[ApiDataService] Returning cached data');
       return apiDataCache;
@@ -175,8 +188,9 @@ const ApiDataService = {
           featuredArtworkId: settings.featuredArtworkId || null,
         };
 
-        // Store in cache
+        // Store in cache with timestamp
         apiDataCache = result;
+        cacheTimestamp = Date.now();
         apiFetchPromise = null;
 
         return result;
