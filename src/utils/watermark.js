@@ -60,91 +60,95 @@ export async function drawWatermarkedImage(imageSrc, canvas, options = {}) {
         quality = 'high' // high, low (indirme denendiğinde low kullanılır)
     } = options;
 
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
         const img = new Image();
         // Localhost/Same-origin için crossOrigin gerekmez, hatta bazen sorun çıkarabilir
         // img.crossOrigin = 'anonymous';
 
         img.onload = async () => {
-            const ctx = canvas.getContext('2d');
+            try {
+                const ctx = canvas.getContext('2d');
 
-            // Canvas boyutlarını ayarla
-            canvas.width = img.width;
-            canvas.height = img.height;
+                // Canvas boyutlarını ayarla
+                canvas.width = img.width;
+                canvas.height = img.height;
 
-            // Görsel kalitesi ayarı (koruma için düşürülebilir)
-            if (quality === 'low') {
-                canvas.width = img.width * 0.4;
-                canvas.height = img.height * 0.4;
-            }
-
-            // Görseli canvas'a çiz
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-            // Filigran bilgilerini hazırla
-            const userIP = includeIP ? await getUserIP() : '';
-            const dateTime = getDateTime();
-
-            // Filigran metinleri
-            const watermarkLines = [
-                artistName,
-                dateTime,
-                siteDomain
-            ];
-
-            if (artworkTitle) {
-                watermarkLines.push(artworkTitle);
-            }
-
-            if (userIP && includeIP) {
-                watermarkLines.push(`IP: ${userIP}`);
-            }
-
-            // === FİLİGRAN ÇİZİMİ ===
-            ctx.save();
-
-            // Filigran stili
-            // Filigran: Hafifçe görünür (caydırıcı), düşük kalite modunda belirgin
-            const watermarkOpacity = quality === 'low' ? 0.4 : 0.06;
-            ctx.globalAlpha = watermarkOpacity;
-            ctx.font = `${fontSize}px 'Inter', sans-serif`;
-            ctx.fillStyle = '#8B4557';
-            ctx.textAlign = 'center';
-
-            // Diyagonal repeated filigran
-            const diagonal = Math.sqrt(canvas.width ** 2 + canvas.height ** 2);
-            const startX = -diagonal / 2;
-            const startY = -diagonal / 2;
-
-            // Canvas'ı döndür
-            ctx.translate(canvas.width / 2, canvas.height / 2);
-            ctx.rotate((rotation * Math.PI) / 180);
-
-            // Filigranları diyagonal şekilde tekrarla
-            for (let y = startY; y < diagonal; y += spacing) {
-                for (let x = startX; x < diagonal; x += spacing * 2) {
-                    watermarkLines.forEach((line, index) => {
-                        ctx.fillText(line, x, y + (index * (fontSize + 4)));
-                    });
+                // Görsel kalitesi ayarı (koruma için düşürülebilir)
+                if (quality === 'low') {
+                    canvas.width = img.width * 0.4;
+                    canvas.height = img.height * 0.4;
                 }
-            }
 
-            ctx.restore();
+                // Görseli canvas'a çiz
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-            // Düşük kalite modunda ekstra yoğun filigran
-            if (quality === 'low') {
+                // Filigran bilgilerini hazırla
+                const userIP = includeIP ? await getUserIP() : '';
+                const dateTime = getDateTime();
+
+                // Filigran metinleri
+                const watermarkLines = [
+                    artistName,
+                    dateTime,
+                    siteDomain
+                ];
+
+                if (artworkTitle) {
+                    watermarkLines.push(artworkTitle);
+                }
+
+                if (userIP && includeIP) {
+                    watermarkLines.push(`IP: ${userIP}`);
+                }
+
+                // === FİLİGRAN ÇİZİMİ ===
                 ctx.save();
-                ctx.globalAlpha = 0.3;
-                ctx.font = `bold ${fontSize * 2}px 'Playfair Display', serif`;
+
+                // Filigran stili
+                // Filigran: Hafifçe görünür (caydırıcı), düşük kalite modunda belirgin
+                const watermarkOpacity = quality === 'low' ? 0.4 : opacity;
+                ctx.globalAlpha = watermarkOpacity;
+                ctx.font = `${fontSize}px 'Inter', sans-serif`;
                 ctx.fillStyle = '#8B4557';
                 ctx.textAlign = 'center';
-                ctx.translate(canvas.width / 2, canvas.height / 2);
-                ctx.rotate((-45 * Math.PI) / 180);
-                ctx.fillText('© Murat Demirhan - Korumalı Kopya', 0, 0);
-                ctx.restore();
-            }
 
-            resolve(canvas);
+                // Diyagonal repeated filigran
+                const diagonal = Math.sqrt(canvas.width ** 2 + canvas.height ** 2);
+                const startX = -diagonal / 2;
+                const startY = -diagonal / 2;
+
+                // Canvas'ı döndür
+                ctx.translate(canvas.width / 2, canvas.height / 2);
+                ctx.rotate((rotation * Math.PI) / 180);
+
+                // Filigranları diyagonal şekilde tekrarla
+                for (let y = startY; y < diagonal; y += spacing) {
+                    for (let x = startX; x < diagonal; x += spacing * 2) {
+                        watermarkLines.forEach((line, index) => {
+                            ctx.fillText(line, x, y + (index * (fontSize + 4)));
+                        });
+                    }
+                }
+
+                ctx.restore();
+
+                // Düşük kalite modunda ekstra yoğun filigran
+                if (quality === 'low') {
+                    ctx.save();
+                    ctx.globalAlpha = 0.3;
+                    ctx.font = `bold ${fontSize * 2}px 'Playfair Display', serif`;
+                    ctx.fillStyle = '#8B4557';
+                    ctx.textAlign = 'center';
+                    ctx.translate(canvas.width / 2, canvas.height / 2);
+                    ctx.rotate((-45 * Math.PI) / 180);
+                    ctx.fillText('© Murat Demirhan - Korumalı Kopya', 0, 0);
+                    ctx.restore();
+                }
+
+                resolve(canvas);
+            } catch (error) {
+                reject(error);
+            }
         };
 
         img.onerror = (error) => {

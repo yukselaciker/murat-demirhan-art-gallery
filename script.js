@@ -301,7 +301,7 @@ function renderGallery(artworksToRender) {
     return;
   }
 
-  artworksToRender.forEach((artwork, index) => {
+  artworksToRender.forEach((artwork) => {
     const card = document.createElement('div');
     card.className = 'artwork-card';
     card.setAttribute('data-category', artwork.category);
@@ -535,7 +535,7 @@ document.addEventListener('keydown', (e) => {
 function renderTimeline(exhibitionsToRender) {
   timeline.innerHTML = '';
 
-  exhibitionsToRender.forEach((exhibition, index) => {
+  exhibitionsToRender.forEach((exhibition) => {
     const item = document.createElement('div');
     item.className = 'timeline__item fade-in';
 
@@ -660,17 +660,5 @@ function debounce(func, wait) {
     };
     clearTimeout(timeout);
     timeout = setTimeout(later, wait);
-  };
-}
-
-// Throttle fonksiyonu (scroll eventi için)
-function throttle(func, limit) {
-  let inThrottle;
-  return function executedFunction(...args) {
-    if (!inThrottle) {
-      func(...args);
-      inThrottle = true;
-      setTimeout(() => inThrottle = false, limit);
-    }
   };
 }

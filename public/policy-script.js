@@ -90,23 +90,6 @@ function initTheme() {
     }
 }
 
-/**
- * Çerez onay durumunu kontrol et
- * @returns {string|null} 'accepted', 'declined' veya null
- */
-function getCookieConsent() {
-    return localStorage.getItem('cookieConsent');
-}
-
-/**
- * Çerez onayını sıfırla (test için)
- */
-function resetCookieConsent() {
-    localStorage.removeItem('cookieConsent');
-    localStorage.removeItem('cookieConsentDate');
-    location.reload();
-}
-
 // Slide down animasyonu için CSS ekle
 const style = document.createElement('style');
 style.textContent = `

@@ -21,7 +21,7 @@ export default function ArtworksPanel() {
   // React Hooks Kuralı: Hook'lar koşulsuz ve aynı sırada çağrılmalı
   const sorted = useMemo(
     () => (data?.artworks ? [...data.artworks].sort((a, b) => Number(b.year) - Number(a.year)) : []),
-    [data?.artworks]
+    [data]
   );
 
   // Debug log

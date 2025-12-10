@@ -2,6 +2,7 @@
 // LANGUAGE CONTEXT - MURAT DEMİRHAN PORTFOLYO
 // Çok dilli yapı yönetimi (TR/EN)
 // ============================================
+/* eslint-disable react-refresh/only-export-components */
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import translations from '../data/translations';
