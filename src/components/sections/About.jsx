@@ -7,12 +7,38 @@ import { useLanguage } from '../../context/LanguageContext';
 import { usePublicData } from '../../data/siteData';
 import './About.css';
 
+// Skeleton Loader Component
+function SkeletonText({ lines = 3, className = '' }) {
+    return (
+        <div className={`skeleton-text ${className}`}>
+            {Array.from({ length: lines }).map((_, i) => (
+                <div
+                    key={i}
+                    className="skeleton"
+                    style={{
+                        height: '1em',
+                        marginBottom: '0.75em',
+                        width: i === lines - 1 ? '70%' : '100%'
+                    }}
+                />
+            ))}
+        </div>
+    );
+}
+
+function SkeletonImage() {
+    return (
+        <div className="skeleton" style={{ width: '100%', height: '400px', borderRadius: 'var(--radius-lg)' }} />
+    );
+}
+
 export function About() {
     const { t } = useLanguage();
-    const { cv } = usePublicData();
+    const { cv, isLoading } = usePublicData();
 
-    // Biyografi paragraflarını çeviri dosyasından al
-    const bioParagraphs = cv?.bio ? [cv.bio] : t('about.bio');
+    // Sadece API'den gelen biyografi göster, fallback yok
+    const bioParagraphs = cv?.bio ? [cv.bio] : [];
+    const hasData = cv?.bio || (cv?.education?.length > 0) || (cv?.awards?.length > 0);
 
     return (
         <section className="about" id="hakkinda">
@@ -20,7 +46,9 @@ export function About() {
                 <div className="about__content">
                     {/* Sol Taraf: Portre */}
                     <div className="about__image-wrapper slide-in-left">
-                        {cv?.artistPhoto ? (
+                        {isLoading ? (
+                            <SkeletonImage />
+                        ) : cv?.artistPhoto ? (
                             <img src={cv.artistPhoto} alt="Murat Demirhan" />
                         ) : (
                             <div className="placeholder-image placeholder-image--portrait">
@@ -36,18 +64,39 @@ export function About() {
                     <div className="about__text slide-in-right">
                         <h2 className="section-title">{t('about.title')}</h2>
 
-                        {/* Biyografi Paragrafları */}
-                        {Array.isArray(bioParagraphs) && bioParagraphs.map((paragraph, index) => (
-                            <p key={index}>{paragraph}</p>
-                        ))}
+                        {/* Loading State */}
+                        {isLoading ? (
+                            <SkeletonText lines={5} />
+                        ) : bioParagraphs.length > 0 ? (
+                            /* Biyografi Paragrafları */
+                            bioParagraphs.map((paragraph, index) => (
+                                <p key={index}>{paragraph}</p>
+                            ))
+                        ) : (
+                            /* Veri yoksa boş bırak */
+                            <p className="about__placeholder">Biyografi bilgisi yükleniyor...</p>
+                        )}
 
-                        {/* Sanatçı Notu */}
-                        <blockquote className="about__quote">
-                            {t('about.artistNote')}
-                        </blockquote>
+                        {/* Sanatçı Notu - sadece veri yüklendiyse göster */}
+                        {!isLoading && hasData && (
+                            <blockquote className="about__quote">
+                                {t('about.artistNote')}
+                            </blockquote>
+                        )}
 
-                        {/* Bilgi Kutuları (dinamik CV verisi) */}
-                        {cv && (
+                        {/* Bilgi Kutuları */}
+                        {isLoading ? (
+                            <div className="about__info">
+                                <div className="about__info-item">
+                                    <div className="skeleton" style={{ height: '1em', width: '60px', marginBottom: '0.5em' }} />
+                                    <SkeletonText lines={2} />
+                                </div>
+                                <div className="about__info-item">
+                                    <div className="skeleton" style={{ height: '1em', width: '60px', marginBottom: '0.5em' }} />
+                                    <SkeletonText lines={2} />
+                                </div>
+                            </div>
+                        ) : cv && (
                             <div className="about__info">
                                 <div className="about__info-item">
                                     <p className="about__info-label">Eğitim</p>

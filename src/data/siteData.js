@@ -577,6 +577,7 @@ export function usePublicData() {
     if (USE_API) return DEFAULT_DATA;
     return DataService.load();
   });
+  const [isLoading, setIsLoading] = useState(USE_API); // API modunda başlangıçta loading
 
   // API'den veri yükle (useSiteData ile aynı mantık)
   useEffect(() => {
@@ -591,12 +592,14 @@ export function usePublicData() {
         setData(validData);
       } catch (err) {
         console.error("[usePublicData] Data load failed:", err);
+      } finally {
+        setIsLoading(false);
       }
     };
     loadData();
   }, []);
 
-  return data;
+  return { ...data, isLoading };
 }
 
 // Deprecated export but kept for compatibility
