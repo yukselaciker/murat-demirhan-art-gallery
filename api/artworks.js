@@ -62,9 +62,7 @@ module.exports = async function handler(req, res) {
                 year: year ? parseInt(year) : null,
                 technique: technique || null,
                 size: size || null,
-                image_url: imageUrl || null,
-                description: description || null,
-                status: status || 'available'
+                image_url: imageUrl || null
             };
 
             console.log("POST /api/artworks - inserting:", {
@@ -104,9 +102,7 @@ module.exports = async function handler(req, res) {
                 year: year ? parseInt(year) : null,
                 technique,
                 size,
-                image_url: imageUrl,
-                description: description || null,
-                status: status || 'available'
+                image_url: imageUrl
             };
 
             console.log("PUT /api/artworks - updating:", id, updateData);
