@@ -14,17 +14,27 @@ export function Exhibitions() {
     console.log('[Exhibitions] Data:', { exhibitions, isLoading, length: exhibitions?.length });
 
     const getTypeLabel = (type) => {
-        // Eğer type zaten Türkçe metin ise (veritabanından), direkt göster
-        // Çeviri anahtarı formatındaysa çevirmeyi dene
-        const knownTypes = ['solo', 'group', 'fair', 'invited'];
+        // Null/undefined kontrolü
+        if (!type) return null;
 
-        if (knownTypes.includes(type)) {
-            const typeKey = `exhibitions.types.${type}`;
+        // String değilse string'e çevir
+        const typeStr = String(type);
+
+        // Eğer "exhibitions.types." prefix'i varsa, sadece son kısmı al
+        if (typeStr.includes('.')) {
+            const parts = typeStr.split('.');
+            return parts[parts.length - 1]; // Son parçayı döndür
+        }
+
+        // Bilinen çeviri anahtarlarını çevir
+        const knownTypes = ['solo', 'group', 'fair', 'invited'];
+        if (knownTypes.includes(typeStr)) {
+            const typeKey = `exhibitions.types.${typeStr}`;
             return t(typeKey);
         }
 
-        // Veritabanından gelen Türkçe metin ise direkt göster
-        return type;
+        // Diğer durumlarda olduğu gibi göster
+        return typeStr;
     };
 
     return (
