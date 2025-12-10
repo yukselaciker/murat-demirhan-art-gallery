@@ -151,7 +151,7 @@ const ApiDataService = {
         exhibitions,
         cv,
         contactInfo,
-        featuredArtworkId: null, // TODO: could store in settings
+        featuredArtworkId: settings.featuredArtworkId || null,
       };
     } catch (e) {
       console.error('[ApiDataService] Load error:', e);
@@ -510,11 +510,24 @@ export function useSiteData() {
           }));
         }
       },
-      setFeaturedArtwork: (artworkId) =>
+      setFeaturedArtwork: async (artworkId) => {
         setData((prev) => ({
           ...prev,
           featuredArtworkId: artworkId,
-        })),
+        }));
+        // API modunda Supabase'e kaydet
+        if (USE_API) {
+          try {
+            await fetch('/api/settings?key=featuredArtworkId', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(artworkId)
+            });
+          } catch (e) {
+            console.error('Failed to save featured artwork:', e);
+          }
+        }
+      },
       resetData: () => {
         if (confirm('Tüm verileri silip varsayılanlara dönmek istediğinize emin misiniz?')) {
           DataService.reset();
