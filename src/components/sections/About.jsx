@@ -1,10 +1,11 @@
+
 // ============================================
 // ABOUT SECTION - MURAT DEMİRHAN PORTFOLYO
 // Sanatçı biyografisi bölümü
 // ============================================
 
 import { useLanguage } from '../../context/LanguageContext';
-import { usePublicData } from '../../data/siteData';
+import { usePublicDataQuery } from '../../data/useSiteQuery';
 import ProtectedImage from '../ui/ProtectedImage';
 import './About.css';
 
@@ -34,12 +35,18 @@ function SkeletonImage() {
 }
 
 export function About() {
-    const { t } = useLanguage();
-    const { cv, isLoading } = usePublicData();
+    const { t, language } = useLanguage();
+    const { data: publicData, isLoading } = usePublicDataQuery(); // REACT QUERY
 
-    // Sadece API'den gelen biyografi göster, fallback yok
-    const bioParagraphs = cv?.bio ? [cv.bio] : [];
-    const hasData = cv?.bio || (cv?.education?.length > 0) || (cv?.awards?.length > 0);
+    // Get CV data from public data
+    const cvData = publicData?.cv || {};
+    const artistPhoto = publicData?.currentArtistPhoto || cvData?.artistPhoto;
+
+    // Determine content based on language
+    const bioParagraphs = language === 'en' && cvData.biographyEn
+        ? cvData.biographyEn.split('\n')
+        : (cvData.biography ? cvData.biography.split('\n') : []);
+    const hasData = cvData?.biography || cvData?.biographyEn || (cvData?.education?.length > 0) || (cvData?.awards?.length > 0);
 
     return (
         <section className="about" id="hakkinda">
@@ -49,9 +56,9 @@ export function About() {
                     <div className="about__image-wrapper slide-in-left">
                         {isLoading ? (
                             <SkeletonImage />
-                        ) : cv?.artistPhoto ? (
+                        ) : artistPhoto ? (
                             <ProtectedImage
-                                src={cv.artistPhoto}
+                                src={artistPhoto}
                                 alt="Murat Demirhan"
                                 className="about__artist-photo"
                             />
@@ -101,13 +108,13 @@ export function About() {
                                     <SkeletonText lines={2} />
                                 </div>
                             </div>
-                        ) : cv && (
+                        ) : cvData && (
                             <div className="about__info">
                                 <div className="about__info-item">
                                     <p className="about__info-label">Eğitim</p>
-                                    {cv.education && cv.education.length > 0 ? (
+                                    {cvData.education && cvData.education.length > 0 ? (
                                         <ul className="about__info-list">
-                                            {cv.education.map((e, idx) => (
+                                            {cvData.education.map((e, idx) => (
                                                 <li key={idx}>{e.school} ({e.year})</li>
                                             ))}
                                         </ul>
@@ -117,9 +124,9 @@ export function About() {
                                 </div>
                                 <div className="about__info-item">
                                     <p className="about__info-label">Ödüller</p>
-                                    {cv.awards && cv.awards.length > 0 ? (
+                                    {cvData.awards && cvData.awards.length > 0 ? (
                                         <ul className="about__info-list">
-                                            {cv.awards.map((a, idx) => (
+                                            {cvData.awards.map((a, idx) => (
                                                 <li key={idx}>{a.title} - {a.org} ({a.year})</li>
                                             ))}
                                         </ul>
@@ -129,9 +136,9 @@ export function About() {
                                 </div>
                                 <div className="about__info-item">
                                     <p className="about__info-label">Öne Çıkanlar</p>
-                                    {cv.highlights && cv.highlights.length > 0 ? (
+                                    {cvData.highlights && cvData.highlights.length > 0 ? (
                                         <ul className="about__info-list">
-                                            {cv.highlights.map((h, idx) => (
+                                            {cvData.highlights.map((h, idx) => (
                                                 <li key={idx}>{h}</li>
                                             ))}
                                         </ul>

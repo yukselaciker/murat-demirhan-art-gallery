@@ -4,7 +4,8 @@
 // ============================================
 
 import { useLanguage } from '../../context/LanguageContext';
-import { usePublicData } from '../../data/siteData';
+// import { usePublicData } from '../../data/siteData'; // OLD HOOK
+import { usePublicDataQuery } from '../../data/useSiteQuery'; // NEW REACT QUERY HOOK
 import './Exhibitions.css';
 
 // Safe type formatter
@@ -16,9 +17,11 @@ const formatType = (typeString) => {
 
 export function Exhibitions() {
     const { t } = useLanguage();
-    const publicData = usePublicData();
+
+    // React Query Entegrasyonu
+    const { data: publicData, isLoading } = usePublicDataQuery();
+
     const exhibitions = publicData?.exhibitions || [];
-    const isLoading = publicData?.isLoading ?? true;
 
     // Loading state
     if (isLoading) {
