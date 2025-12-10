@@ -6,6 +6,7 @@
 import { useLanguage } from '../../context/LanguageContext';
 import { usePublicData } from '../../data/siteData';
 import Button from '../ui/Button';
+import ProtectedImage from '../ui/ProtectedImage';
 import './Hero.css';
 
 export function Hero() {
@@ -67,7 +68,11 @@ export function Hero() {
                         <div className="hero__image-frame">
                             {featuredArtwork && featuredArtwork.image ? (
                                 <>
-                                    <img src={featuredArtwork.image} alt={featuredArtwork.title} />
+                                    <ProtectedImage
+                                        src={featuredArtwork.image}
+                                        alt={featuredArtwork.title}
+                                        className="hero__featured-image"
+                                    />
                                     <div className="hero__artwork-info">
                                         <h3>{featuredArtwork.title}</h3>
                                         <p>{featuredArtwork.year} • {featuredArtwork.technique}</p>

@@ -5,6 +5,7 @@
 
 import { useLanguage } from '../../context/LanguageContext';
 import { usePublicData } from '../../data/siteData';
+import ProtectedImage from '../ui/ProtectedImage';
 import './About.css';
 
 // Skeleton Loader Component
@@ -49,7 +50,11 @@ export function About() {
                         {isLoading ? (
                             <SkeletonImage />
                         ) : cv?.artistPhoto ? (
-                            <img src={cv.artistPhoto} alt="Murat Demirhan" />
+                            <ProtectedImage
+                                src={cv.artistPhoto}
+                                alt="Murat Demirhan"
+                                className="about__artist-photo"
+                            />
                         ) : (
                             <div className="placeholder-image placeholder-image--portrait">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
