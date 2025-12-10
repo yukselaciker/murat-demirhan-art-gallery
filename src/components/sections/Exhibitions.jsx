@@ -7,50 +7,28 @@ import { useLanguage } from '../../context/LanguageContext';
 import { usePublicData } from '../../data/siteData';
 import './Exhibitions.css';
 
+// Ultra-safe type formatter - NEVER crashes
+const formatType = (typeString) => {
+    if (!typeString) return null; // Don't show anything if empty
+    if (typeof typeString !== 'string') return String(typeString);
+    // Remove prefix if present
+    return typeString.replace('exhibitions.types.', '');
+};
+
 export function Exhibitions() {
     const { t, language } = useLanguage();
-    const { exhibitions, isLoading } = usePublicData();
+    const publicData = usePublicData();
 
-    // Debug log - her zaman çalışır
-    console.log('[Exhibitions] Raw data:', exhibitions);
+    // Safe destructuring with defaults
+    const exhibitions = publicData?.exhibitions || [];
+    const isLoading = publicData?.isLoading ?? true;
+
+    // Debug
+    console.log('[Exhibitions] exhibitions:', exhibitions);
     console.log('[Exhibitions] isLoading:', isLoading);
-    console.log('[Exhibitions] exhibitions length:', exhibitions?.length);
+    console.log('[Exhibitions] count:', exhibitions.length);
 
-    // Güvenli type label fonksiyonu - ASLA crash olmaz
-    const getTypeLabel = (type) => {
-        try {
-            // Null/undefined/empty kontrolü
-            if (!type || type === '' || type === null || type === undefined) {
-                return null; // Gösterme
-            }
-
-            // String değilse string'e çevir
-            const typeStr = String(type).trim();
-
-            if (!typeStr) return null;
-
-            // Eğer nokta içeriyorsa, son kısmı al
-            if (typeStr.includes('.')) {
-                const parts = typeStr.split('.');
-                const lastPart = parts[parts.length - 1];
-                return lastPart || null;
-            }
-
-            // Bilinen İngilizce anahtarları çevir
-            const knownTypes = ['solo', 'group', 'fair', 'invited'];
-            if (knownTypes.includes(typeStr.toLowerCase())) {
-                return t(`exhibitions.types.${typeStr.toLowerCase()}`);
-            }
-
-            // Diğer durumlarda olduğu gibi göster
-            return typeStr;
-        } catch (err) {
-            console.error('[Exhibitions] getTypeLabel error:', err);
-            return null;
-        }
-    };
-
-    // Loading durumu
+    // Loading state
     if (isLoading) {
         return (
             <section className="exhibitions" id="sergiler">
@@ -69,9 +47,8 @@ export function Exhibitions() {
         );
     }
 
-    // Boş veri kontrolü
-    if (!exhibitions || !Array.isArray(exhibitions) || exhibitions.length === 0) {
-        console.log('[Exhibitions] No data or empty array');
+    // Empty state
+    if (exhibitions.length === 0) {
         return (
             <section className="exhibitions" id="sergiler">
                 <div className="container">
@@ -89,47 +66,7 @@ export function Exhibitions() {
         );
     }
 
-    // Her item'ı güvenli şekilde render et
-    const renderExhibition = (exhibition, index) => {
-        try {
-            // Null item kontrolü
-            if (!exhibition) {
-                console.warn('[Exhibitions] Null item at index:', index);
-                return null;
-            }
-
-            // Güvenli erişim
-            const id = exhibition?.id ?? `exhibition-${index}`;
-            const year = exhibition?.year ?? '-';
-            const title = (language === 'en' && exhibition?.titleEn)
-                ? exhibition.titleEn
-                : (exhibition?.title ?? 'İsimsiz Sergi');
-            const venue = exhibition?.venue ?? '';
-            const city = exhibition?.city ?? '';
-            const location = venue && city ? `${venue}, ${city}` : (venue || city || 'Konum belirtilmedi');
-            const description = (language === 'en' && exhibition?.descriptionEn)
-                ? exhibition.descriptionEn
-                : exhibition?.description;
-            const typeLabel = getTypeLabel(exhibition?.type);
-
-            return (
-                <div key={id} className="timeline__item fade-in">
-                    <div className="timeline__marker"></div>
-                    <div className="timeline__date">{year}</div>
-                    <div className="timeline__content">
-                        <h3 className="timeline__title">{title}</h3>
-                        <p className="timeline__location">{location}</p>
-                        {description && <p className="timeline__description">{description}</p>}
-                        {typeLabel && <span className="timeline__type">{typeLabel}</span>}
-                    </div>
-                </div>
-            );
-        } catch (err) {
-            console.error('[Exhibitions] Error rendering item:', index, exhibition, err);
-            return null;
-        }
-    };
-
+    // Render exhibitions - ultra simple
     return (
         <section className="exhibitions" id="sergiler">
             <div className="container">
@@ -138,7 +75,41 @@ export function Exhibitions() {
                     <p>{t('exhibitions.subtitle')}</p>
                 </div>
                 <div className="timeline">
-                    {exhibitions.map((exhibition, index) => renderExhibition(exhibition, index))}
+                    {exhibitions.map((item, index) => {
+                        // Skip null items
+                        if (!item) return null;
+
+                        // Safe field access with fallbacks
+                        const id = item.id || `ex-${index}`;
+                        const title = item.title || 'İsimsiz Sergi';
+                        const year = item.year || '';
+                        const venue = item.venue || '';
+                        const city = item.city || '';
+                        const description = item.description || '';
+                        const type = formatType(item.type);
+
+                        // Build location string safely
+                        let location = venue;
+                        if (city) {
+                            location = venue ? `${venue}, ${city}` : city;
+                        }
+                        if (!location) location = '';
+
+                        console.log('[Exhibitions] Rendering item:', id, title);
+
+                        return (
+                            <div key={id} className="timeline__item fade-in">
+                                <div className="timeline__marker"></div>
+                                <div className="timeline__date">{year}</div>
+                                <div className="timeline__content">
+                                    <h3 className="timeline__title">{title}</h3>
+                                    {location && <p className="timeline__location">{location}</p>}
+                                    {description && <p className="timeline__description">{description}</p>}
+                                    {type && <span className="timeline__type">{type}</span>}
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </section>
