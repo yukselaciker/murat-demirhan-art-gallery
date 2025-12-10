@@ -78,7 +78,7 @@ export function Exhibitions() {
                 <div style={{ background: '#10b981', color: 'white', padding: '20px', marginBottom: '20px', borderRadius: '8px', textAlign: 'center' }}>
                     ✅ SERGILER YÜKLENDİ: {exhibitions.length} adet sergi bulundu
                 </div>
-                <div className="timeline">
+                <div className="timeline" style={{ border: '5px solid red', minHeight: '200px', padding: '20px', background: '#fff5f5' }}>
                     {exhibitions.map((item, index) => {
                         // Detailed debug log
                         console.log('[Exhibitions] MAP item', index, ':', item);
