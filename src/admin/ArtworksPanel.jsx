@@ -7,6 +7,7 @@ const emptyArtwork = {
   year: '',
   technique: '',
   size: '',
+  category: '',
   image: '',
 };
 
@@ -131,6 +132,10 @@ export default function ArtworksPanel() {
         <label>
           Ölçü *
           <input name="size" value={form.size} onChange={handleChange} required />
+        </label>
+        <label>
+          Kategori *
+          <input name="category" value={form.category} onChange={handleChange} required />
         </label>
 
         <ImageUploader
