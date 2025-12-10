@@ -4,30 +4,35 @@
    ============================================ */
 
 :root {
-    /* ===== RENKLER - LIGHT MODE ===== */
-    --color-bg-primary: #FAFAF8;
-    --color-bg-secondary: #F5F5F3;
-    --color-bg-tertiary: #EEEDEB;
+    /* ===== RENKLER - LIGHT MODE (Art Gallery Theme) ===== */
+    /* Sıcak fildişi/krem tonları - galeri duvarları gibi */
+    --color-bg-primary: #FAF8F5;
+    --color-bg-secondary: #F4F1EC;
+    --color-bg-tertiary: #EBE7E0;
     --color-bg-card: #FFFFFF;
 
-    --color-text-primary: #1A1A1A;
-    --color-text-secondary: #4A4A4A;
-    --color-text-light: #7A7A7A;
+    /* Derin antrasit/kömür tonları - zarif ve okunabilir */
+    --color-text-primary: #1C1C1C;
+    --color-text-secondary: #3D3D3D;
+    --color-text-light: #6B6B6B;
     --color-text-inverse: #FFFFFF;
 
-    /* Vurgu: Pastel Bordo / Terracotta */
-    --color-accent: #8B4557;
-    --color-accent-light: #A66B7A;
-    --color-accent-dark: #6B3444;
-    --color-accent-muted: rgba(139, 69, 87, 0.1);
+    /* Vurgu: Antik Altın / Bronz - sanat galerileri için klasik */
+    --color-accent: #B8860B;
+    /* Antik Altın */
+    --color-accent-light: #D4A845;
+    /* Açık Altın */
+    --color-accent-dark: #8B6914;
+    /* Koyu Altın */
+    --color-accent-muted: rgba(184, 134, 11, 0.12);
 
-    --color-border: #E5E5E3;
-    --color-border-light: #EEEEEC;
+    --color-border: #E0DCD5;
+    --color-border-light: #EBE8E2;
 
     /* Durum Renkleri */
-    --color-success: #48BB78;
-    --color-error: #E53E3E;
-    --color-warning: #ED8936;
+    --color-success: #2D8A5F;
+    --color-error: #C53030;
+    --color-warning: #C97706;
 
     /* ===== TİPOGRAFİ ===== */
     --font-heading: 'Playfair Display', Georgia, serif;
@@ -114,23 +119,24 @@
 
 /* ===== DARK MODE ===== */
 [data-theme="dark"] {
-    --color-bg-primary: #121212;
-    --color-bg-secondary: #1A1A1A;
-    --color-bg-tertiary: #242424;
-    --color-bg-card: #1E1E1E;
+    --color-bg-primary: #0F0F0F;
+    --color-bg-secondary: #1A1918;
+    --color-bg-tertiary: #252420;
+    --color-bg-card: #1C1B1A;
 
-    --color-text-primary: #F5F5F5;
-    --color-text-secondary: #B0B0B0;
-    --color-text-light: #808080;
-    --color-text-inverse: #121212;
+    --color-text-primary: #F5F4F0;
+    --color-text-secondary: #B5B3AD;
+    --color-text-light: #7D7B75;
+    --color-text-inverse: #0F0F0F;
 
-    --color-accent: #C08090;
-    --color-accent-light: #D0A0A8;
-    --color-accent-dark: #A06070;
-    --color-accent-muted: rgba(192, 128, 144, 0.15);
+    /* Altın tonları dark mode için ayarlandı */
+    --color-accent: #D4A845;
+    --color-accent-light: #E5C070;
+    --color-accent-dark: #B8860B;
+    --color-accent-muted: rgba(212, 168, 69, 0.15);
 
-    --color-border: #333333;
-    --color-border-light: #2A2A2A;
+    --color-border: #2E2D2A;
+    --color-border-light: #252420;
 
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
