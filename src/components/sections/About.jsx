@@ -1,4 +1,3 @@
-
 // ============================================
 // ABOUT SECTION - MURAT DEMİRHAN PORTFOLYO
 // Sanatçı biyografisi bölümü
@@ -35,15 +34,12 @@ function SkeletonImage() {
 }
 
 export function About() {
-    const { t, language } = useLanguage();
+    const { t } = useLanguage();
     const { cv, isLoading } = usePublicData();
 
     // Sadece API'den gelen biyografi göster, fallback yok
-    const bioParagraphs = language === 'en' && cv?.biographyEn
-        ? cv.biographyEn.split('\n')
-        : (cv?.biography ? cv.biography.split('\n') : []);
-
-    const hasData = cv?.biography || cv?.biographyEn || (cv?.education?.length > 0) || (cv?.awards?.length > 0);
+    const bioParagraphs = cv?.bio ? [cv.bio] : [];
+    const hasData = cv?.bio || (cv?.education?.length > 0) || (cv?.awards?.length > 0);
 
     return (
         <section className="about" id="hakkinda">

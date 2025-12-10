@@ -1,4 +1,3 @@
-
 // ============================================
 // ORTAK VERİ KATMANI - MURAT DEMİRHAN PORTFOLYO
 // ============================================
@@ -23,7 +22,7 @@ import { useEffect, useMemo, useState } from 'react';
 // ============================================
 // 1. DATA SCHEMA & DEFAULTS
 // ============================================
-export const DEFAULT_DATA = {
+const DEFAULT_DATA = {
   // Tüm veriler Supabase API'den geliyor - hardcoded data YOK!
   artworks: [],
   exhibitions: [],
@@ -110,76 +109,78 @@ const LocalDataService = {
 };
 
 // API Implementation (Vercel Serverless + Supabase)
-// SINGLETON MEMORY CACHE
-let singletonCache = {
-  data: null,
-  timestamp: 0
-};
+// Module-level cache to prevent duplicate requests
+let apiDataCache = null;
 let apiFetchPromise = null;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 Minutes
+let cacheTimestamp = null;
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 dakika cache TTL (mobil için optimize)
 
-export const ApiDataService = {
+const ApiDataService = {
   // Invalidate cache - call after mutations
   invalidateCache: () => {
-    singletonCache.data = null;
-    singletonCache.timestamp = 0;
+    apiDataCache = null;
+    apiFetchPromise = null;
+    cacheTimestamp = null;
     console.log('[ApiDataService] Cache invalidated');
   },
 
   load: async () => {
-    // 1. Check if valid data exists in cache
+    // Check if cache is still valid (within TTL)
     const now = Date.now();
-    const isCacheValid = singletonCache.data && (now - singletonCache.timestamp < CACHE_DURATION);
+    const cacheExpired = cacheTimestamp && (now - cacheTimestamp > CACHE_TTL_MS);
 
-    if (isCacheValid) {
-      console.log('[ApiDataService] Returning singleton cached data (Instant)');
-      return singletonCache.data;
+    if (cacheExpired) {
+      console.log('[ApiDataService] Cache expired, fetching fresh data...');
+      apiDataCache = null;
+      apiFetchPromise = null;
     }
 
-    // 2. Prevent duplicate requests (fetch deduction)
+    // Return cached data if available and not expired
+    if (apiDataCache) {
+      console.log('[ApiDataService] Returning cached data');
+      return apiDataCache;
+    }
+
+    // If fetch in progress, wait for existing promise (prevents duplicate requests)
     if (apiFetchPromise) {
-      console.log('[ApiDataService] Fetch in progress, sharing promise...');
+      console.log('[ApiDataService] Fetch in progress, waiting for existing promise...');
       return apiFetchPromise;
     }
 
-    // 3. Fetch from API (Parallel)
+    // Start new fetch and store promise
     apiFetchPromise = (async () => {
       try {
-        console.log('[ApiDataService] Fetching fresh data from Supabase...');
+        console.log('[ApiDataService] Fetching all data from API...');
 
-        // Fetch all independently & simultaneously
+        // Fetch all entities in parallel
         const [resArt, resExh, resSettings] = await Promise.all([
           fetch('/api/artworks'),
           fetch('/api/exhibitions'),
           fetch('/api/settings')
         ]);
 
-        // Parse JSON
+        // Parse responses
         const [rawArtworks, rawExhibitions, settings] = await Promise.all([
           resArt.ok ? resArt.json() : [],
           resExh.ok ? resExh.json() : [],
           resSettings.ok ? resSettings.json() : {}
         ]);
 
-        // 4. Data Normalization & Image Optimization
+        // NORMALIZE: Supabase column names to frontend names
         const artworks = Array.isArray(rawArtworks)
-          ? rawArtworks.map(a => {
-            // Optimize image URL for lists (mobile perf)
-            let imgUrl = a.image_url || a.image || a.imageUrl;
-            if (imgUrl && !imgUrl.includes('?')) {
-              imgUrl += '?width=600'; // Resize on the fly via Supabase/Vercel
-            }
-
-            return {
-              ...a,
-              image: imgUrl,
-            };
-          })
+          ? rawArtworks.map(a => ({
+            ...a,
+            image: a.image_url || a.image || a.imageUrl,
+          }))
           : [];
 
         const exhibitions = Array.isArray(rawExhibitions) ? rawExhibitions : [];
         const cv = settings.cv || DEFAULT_DATA.cv;
         const contactInfo = settings.contact || DEFAULT_DATA.contactInfo;
+
+        console.log('[ApiDataService] Loaded:', artworks.length, 'artworks,', exhibitions.length, 'exhibitions');
+        console.log('[ApiDataService] Raw exhibitions response:', rawExhibitions);
+        console.log('[ApiDataService] Parsed exhibitions:', exhibitions);
 
         const result = {
           artworks,
@@ -189,9 +190,9 @@ export const ApiDataService = {
           featuredArtworkId: settings.featuredArtworkId || null,
         };
 
-        // Update Cache
-        singletonCache.data = result;
-        singletonCache.timestamp = Date.now();
+        // Store in cache with timestamp
+        apiDataCache = result;
+        cacheTimestamp = Date.now();
         apiFetchPromise = null;
 
         return result;
@@ -588,7 +589,7 @@ export function useSiteData() {
 // Public Hook - Sadece okur (API'den async olarak)
 export function usePublicData() {
   // Check if we have cached data immediately
-  const cachedData = singletonCache.data;
+  const cachedData = apiDataCache;
 
   // USE_API true ise: cache varsa kullan, yoksa DEFAULT_DATA
   const [data, setData] = useState(() => {

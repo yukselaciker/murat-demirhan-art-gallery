@@ -1,12 +1,10 @@
-
 // ============================================
 // EXHIBITIONS SECTION - MURAT DEMİRHAN PORTFOLYO
 // Sergiler timeline bölümü
 // ============================================
 
 import { useLanguage } from '../../context/LanguageContext';
-import { usePublicData } from '../../data/siteData'; // OLD HOOK
-// import { usePublicDataQuery } from '../../data/useSiteQuery'; // NEW REACT QUERY HOOK
+import { usePublicData } from '../../data/siteData';
 import './Exhibitions.css';
 
 // Safe type formatter
@@ -18,8 +16,6 @@ const formatType = (typeString) => {
 
 export function Exhibitions() {
     const { t } = useLanguage();
-
-    // React Query Entegrasyonu
     const publicData = usePublicData();
     const exhibitions = publicData?.exhibitions || [];
     const isLoading = publicData?.isLoading ?? true;
@@ -74,14 +70,14 @@ export function Exhibitions() {
                     {exhibitions.map((item, index) => {
                         if (!item) return null;
 
-                        const id = item.id || `ex - ${index} `;
+                        const id = item.id || `ex-${index}`;
                         const title = item.title || 'İsimsiz Sergi';
                         const year = item.year || '';
                         const venue = item.venue || '';
                         const city = item.city || '';
                         const description = item.description || '';
                         const type = formatType(item.type);
-                        const location = venue && city ? `${venue}, ${city} ` : (venue || city || '');
+                        const location = venue && city ? `${venue}, ${city}` : (venue || city || '');
 
                         return (
                             <div key={id} className="timeline__item">
