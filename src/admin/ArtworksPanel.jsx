@@ -47,14 +47,28 @@ export default function ArtworksPanel() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!form.title || !form.year || !form.technique || !form.size || !form.category) {
-      setMessage('Lütfen zorunlu alanları doldurun.');
+    const title = form.title?.trim();
+    const rawYear = form.year?.toString().trim();
+    const parsedYear = rawYear ? Number(rawYear) : null;
+
+    if (!title) {
+      setMessage('Eser adı gereklidir.');
+      return;
+    }
+
+    if (rawYear && Number.isNaN(parsedYear)) {
+      setMessage('Yıl sadece rakam olmalıdır.');
       return;
     }
 
     const payload = {
       ...form,
-      year: form.year,
+      title,
+      year: parsedYear,
+      technique: form.technique?.trim() || null,
+      size: form.size?.trim() || null,
+      category: form.category?.trim() || '',
+      image: form.image?.trim() || '',
       tags: form.tags ? form.tags.split(',').map((t) => t.trim()).filter(Boolean) : [],
     };
 
@@ -72,7 +86,12 @@ export default function ArtworksPanel() {
 
   const handleEdit = (art) => {
     setForm({
-      ...art,
+      title: art.title || '',
+      year: art.year ? String(art.year) : '',
+      technique: art.technique || '',
+      size: art.size || '',
+      category: art.category || '',
+      image: art.image || art.image_url || art.imageUrl || '',
       tags: art.tags?.join(', ') || '',
     });
     setEditingId(art.id);
@@ -122,16 +141,20 @@ export default function ArtworksPanel() {
           <input name="title" value={form.title} onChange={handleChange} required />
         </label>
         <label>
-          Yıl *
-          <input name="year" value={form.year} onChange={handleChange} required />
+          Yıl (opsiyonel)
+          <input name="year" value={form.year} onChange={handleChange} />
         </label>
         <label>
-          Teknik *
-          <input name="technique" value={form.technique} onChange={handleChange} required />
+          Teknik (opsiyonel)
+          <input name="technique" value={form.technique} onChange={handleChange} />
         </label>
         <label>
-          Ölçü *
-          <input name="size" value={form.size} onChange={handleChange} required />
+          Ölçü (opsiyonel)
+          <input name="size" value={form.size} onChange={handleChange} />
+        </label>
+        <label>
+          Kategori (opsiyonel)
+          <input name="category" value={form.category} onChange={handleChange} />
         </label>
         <label>
           Kategori *
@@ -141,7 +164,7 @@ export default function ArtworksPanel() {
         <ImageUploader
           value={form.image}
           onChange={(dataUrl) => setForm(prev => ({ ...prev, image: dataUrl }))}
-          label="Eser Görseli *"
+          label="Eser Görseli (opsiyonel)"
         />
 
         <div className="form-actions">
