@@ -53,6 +53,7 @@ export function LightboxModal({
     const description = language === 'en' && artwork.descriptionEn ? artwork.descriptionEn : artwork.description;
 
     const getStatusLabel = (status) => {
+        if (!status) return null;
         const statusKey = `gallery.status.${status}`;
         return t(statusKey);
     };
@@ -140,9 +141,9 @@ export function LightboxModal({
                         </div>
                     </div>
 
-                    <p className="lightbox__description">{description}</p>
+                    {description && <p className="lightbox__description">{description}</p>}
 
-                    <p className="lightbox__status">{getStatusLabel(artwork.status)}</p>
+                    {artwork.status && <p className="lightbox__status">{getStatusLabel(artwork.status)}</p>}
                 </div>
             </div>
         </div>

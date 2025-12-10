@@ -388,11 +388,33 @@ export function useSiteData() {
           }));
         }
       },
-      updateArtwork: (id, payload) =>
-        setData((prev) => ({
-          ...prev,
-          artworks: prev.artworks.map((a) => (a.id === id ? { ...a, ...payload } : a)),
-        })),
+      updateArtwork: async (id, payload) => {
+        if (USE_API) {
+          try {
+            // PUT /api/artworks?id=...
+            const res = await fetch(`/api/artworks?id=${id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            if (!res.ok) throw new Error('Update failed');
+
+            // Refresh data from server
+            const freshData = await ApiDataService.load();
+            setData(freshData);
+            return true;
+          } catch (e) {
+            console.error('Update artwork failed', e);
+            alert('Eser güncellenirken hata oluştu');
+            return false;
+          }
+        } else {
+          setData((prev) => ({
+            ...prev,
+            artworks: prev.artworks.map((a) => (a.id === id ? { ...a, ...payload } : a)),
+          }));
+        }
+      },
 
       deleteArtwork: async (id) => {
         if (USE_API) {
