@@ -58,10 +58,17 @@ export default async function handler(req, res) {
     }
 
     // Send email via Resend
+    const fromEmail = process.env.CONTACT_FROM_EMAIL || 'Portfolyo İletişim <onboarding@resend.dev>';
+    const toEmail = process.env.CONTACT_EMAIL || 'info@muratdemirhan.com';
+    const emailSubject = subject
+      ? `[MuratDemirhan.com] ${subject}`
+      : '[MuratDemirhan.com] Yeni İletişim Formu Mesajı';
+
     const data = await resend.emails.send({
-      from: 'Portfolyo İletişim <onboarding@resend.dev>', // Resend verified domain
-      to: [process.env.CONTACT_EMAIL || 'info@muratdemirhan.com'],
-      subject: subject || 'Yeni İletişim Formu Mesajı',
+      from: fromEmail,
+      to: [toEmail],
+      subject: emailSubject,
+      reply_to: email, // Yanıtla deyince doğrudan gönderen kişiye gider
       html: `
         <!DOCTYPE html>
         <html>
