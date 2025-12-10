@@ -33,29 +33,57 @@ module.exports = async function handler(req, res) {
 
         // POST - Yeni eser ekle
         if (req.method === "POST") {
-            const { title, year, technique, size, category, description, status } = req.body;
+            console.log("POST /api/artworks - received body keys:", Object.keys(req.body || {}));
+
+            // Check if body exists
+            if (!req.body) {
+                console.error("POST /api/artworks - no body received");
+                return res.status(400).json({ error: "Request body is empty" });
+            }
+
+            const { title, year, technique, size, category, description, status, tags } = req.body;
 
             // Handle all image field variations
             const imageUrl = req.body.image_url || req.body.imageUrl || req.body.image;
 
+            // Validate required fields
+            if (!title || !title.trim()) {
+                return res.status(400).json({ error: "Title is required" });
+            }
+
+            // Check image size (base64 data URLs can be very large)
+            if (imageUrl && imageUrl.length > 5 * 1024 * 1024) {
+                console.error("POST /api/artworks - image too large:", imageUrl.length, "bytes");
+                return res.status(400).json({ error: "Image is too large. Please use a smaller image (max 5MB)." });
+            }
+
             const insertData = {
-                title,
+                title: title.trim(),
                 year: year ? parseInt(year) : null,
-                technique,
-                size,
-                image_url: imageUrl,
-                category,
+                technique: technique || null,
+                size: size || null,
+                image_url: imageUrl || null,
+                category: category || 'figuratif',
                 description: description || null,
                 status: status || 'available'
             };
 
-            console.log("POST /api/artworks - inserting:", insertData);
+            console.log("POST /api/artworks - inserting:", {
+                ...insertData,
+                image_url: insertData.image_url ? `[${insertData.image_url.length} chars]` : null
+            });
 
             const { data, error } = await supabase.from("artworks").insert([insertData]).select();
 
             if (error) {
                 console.error("POST /api/artworks error:", error);
-                return res.status(500).json({ error: error.message });
+                console.error("POST /api/artworks error details:", JSON.stringify(error, null, 2));
+                return res.status(500).json({
+                    error: error.message,
+                    details: error.details || null,
+                    hint: error.hint || null,
+                    code: error.code || null
+                });
             }
 
             console.log("POST /api/artworks - success:", data);
