@@ -63,7 +63,6 @@ module.exports = async function handler(req, res) {
                 technique: technique || null,
                 size: size || null,
                 image_url: imageUrl || null,
-                category: category || 'figuratif',
                 description: description || null,
                 status: status || 'available'
             };
@@ -106,7 +105,6 @@ module.exports = async function handler(req, res) {
                 technique,
                 size,
                 image_url: imageUrl,
-                category,
                 description: description || null,
                 status: status || 'available'
             };
