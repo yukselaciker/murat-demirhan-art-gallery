@@ -39,7 +39,7 @@ export function Gallery() {
 
             return matchesCategory && matchesSearch;
         });
-    }, [activeFilter, searchTerm, language]);
+    }, [activeFilter, searchTerm, language, artworks]);
 
     // Scroll animasyonu
     useEffect(() => {
