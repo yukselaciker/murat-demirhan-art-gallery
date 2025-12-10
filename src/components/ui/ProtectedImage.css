@@ -8,12 +8,23 @@
     width: 100%;
     height: 100%;
     overflow: hidden;
+
     /* Seçim ve sürükleme engelle */
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
     -webkit-user-drag: none;
+    user-drag: none;
+
+    /* Mobil long-press engelle (iOS) */
+    -webkit-touch-callout: none;
+
+    /* Mobil long-press engelle (Android/iOS) */
+    touch-action: manipulation;
+
+    /* Metin seçimini tamamen engelle */
+    -webkit-tap-highlight-color: transparent;
 }
 
 .protected-image__canvas {
@@ -21,6 +32,12 @@
     height: 100%;
     object-fit: cover;
     display: block;
+
+    /* Canvas için ek koruma */
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    pointer-events: none;
+    /* Shield üzerinden etkileşim */
 }
 
 .protected-image__canvas.hidden {
@@ -70,11 +87,28 @@
     background: transparent;
     z-index: 10;
     pointer-events: auto;
-    /* HER ZAMAN aktif - koruma sürekli */
     cursor: pointer;
+
+    /* Mobil long-press koruması */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
 }
 
 /* Tıklama görsel geri bildirimi */
 .protected-image__shield:active {
     background: rgba(0, 0, 0, 0.02);
+}
+
+/* Galeri kartları için özel koruma */
+.artwork-card .protected-image {
+    /* Kartlarda tam koruma */
+    -webkit-touch-callout: none !important;
+}
+
+/* Lightbox'ta görsel koruma */
+.lightbox__image .protected-image {
+    -webkit-touch-callout: none !important;
+    touch-action: pinch-zoom;
+    /* Sadece zoom izin ver */
 }

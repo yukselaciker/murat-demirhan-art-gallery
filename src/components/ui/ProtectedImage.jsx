@@ -4,7 +4,7 @@
 // Görseller doğrudan <img> yerine canvas ile gösterilir
 // ============================================
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { drawWatermarkedImage } from '../../utils/watermark';
 import './ProtectedImage.css';
 
@@ -17,6 +17,7 @@ export function ProtectedImage({
     loading = 'lazy'
 }) {
     const canvasRef = useRef(null);
+    const containerRef = useRef(null);
     const [isLoading, setIsLoading] = useState(true);
     const [hasError, setHasError] = useState(false);
 
@@ -64,24 +65,67 @@ export function ProtectedImage({
         }
     }, [src, artworkTitle, loading]);
 
+    // ============================================
+    // SECURITY HANDLERS
+    // ============================================
+
     // Sağ tık engelle
-    const handleContextMenu = (e) => {
+    const handleContextMenu = useCallback((e) => {
         e.preventDefault();
+        e.stopPropagation();
         return false;
-    };
+    }, []);
 
     // Sürükleme engelle
-    const handleDragStart = (e) => {
+    const handleDragStart = useCallback((e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    }, []);
+
+    // Seçim engelle
+    const handleSelectStart = useCallback((e) => {
         e.preventDefault();
         return false;
-    };
+    }, []);
+
+    // Mobil long-press engelle
+    const handleTouchStart = useCallback((e) => {
+        // Long-press menüsünü engelle
+        if (e.touches.length === 1) {
+            e.target.style.webkitTouchCallout = 'none';
+        }
+    }, []);
+
+    const handleTouchEnd = useCallback((e) => {
+        // Normal tıklama davranışını koru
+        if (onClick && e.changedTouches.length === 1) {
+            const touch = e.changedTouches[0];
+            const element = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (containerRef.current?.contains(element)) {
+                onClick(e);
+            }
+        }
+    }, [onClick]);
+
+    // Kopyalama engelle
+    const handleCopy = useCallback((e) => {
+        e.preventDefault();
+        return false;
+    }, []);
 
     return (
         <div
+            ref={containerRef}
             className={`protected-image ${className}`}
             onClick={onClick}
             onContextMenu={handleContextMenu}
             onDragStart={handleDragStart}
+            onSelectStart={handleSelectStart}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            onCopy={handleCopy}
+            draggable={false}
         >
             {/* Loading skeleton */}
             {isLoading && (
@@ -94,23 +138,35 @@ export function ProtectedImage({
                 className={`protected-image__canvas ${isLoading ? 'hidden' : ''}`}
                 aria-label={alt}
                 role="img"
+                onContextMenu={handleContextMenu}
+                onDragStart={handleDragStart}
+                draggable={false}
             />
 
-            {/* Hata durumu - Fallback olarak normal resim göster (Güvenlikten ödün verilir ama görünürlük sağlanır) */}
+            {/* Hata durumu - Fallback olarak normal resim göster */}
             {hasError && !isLoading && (
                 <img
                     src={src}
                     alt={alt}
                     className="protected-image__canvas"
                     style={{ objectFit: 'cover' }}
-                    onContextMenu={(e) => e.preventDefault()}
+                    onContextMenu={handleContextMenu}
+                    onDragStart={handleDragStart}
+                    draggable={false}
                 />
             )}
 
-            {/* Görünmez koruma katmanı */}
-            <div className="protected-image__shield" aria-hidden="true" />
+            {/* Görünmez koruma katmanı - tüm etkileşimleri yakalar */}
+            <div
+                className="protected-image__shield"
+                aria-hidden="true"
+                onContextMenu={handleContextMenu}
+                onDragStart={handleDragStart}
+                onTouchStart={handleTouchStart}
+            />
         </div>
     );
 }
 
 export default ProtectedImage;
+
