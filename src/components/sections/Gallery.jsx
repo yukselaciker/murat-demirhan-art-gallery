@@ -70,6 +70,7 @@ export function Gallery() {
     ];
 
     const getStatusLabel = (status) => {
+        if (!status) return ''; // Status yoksa boş döndür
         const statusKey = `gallery.status.${status}`;
         return t(statusKey);
     };
