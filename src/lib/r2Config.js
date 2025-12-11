@@ -96,7 +96,7 @@ export const uploadToR2 = async (file, folder = "artworks") => {
         // Return the public URL
         const fullUrl = `${import.meta.env.VITE_R2_PUBLIC_URL}/${fileName}`;
         console.log('[R2] Public URL:', fullUrl);
-        return fullUrl;
+        return { key: fileName, publicUrl: fullUrl };
 
     } catch (error) {
         console.error("[R2] ❌ Upload error:", error);

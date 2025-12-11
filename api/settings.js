@@ -40,8 +40,8 @@ export default async function handler(req, res) {
                     result[row.key] = row.value;
                 });
 
-                // Vercel Edge Caching - 1 saat cache, 5 dk stale-while-revalidate
-                res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=300');
+                // Vercel Edge Caching - Cache REMOVED for real-time admin updates
+                res.setHeader('Cache-Control', 'no-store, max-age=0');
 
                 return res.status(200).json(result);
             }

@@ -181,9 +181,11 @@ const ApiDataService = {
       let rawExhibitions = [];
       let settings = {};
 
+      const timestamp = Date.now();
+
       // Fetch artworks
       try {
-        const res = await fetch('/api/artworks');
+        const res = await fetch(`/api/artworks?_t=${timestamp}`);
         if (res.ok) {
           rawArtworks = await res.json();
           console.log('[ApiDataService] Artworks loaded:', rawArtworks.length);
@@ -196,7 +198,7 @@ const ApiDataService = {
 
       // Fetch exhibitions
       try {
-        const res = await fetch('/api/exhibitions');
+        const res = await fetch(`/api/exhibitions?_t=${timestamp}`);
         if (res.ok) {
           rawExhibitions = await res.json();
           console.log('[ApiDataService] Exhibitions loaded:', rawExhibitions.length);
@@ -209,7 +211,7 @@ const ApiDataService = {
 
       // Fetch settings (most likely to fail - isolated so it doesn't break others)
       try {
-        const res = await fetch('/api/settings');
+        const res = await fetch(`/api/settings?_t=${timestamp}`);
         if (res.ok) {
           settings = await res.json();
           console.log('[ApiDataService] Settings loaded:', Object.keys(settings));
