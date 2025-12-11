@@ -19,45 +19,21 @@ export default async function handler(req, res) {
     }
 
     try {
-        // GET - Fetch artworks (OPTIMIZED with View)
+        // GET - Fetch artworks (OPTIMIZED)
         if (req.method === "GET") {
             // Check if full data is requested (for admin panel CRUD)
             const isFullRequest = req.query.full === 'true';
 
-            let data, error;
+            // Select only needed columns for public requests (reduces payload)
+            const columns = isFullRequest
+                ? '*'  // Admin needs everything
+                : 'id, title, image_url, year, technique, size, category, created_at';
 
-            if (isFullRequest) {
-                // Admin panel needs full data from artworks table for editing
-                const result = await supabase
-                    .from("artworks")
-                    .select("*")
-                    .order("created_at", { ascending: false });
-                data = result.data;
-                error = result.error;
-            } else {
-                // Public requests use the VIEW (bypasses RLS, 30-60x faster!)
-                // NOTE: You must create the view first. See supabase_performance_guide.md
-                // If view doesn't exist, fallback to table query
-                const result = await supabase
-                    .from("public_artworks")  // Uses the view, not the table!
-                    .select("*")  // View already has only needed columns
-                    .limit(50);
-
-                if (result.error && result.error.code === 'PGRST200') {
-                    // View doesn't exist yet, fallback to table
-                    console.log("[artworks] View not found, falling back to table query");
-                    const fallback = await supabase
-                        .from("artworks")
-                        .select("id, title, image_url, year, technique, size, category, created_at")
-                        .order("created_at", { ascending: false })
-                        .limit(50);
-                    data = fallback.data;
-                    error = fallback.error;
-                } else {
-                    data = result.data;
-                    error = result.error;
-                }
-            }
+            const { data, error } = await supabase
+                .from("artworks")  // Query the actual table
+                .select(columns)
+                .order("created_at", { ascending: false })
+                .limit(isFullRequest ? 1000 : 50);
 
             if (error) {
                 console.error("GET /api/artworks error:", error);
