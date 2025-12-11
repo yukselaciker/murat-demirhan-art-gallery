@@ -137,6 +137,7 @@ h6 {
   min-height: 100vh;
   background: var(--gray-50);
   color: var(--gray-600);
+  position: relative;
 }
 
 .admin-sidebar {
@@ -164,6 +165,25 @@ h6 {
     position: sticky;
     height: auto;
     max-height: none;
+    border-right: none;
+    border-bottom: 1px solid var(--gray-200);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-sidebar {
+    position: fixed;
+    inset: 0 0 auto 0;
+    max-width: none;
+    width: 100%;
+    height: auto;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(6px);
+  }
+
+  .admin-main {
+    padding-top: 6.5rem;
   }
 }
 
@@ -260,6 +280,7 @@ h6 {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-height: 44px;
 }
 
 .nav-btn:hover {

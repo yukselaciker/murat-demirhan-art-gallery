@@ -38,6 +38,7 @@ export default function AdminLayout({ tabs, activeTab, onSelectTab, onLogout, ch
             className="nav-toggle"
             onClick={() => setIsMobileNavOpen((prev) => !prev)}
             aria-label="Yan menüyü aç/kapat"
+            aria-expanded={isMobileNavOpen}
           >
             {isMobileNavOpen ? '✕' : '☰'}
           </button>
