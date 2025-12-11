@@ -150,6 +150,7 @@ export function ProtectedImage({
                     alt={alt}
                     className="protected-image__canvas"
                     style={{ objectFit: 'cover' }}
+                    referrerPolicy="no-referrer"
                     onContextMenu={handleContextMenu}
                     onDragStart={handleDragStart}
                     draggable={false}

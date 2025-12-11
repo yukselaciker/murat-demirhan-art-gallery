@@ -306,6 +306,8 @@ export default function ArtworksPanel() {
                   <img
                     src={url}
                     alt={art.title}
+                    referrerPolicy="no-referrer"
+                    crossOrigin="anonymous"
                     style={{
                       width: '100%',
                       height: '100%',
