@@ -1,13 +1,10 @@
 // ============================================
 // DATA CONTEXT - MURAT DEMİRHAN PORTFOLYO
-// Centralized data fetching - STARTS IMMEDIATELY
-// Uses module-level fetch to eliminate any delay
+// Uses prefetched data from index.html inline script
+// Data fetching starts BEFORE React bundle even downloads!
 // ============================================
 
 import { createContext, useContext, useState, useEffect } from 'react';
-
-// API Configuration
-const USE_API = import.meta.env.VITE_USE_API !== 'false';
 
 // Default data structure
 const DEFAULT_DATA = {
@@ -49,107 +46,74 @@ function getThumbnailUrl(imageUrl, width = 600, quality = 75) {
     return `${imageUrl}${separator}width=${width}&quality=${quality}`;
 }
 
-// ============================================
-// CRITICAL: START FETCHING IMMEDIATELY AT MODULE LOAD
-// This runs BEFORE React even mounts - no 4-second gap!
-// ============================================
-let dataPromise = null;
+/**
+ * Normalize raw API data to frontend format
+ */
+function normalizeData(rawData) {
+    const { artworks: rawArtworks, exhibitions: rawExhibitions, settings } = rawData;
 
-function startFetching() {
-    if (dataPromise) return dataPromise;
-
-    if (!USE_API) {
-        // Local mode - synchronous localStorage
-        try {
-            const raw = localStorage.getItem('md-site-data');
-            if (raw) {
-                return Promise.resolve(JSON.parse(raw));
-            }
-        } catch (e) {
-            console.error('[DataContext] LocalStorage error:', e);
-        }
-        return Promise.resolve(DEFAULT_DATA);
-    }
-
-    // API mode - fetch everything in PARALLEL IMMEDIATELY
-    console.log('[DataContext] Starting IMMEDIATE parallel fetch...');
-
-    dataPromise = (async () => {
-        try {
-            // ============================================
-            // CRITICAL: Promise.all fires all 3 requests AT ONCE
-            // ============================================
-            const [resArt, resExh, resSettings] = await Promise.all([
-                fetch('/api/artworks'),
-                fetch('/api/exhibitions'),
-                fetch('/api/settings')
-            ]);
-
-            // Parse all responses in parallel
-            const [rawArtworks, rawExhibitions, settings] = await Promise.all([
-                resArt.ok ? resArt.json() : [],
-                resExh.ok ? resExh.json() : [],
-                resSettings.ok ? resSettings.json() : {}
-            ]);
-
-            console.log('[DataContext] All 3 fetches completed SIMULTANEOUSLY');
-
-            // Normalize artworks with thumbnails
-            const artworks = Array.isArray(rawArtworks)
-                ? rawArtworks.map(a => {
-                    const fullImage = a.image_url || a.image || a.imageUrl;
-                    return {
-                        ...a,
-                        image: fullImage,
-                        thumbnail: getThumbnailUrl(fullImage, 600, 75),
-                    };
-                })
-                : [];
-
-            const exhibitions = Array.isArray(rawExhibitions) ? rawExhibitions : [];
-            const cv = settings.cv || DEFAULT_DATA.cv;
-            const contactInfo = settings.contact || DEFAULT_DATA.contactInfo;
-
-            console.log('[DataContext] Loaded:', artworks.length, 'artworks,', exhibitions.length, 'exhibitions');
-
+    // Normalize artworks with thumbnails
+    const artworks = Array.isArray(rawArtworks)
+        ? rawArtworks.map(a => {
+            const fullImage = a.image_url || a.image || a.imageUrl;
             return {
-                artworks,
-                exhibitions,
-                cv,
-                contactInfo,
-                featuredArtworkId: settings.featuredArtworkId || null,
+                ...a,
+                image: fullImage,
+                thumbnail: getThumbnailUrl(fullImage, 600, 75),
             };
-        } catch (e) {
-            console.error('[DataContext] Fetch error:', e);
-            return DEFAULT_DATA;
-        }
-    })();
+        })
+        : [];
 
-    return dataPromise;
+    const exhibitions = Array.isArray(rawExhibitions) ? rawExhibitions : [];
+    const cv = settings?.cv || DEFAULT_DATA.cv;
+    const contactInfo = settings?.contact || DEFAULT_DATA.contactInfo;
+
+    return {
+        artworks,
+        exhibitions,
+        cv,
+        contactInfo,
+        featuredArtworkId: settings?.featuredArtworkId || null,
+    };
 }
-
-// START FETCHING IMMEDIATELY WHEN THIS MODULE LOADS
-// This happens BEFORE React even starts rendering!
-startFetching();
 
 // Create context
 const DataContext = createContext(null);
 
-// Provider component - just waits for the already-started promise
+// Provider component - uses prefetched data from index.html
 export function DataProvider({ children }) {
     const [data, setData] = useState(DEFAULT_DATA);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // The fetch already started at module load - we just await it
-        startFetching()
-            .then(result => {
-                setData(result);
+        const loadData = async () => {
+            try {
+                // Check if data was prefetched in index.html
+                if (window.__PREFETCH_DATA__) {
+                    console.log('[DataContext] Using prefetched data from HTML!');
+                    const rawData = await window.__PREFETCH_DATA__;
+                    const normalized = normalizeData(rawData);
+                    console.log('[DataContext] Loaded:', normalized.artworks.length, 'artworks');
+                    setData(normalized);
+                } else {
+                    // Fallback: fetch directly if prefetch failed
+                    console.log('[DataContext] Prefetch not found, fetching directly...');
+                    const [rawArtworks, rawExhibitions, settings] = await Promise.all([
+                        fetch('/api/artworks').then(r => r.ok ? r.json() : []).catch(() => []),
+                        fetch('/api/exhibitions').then(r => r.ok ? r.json() : []).catch(() => []),
+                        fetch('/api/settings').then(r => r.ok ? r.json() : {}).catch(() => ({}))
+                    ]);
+                    const normalized = normalizeData({ artworks: rawArtworks, exhibitions: rawExhibitions, settings });
+                    setData(normalized);
+                }
+            } catch (e) {
+                console.error('[DataContext] Error loading data:', e);
+            } finally {
                 setIsLoading(false);
-            })
-            .catch(() => {
-                setIsLoading(false);
-            });
+            }
+        };
+
+        loadData();
     }, []);
 
     const value = {

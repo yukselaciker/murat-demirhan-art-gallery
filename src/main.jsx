@@ -1,25 +1,41 @@
 // ============================================
 // MAIN.JSX - MURAT DEMİRHAN PORTFOLYO
 // React uygulaması giriş noktası
+// OPTIMIZED: Lazy load admin, immediate data fetch
 // ============================================
 
-import { StrictMode } from 'react';
+import { StrictMode, lazy, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 
 // CRITICAL: Import DataContext FIRST to start fetching IMMEDIATELY
-// This import triggers the module-level startFetching() call
+// This runs before anything else and starts the Promise.all for APIs
 import './context/DataContext';
 
-// Then load the app components
-import App from './App.jsx';
-import AdminApp from './admin/AdminApp.jsx';
-
-// Admin paneli güvenli bir route'ta render et
-// Güvenlik için tahmin edilemez bir path kullanılıyor
+// Check if admin path BEFORE importing anything else
 const isAdmin = window.location.pathname.startsWith('/studio-md-2024');
+
+// Only load what we need - lazy load admin to avoid loading siteData.js on public site
+const App = lazy(() => import('./App.jsx'));
+const AdminApp = isAdmin ? lazy(() => import('./admin/AdminApp.jsx')) : null;
+
+// Simple loading fallback
+const LoadingFallback = () => (
+  <div style={{
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100vh',
+    fontFamily: 'system-ui, sans-serif',
+    color: '#666'
+  }}>
+    Yükleniyor...
+  </div>
+);
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    {isAdmin ? <AdminApp /> : <App />}
+    <Suspense fallback={<LoadingFallback />}>
+      {isAdmin && AdminApp ? <AdminApp /> : <App />}
+    </Suspense>
   </StrictMode>
 );

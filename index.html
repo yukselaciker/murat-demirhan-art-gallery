@@ -23,21 +23,30 @@
   <link rel="icon" type="image/svg+xml"
     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
 
-  <!-- API Preload Hints - Start fetching before JS runs (saves 200-500ms) -->
+  <!-- API Preload Hints -->
   <link rel="preconnect" href="https://api.supabase.co" crossorigin>
   <link rel="dns-prefetch" href="https://api.supabase.co">
-
-  <!-- Preload API endpoints -->
-  <link rel="preload" href="/api/artworks" as="fetch" crossorigin>
-  <link rel="preload" href="/api/exhibitions" as="fetch" crossorigin>
-  <link rel="preload" href="/api/settings" as="fetch" crossorigin>
 
   <!-- Google Fonts Preconnect -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-  <!-- Prevent dark mode flash - runs before React loads -->
-  <!-- script removed (Dark mode disabled) -->
+  <!-- ============================================
+       CRITICAL: Start fetching data IMMEDIATELY
+       This runs BEFORE the React bundle downloads!
+       ============================================ -->
+  <script>
+    // Start ALL API fetches immediately when HTML parses
+    // This data will be ready by the time React mounts
+    window.__PREFETCH_DATA__ = Promise.all([
+      fetch('/api/artworks').then(r => r.ok ? r.json() : []).catch(() => []),
+      fetch('/api/exhibitions').then(r => r.ok ? r.json() : []).catch(() => []),
+      fetch('/api/settings').then(r => r.ok ? r.json() : {}).catch(() => ({}))
+    ]).then(([artworks, exhibitions, settings]) => {
+      console.log('[Prefetch] All data loaded BEFORE React!');
+      return { artworks, exhibitions, settings };
+    });
+  </script>
 </head>
 
 <body>
