@@ -277,12 +277,29 @@ export default function ArtworksPanel() {
             {/* Card Image */}
             <div className="card-image">
               {getImageUrl(art) ? (
-                <img src={getImageUrl(art)} alt={art.title} loading="lazy" />
+                <img
+                  src={getImageUrl(art)}
+                  alt={art.title}
+                  loading="lazy"
+                  onError={(e) => { e.currentTarget.style.border = '5px solid red'; }}
+                />
               ) : (
                 <div className="no-image">🖼️</div>
               )}
               {data.featuredArtworkId === art.id && (
                 <span className="featured-badge">⭐ Öne Çıkan</span>
+              )}
+            </div>
+
+            {/* DEBUG INFO */}
+            <div style={{ padding: '5px', background: '#fee2e2', borderBottom: '1px solid #ccc' }}>
+              <p style={{ fontSize: '10px', color: 'red', wordBreak: 'break-all', margin: 0 }}>
+                SRC: {getImageUrl(art)}
+              </p>
+              {(getImageUrl(art)?.toLowerCase().endsWith('.heic') || getImageUrl(art)?.toLowerCase().endsWith('.heif')) && (
+                <span style={{ color: 'red', fontWeight: 'bold', fontSize: '12px', display: 'block', marginTop: '4px' }}>
+                  WARNING: HEIC FORMAT DETECTED (Not supported on mobile web)
+                </span>
               )}
             </div>
 
