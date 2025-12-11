@@ -72,46 +72,48 @@ export default function SettingsPanel() {
                 {/* Contact Info Card */}
                 <div className="form-card">
                     <h3>İletişim Bilgileri</h3>
-                    <div className="form-grid-modern">
-                        <div className="form-group">
-                            <label>E-posta Adresi</label>
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="info@muratdemirhan.com"
-                            />
-                            <div style={{ fontSize: '0.8rem', color: 'var(--slate-500)' }}>İletişim sayfasında görünür.</div>
+                    <div className="stacked-form">
+                        <div className="form-grid-modern">
+                            <div className="form-group">
+                                <label>E-posta Adresi</label>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="info@muratdemirhan.com"
+                                />
+                                <div style={{ fontSize: '0.8rem', color: 'var(--slate-500)' }}>İletişim sayfasında görünür.</div>
+                            </div>
+
+                            <div className="form-group">
+                                <label>Konum / Şehir</label>
+                                <input
+                                    type="text"
+                                    value={location}
+                                    onChange={(e) => setLocation(e.target.value)}
+                                    placeholder="İstanbul, Türkiye"
+                                />
+                                <div style={{ fontSize: '0.8rem', color: 'var(--slate-500)' }}>İletişim sayfasında görünür.</div>
+                            </div>
+
+                            <div className="form-group full-width">
+                                <label>Telefon (Opsiyonel)</label>
+                                <input
+                                    type="tel"
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                    placeholder="+90 5XX XXX XX XX"
+                                    style={{ maxWidth: '50%' }}
+                                />
+                                <div style={{ fontSize: '0.8rem', color: 'var(--slate-500)' }}>Boş bırakılırsa sitede görünmez.</div>
+                            </div>
                         </div>
 
-                        <div className="form-group">
-                            <label>Konum / Şehir</label>
-                            <input
-                                type="text"
-                                value={location}
-                                onChange={(e) => setLocation(e.target.value)}
-                                placeholder="İstanbul, Türkiye"
-                            />
-                            <div style={{ fontSize: '0.8rem', color: 'var(--slate-500)' }}>İletişim sayfasında görünür.</div>
+                        <div className="form-buttons">
+                            <button className="btn-primary btn-full" onClick={handleSave} disabled={isSaving} style={{ padding: '1rem' }}>
+                                {isSaving ? 'Kaydediliyor...' : 'Bilgileri Güncelle'}
+                            </button>
                         </div>
-
-                        <div className="form-group full-width">
-                            <label>Telefon (Opsiyonel)</label>
-                            <input
-                                type="tel"
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
-                                placeholder="+90 5XX XXX XX XX"
-                                style={{ maxWidth: '50%' }}
-                            />
-                            <div style={{ fontSize: '0.8rem', color: 'var(--slate-500)' }}>Boş bırakılırsa sitede görünmez.</div>
-                        </div>
-                    </div>
-
-                    <div className="form-buttons">
-                        <button className="btn-primary" onClick={handleSave} disabled={isSaving} style={{ width: '100%', padding: '1rem' }}>
-                            {isSaving ? 'Kaydediliyor...' : 'Bilgileri Güncelle'}
-                        </button>
                     </div>
                 </div>
 

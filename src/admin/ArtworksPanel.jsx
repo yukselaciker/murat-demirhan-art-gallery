@@ -158,8 +158,9 @@ export default function ArtworksPanel() {
     <div className="artworks-panel">
       {/* Header with Toggle */}
       <div className="panel-header-modern">
-        <div>
-          <h2>🎨 Eserler</h2>
+        <div className="panel-heading">
+          <p className="eyebrow">Galeri Yönetimi</p>
+          <h2>Eserler</h2>
           <p className="subtitle">{sorted.length} eser kayıtlı</p>
         </div>
         <button
@@ -180,9 +181,13 @@ export default function ArtworksPanel() {
       {/* Collapsible Form */}
       <div className={`form-container ${isFormOpen ? 'open' : ''}`}>
         <div className="form-card">
-          <h3>{editingId ? '✏️ Eseri Düzenle' : '➕ Yeni Eser Ekle'}</h3>
+          <div className="form-header">
+            <p className="eyebrow">Form</p>
+            <h3>{editingId ? 'Eseri Düzenle' : 'Yeni Eser Ekle'}</h3>
+            <p className="subtitle">Tüm alanları eksiksiz doldurun ve kaydedin.</p>
+          </div>
 
-          <form onSubmit={handleSubmit}>
+          <form className="stacked-form" onSubmit={handleSubmit}>
             <div className="form-grid-modern">
               <div className="form-group">
                 <label>Eser Adı *</label>
@@ -298,19 +303,24 @@ export default function ArtworksPanel() {
 
             {/* Card Actions */}
             <div className="card-actions">
-              <button className="action-btn edit" onClick={() => handleEdit(art)} title="Düzenle">
-                ✏️
-              </button>
-              <button
-                className={`action-btn star ${data.featuredArtworkId === art.id ? 'active' : ''}`}
-                onClick={() => handleSetFeatured(art.id)}
-                title="Öne Çıkar"
-              >
-                ⭐
-              </button>
-              <button className="action-btn delete" onClick={() => handleDelete(art.id)} title="Sil">
-                🗑️
-              </button>
+              <div className="action-group">
+                <button className="action-btn edit" onClick={() => handleEdit(art)} title="Düzenle">
+                  ✏️
+                  <span className="action-label">Düzenle</span>
+                </button>
+                <button
+                  className={`action-btn star ${data.featuredArtworkId === art.id ? 'active' : ''}`}
+                  onClick={() => handleSetFeatured(art.id)}
+                  title="Öne Çıkar"
+                >
+                  ⭐
+                  <span className="action-label">Öne Çıkar</span>
+                </button>
+                <button className="action-btn delete" onClick={() => handleDelete(art.id)} title="Sil">
+                  🗑️
+                  <span className="action-label">Sil</span>
+                </button>
+              </div>
             </div>
           </div>
         ))}

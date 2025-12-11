@@ -130,7 +130,7 @@ export default function ExhibitionsPanel() {
       <div className={`form-container ${isFormOpen ? 'open' : ''}`}>
         <div className="form-card">
           <h3>{editingId ? '✏️ Sergiyi Düzenle' : '➕ Yeni Sergi Ekle'}</h3>
-          <form onSubmit={handleSubmit}>
+          <form className="stacked-form" onSubmit={handleSubmit}>
             <div className="form-grid-modern">
               <div className="form-group">
                 <label>Sergi Adı *</label>
