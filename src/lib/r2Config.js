@@ -42,6 +42,7 @@ const getR2Client = () => {
     r2Client = new S3Client({
         region: "auto",
         endpoint: import.meta.env.VITE_R2_ENDPOINT,
+        forcePathStyle: true, // CRITICAL: Use path-style URLs
         credentials: {
             accessKeyId: import.meta.env.VITE_R2_ACCESS_KEY,
             secretAccessKey: import.meta.env.VITE_R2_SECRET_KEY,
