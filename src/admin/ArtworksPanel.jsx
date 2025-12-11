@@ -21,8 +21,17 @@ export default function ArtworksPanel() {
 
   // IMPORTANT: Tüm hook'lar early return'den ÖNCE çağrılmalı!
   // React Hooks Kuralı: Hook'lar koşulsuz ve aynı sırada çağrılmalı
+  // Sort by created_at (newest first) so new items appear at top
   const sorted = useMemo(
-    () => (data?.artworks ? [...data.artworks].sort((a, b) => Number(b.year) - Number(a.year)) : []),
+    () => {
+      if (!data?.artworks) return [];
+      return [...data.artworks].sort((a, b) => {
+        // Sort by created_at descending (newest first)
+        const dateA = new Date(a.created_at || 0);
+        const dateB = new Date(b.created_at || 0);
+        return dateB - dateA;
+      });
+    },
     [data]
   );
 
