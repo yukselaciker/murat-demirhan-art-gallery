@@ -36,14 +36,25 @@
        Bypasses Vercel cold starts entirely!
        ============================================ -->
   <script>
-    // Supabase credentials from Vercel env (injected at build time)
-    // For development, we'll use the API fallback
+    // Supabase credentials (injected at build time by Vite)
     (async function () {
       const SUPABASE_URL = '%VITE_SUPABASE_URL%';
       const SUPABASE_KEY = '%VITE_SUPABASE_ANON_KEY%';
 
       // Check if we have direct Supabase access
       const hasDirectAccess = SUPABASE_URL && !SUPABASE_URL.includes('VITE_') && SUPABASE_KEY && !SUPABASE_KEY.includes('VITE_');
+
+      // Helper: Parse site_settings array to object {cv: {...}, contact: {...}, ...}
+      function parseSettings(rows) {
+        if (!Array.isArray(rows)) return {};
+        const result = {};
+        rows.forEach(row => {
+          if (row.key && row.value !== undefined) {
+            result[row.key] = row.value;
+          }
+        });
+        return result;
+      }
 
       if (hasDirectAccess) {
         // DIRECT SUPABASE QUERY - instant, no cold start!
@@ -54,19 +65,22 @@
         };
 
         window.__PREFETCH_DATA__ = Promise.all([
+          // Artworks - optimized columns
           fetch(`${SUPABASE_URL}/rest/v1/artworks?select=id,title,image_url,year,technique,size,category,created_at&order=created_at.desc&limit=50`, { headers })
             .then(r => r.ok ? r.json() : []).catch(() => []),
+          // Exhibitions
           fetch(`${SUPABASE_URL}/rest/v1/exhibitions?select=id,title,year,city,venue,type,description&order=year.desc&limit=30`, { headers })
             .then(r => r.ok ? r.json() : []).catch(() => []),
-          fetch(`${SUPABASE_URL}/rest/v1/settings?select=*&limit=1`, { headers })
-            .then(r => r.ok ? r.json() : []).then(arr => arr[0] || {}).catch(() => ({}))
+          // Settings - CORRECT table name: site_settings
+          fetch(`${SUPABASE_URL}/rest/v1/site_settings?select=key,value`, { headers })
+            .then(r => r.ok ? r.json() : []).then(parseSettings).catch(() => ({}))
         ]).then(([artworks, exhibitions, settings]) => {
-          console.log('[Prefetch] Direct Supabase query complete!', artworks.length, 'artworks');
+          console.log('[Prefetch] Direct query complete:', artworks.length, 'artworks,', Object.keys(settings).length, 'settings');
           return { artworks, exhibitions, settings };
         });
       } else {
         // Fallback to API routes (has cold start delay)
-        console.log('[Prefetch] Using API routes (direct Supabase not configured)...');
+        console.log('[Prefetch] Using API routes...');
         window.__PREFETCH_DATA__ = Promise.all([
           fetch('/api/artworks').then(r => r.ok ? r.json() : []).catch(() => []),
           fetch('/api/exhibitions').then(r => r.ok ? r.json() : []).catch(() => []),
