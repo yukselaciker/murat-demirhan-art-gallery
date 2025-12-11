@@ -5,14 +5,14 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
-import { usePublicData } from '../../data/siteData';
+import { useData } from '../../context/DataContext';
 import LightboxModal from '../gallery/LightboxModal';
 import ProtectedImage from '../ui/ProtectedImage';
 import './Gallery.css';
 
 export function Gallery() {
     const { t, language } = useLanguage();
-    const { artworks } = usePublicData();
+    const { artworks } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [lightboxIndex, setLightboxIndex] = useState(null);
     const gridRef = useRef(null);

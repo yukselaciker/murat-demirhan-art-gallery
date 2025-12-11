@@ -6,6 +6,7 @@
 import { useEffect } from 'react';
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
+import { DataProvider } from './context/DataContext';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import Hero from './components/sections/Hero';
@@ -69,21 +70,23 @@ function App() {
   return (
     <ThemeProvider>
       <LanguageProvider>
-        <div className="app">
-          <Header />
+        <DataProvider>
+          <div className="app">
+            <Header />
 
-          <main>
-            <Hero />
-            <About />
-            <Gallery />
-            <Exhibitions />
-            <Contact />
-          </main>
+            <main>
+              <Hero />
+              <About />
+              <Gallery />
+              <Exhibitions />
+              <Contact />
+            </main>
 
-          <Footer />
+            <Footer />
 
-          <CookieBanner />
-        </div>
+            <CookieBanner />
+          </div>
+        </DataProvider>
       </LanguageProvider>
     </ThemeProvider>
   );

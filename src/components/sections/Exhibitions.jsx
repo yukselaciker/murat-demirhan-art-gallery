@@ -4,7 +4,7 @@
 // ============================================
 
 import { useLanguage } from '../../context/LanguageContext';
-import { usePublicData } from '../../data/siteData';
+import { useData } from '../../context/DataContext';
 import './Exhibitions.css';
 
 // Safe type formatter
@@ -16,7 +16,7 @@ const formatType = (typeString) => {
 
 export function Exhibitions() {
     const { t } = useLanguage();
-    const publicData = usePublicData();
+    const publicData = useData();
     const exhibitions = publicData?.exhibitions || [];
     const isLoading = publicData?.isLoading ?? true;
 

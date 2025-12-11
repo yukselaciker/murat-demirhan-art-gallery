@@ -4,7 +4,7 @@
 // ============================================
 
 import { useLanguage } from '../../context/LanguageContext';
-import { usePublicData } from '../../data/siteData';
+import { useData } from '../../context/DataContext';
 import ProtectedImage from '../ui/ProtectedImage';
 import './About.css';
 
@@ -35,7 +35,7 @@ function SkeletonImage() {
 
 export function About() {
     const { t } = useLanguage();
-    const { cv, isLoading } = usePublicData();
+    const { cv, isLoading } = useData();
 
     // Sadece API'den gelen biyografi göster, fallback yok
     const bioParagraphs = cv?.bio ? [cv.bio] : [];

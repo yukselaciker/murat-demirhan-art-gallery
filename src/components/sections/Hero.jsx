@@ -4,14 +4,14 @@
 // ============================================
 
 import { useLanguage } from '../../context/LanguageContext';
-import { usePublicData } from '../../data/siteData';
+import { useData } from '../../context/DataContext';
 import Button from '../ui/Button';
 import ProtectedImage from '../ui/ProtectedImage';
 import './Hero.css';
 
 export function Hero() {
     const { t } = useLanguage();
-    const siteData = usePublicData();
+    const siteData = useData();
 
     // Find featured artwork
     const featuredArtwork = siteData.artworks.find(art => art.id === siteData.featuredArtworkId);

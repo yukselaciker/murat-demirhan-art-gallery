@@ -5,13 +5,13 @@
 
 import { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
-import { usePublicData } from '../../data/siteData';
+import { useData } from '../../context/DataContext';
 import Button from '../ui/Button';
 import './Contact.css';
 
 export function Contact() {
     const { t } = useLanguage();
-    const siteData = usePublicData();
+    const siteData = useData();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
