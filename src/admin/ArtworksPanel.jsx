@@ -280,94 +280,74 @@ export default function ArtworksPanel() {
 
       {/* Card Grid */}
       <div className="artworks-grid">
-        {sorted.map((art) => (
-          <div key={art.id} className={`artwork-card ${data.featuredArtworkId === art.id ? 'featured' : ''}`}>
-            {/* Card Image */}
-            <div className="card-image">
-              {(() => {
-                const url = getImageUrl(art);
-                if (!url) return <div className="no-image">🖼️</div>;
+        {sorted.map((art) => {
+          // Resolve Image
+          const rawPath = art.image || art.image_url || art.imageUrl;
+          const imgData = getImageUrl(rawPath);
 
-                const isHeic = url.toLowerCase().endsWith('.heic') || url.toLowerCase().endsWith('.heif');
+          return (
+            <div key={art.id} className={`artwork-card ${data.featuredArtworkId === art.id ? 'featured' : ''}`}>
+              {/* Card Image */}
+              <div className="card-image">
+                <img
+                  src={imgData.display}
+                  alt={art.title}
+                  /* 2. MAGIC ATTRIBUTES */
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
+                  loading="eager"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    minHeight: '300px',
+                    objectFit: 'cover',
+                    display: 'block',
+                    flexShrink: 0,
+                    backgroundColor: '#e5e7eb'
+                  }}
+                />
 
-                if (isHeic) {
-                  return (
-                    <div style={{
-                      width: '100%',
-                      height: '300px',
-                      backgroundColor: '#fee2e2',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      textAlign: 'center',
-                      padding: '1rem',
-                      color: '#dc2626',
-                      fontWeight: 'bold',
-                      border: '2px dashed #ef4444'
-                    }}>
-                      Mobile Error: Please convert this image to JPG and re-upload.
-                    </div>
-                  );
-                }
-
-                return (
-                  <img
-                    src={url}
-                    alt={art.title}
-                    referrerPolicy="no-referrer"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      minHeight: '300px', /* Force inline min-height for mobile */
-                      objectFit: 'cover',
-                      display: 'block',
-                      flexShrink: 0,
-                      backgroundColor: '#e5e7eb'
-                    }}
-                  />
-                );
-              })()}
-
-              {data.featuredArtworkId === art.id && (
-                <span className="featured-badge">⭐ Öne Çıkan</span>
-              )}
-            </div>
-
-            {/* DEBUG INFO */}
-            <div style={{ padding: '5px', background: '#f3f4f6', borderBottom: '1px solid #ccc' }}>
-              <p style={{ fontSize: '10px', color: '#666', wordBreak: 'break-all', margin: 0 }}>
-                SRC: {getImageUrl(art)}
-              </p>
-            </div>
-
-            {/* Card Content */}
-            <div className="card-content">
-              <h4>{art.title}</h4>
-              <div className="card-meta">
-                {art.year && <span className="meta-item">📅 {art.year}</span>}
-                {art.technique && <span className="meta-item">🎨 {art.technique}</span>}
+                {data.featuredArtworkId === art.id && (
+                  <span className="featured-badge">⭐ Öne Çıkan</span>
+                )}
               </div>
-              <span className="category-badge">{art.category}</span>
-            </div>
 
-            {/* Card Actions */}
-            <div className="card-actions">
-              <button className="action-btn edit" onClick={() => handleEdit(art)} title="Düzenle">
-                ✏️
-              </button>
-              <button
-                className={`action-btn star ${data.featuredArtworkId === art.id ? 'active' : ''}`}
-                onClick={() => handleSetFeatured(art.id)}
-                title="Öne Çıkar"
-              >
-                ⭐
-              </button>
-              <button className="action-btn delete" onClick={() => handleDelete(art.id)} title="Sil">
-                🗑️
-              </button>
+              {/* 3. VISUAL DEBUGGER */}
+              <div style={{ padding: '8px', background: '#fee2e2', borderBottom: '1px solid #fca5a5' }}>
+                <p style={{ fontSize: '10px', color: '#dc2626', wordBreak: 'break-all', margin: 0, fontWeight: 'bold' }}>
+                  RAW: {imgData.raw}
+                </p>
+              </div>
+
+              {/* Card Content */}
+              <div className="card-content">
+                <h4>{art.title}</h4>
+                <div className="card-meta">
+                  {art.year && <span className="meta-item">📅 {art.year}</span>}
+                  {art.technique && <span className="meta-item">🎨 {art.technique}</span>}
+                </div>
+                <span className="category-badge">{art.category}</span>
+              </div>
+
+              {/* Card Actions */}
+              <div className="card-actions">
+                <button className="action-btn edit" onClick={() => handleEdit(art)} title="Düzenle">
+                  ✏️
+                </button>
+                <button
+                  className={`action-btn star ${data.featuredArtworkId === art.id ? 'active' : ''}`}
+                  onClick={() => handleSetFeatured(art.id)}
+                  title="Öne Çıkar"
+                >
+                  ⭐
+                </button>
+                <button className="action-btn delete" onClick={() => handleDelete(art.id)} title="Sil">
+                  🗑️
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {/* Empty State */}

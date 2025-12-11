@@ -141,7 +141,23 @@ export function Gallery() {
                                     <div className="artwork-card__image-wrapper">
                                         {artwork.image ? (
                                             <ProtectedImage
-                                                src={`https://wsrv.nl/?url=${encodeURIComponent(artwork.thumbnail || artwork.image)}&w=800&q=75&fit=cover&output=jpg`}
+                                                src={(() => {
+                                                    const raw = artwork.thumbnail || artwork.image;
+                                                    if (!raw) return '';
+                                                    if (raw.startsWith('data:')) return raw;
+
+                                                    let fullUrl = raw;
+                                                    if (!raw.startsWith('http')) {
+                                                        const baseUrl = import.meta.env.VITE_SUPABASE_URL
+                                                            ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/artworks/`
+                                                            : '';
+                                                        if (baseUrl) {
+                                                            fullUrl = `${baseUrl.replace(/\/$/, '')}/${raw.replace(/^\//, '')}`;
+                                                        }
+                                                    }
+
+                                                    return `https://wsrv.nl/?url=${encodeURIComponent(fullUrl)}&w=800&q=75&fit=cover&output=jpg`;
+                                                })()}
                                                 alt={`${title} - ${technique}`}
                                                 artworkTitle={title}
                                                 className="artwork-card__image"

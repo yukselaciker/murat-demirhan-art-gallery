@@ -134,28 +134,64 @@ export default function ExhibitionsPanel() {
           <span>Şehir</span>
           <span>İşlemler</span>
         </div>
-        {sorted.map((item) => (
-          <div key={item.id} className="table-row">
-            <div style={{ maxWidth: '100%', overflow: 'hidden' }}>
-              <strong style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>{item.title}</strong>
-              <p className="muted tiny" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
-                {item.venue}, {item.city} — {item.type}
-              </p>
+
+        {sorted.map((item) => {
+          const imgData = getImageUrl(item.image);
+          return (
+            <div key={item.id} className="table-row" style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 2fr) 60px 100px 140px', gap: '10px', alignItems: 'center' }}>
+              <div style={{ maxWidth: '100%', overflow: 'hidden' }}>
+                <strong style={{ wordWrap: 'break-word', overflowWrap: 'break-word', display: 'block' }}>{item.title}</strong>
+                <p className="muted tiny" style={{ wordWrap: 'break-word', overflowWrap: 'break-word', margin: 0 }}>
+                  {item.venue}, {item.city} — {item.type}
+                </p>
+                {/* VISUAL DEBUGGER - Small thumbnail inside the row logic */}
+                {item.image && (
+                  <div style={{ marginTop: '5px', fontSize: '9px', color: '#dc2626' }}>
+                    <img
+                      src={imgData.display}
+                      alt="thumb"
+                      referrerPolicy="no-referrer"
+                      crossOrigin="anonymous"
+                      style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd', marginRight: '5px', float: 'left' }}
+                    />
+                    <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      RAW: {imgData.raw}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <span style={{ whiteSpace: 'nowrap' }}>{item.year}</span>
+              <span style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>{item.city}</span>
+              <div className="row-actions">
+                <button className="btn tiny" onClick={() => handleEdit(item)}>
+                  Düzenle
+                </button>
+                <button className="btn danger tiny" onClick={() => handleDelete(item.id)}>
+                  Sil
+                </button>
+              </div>
             </div>
-            <span style={{ whiteSpace: 'nowrap' }}>{item.year}</span>
-            <span style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>{item.city}</span>
-            <div className="row-actions">
-              <button className="btn tiny" onClick={() => handleEdit(item)}>
-                Düzenle
+          );
+        })}
+      </div>
+
+      {/* Silme Onay Dialog */}
+      {deleteConfirm && (
+        <div className="modal-overlay" onClick={cancelDelete}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <h3>Emin misiniz?</h3>
+            <p>Bu sergiyi silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</p>
+            <div className="modal-actions">
+              <button className="btn ghost" onClick={cancelDelete}>
+                İptal
               </button>
-              <button className="btn danger tiny" onClick={() => handleDelete(item.id)}>
-                Sil
+              <button className="btn danger" onClick={confirmDelete}>
+                Evet, Sil
               </button>
             </div>
           </div>
-        ))}
-      </div>
-
+        </div>
+      )}
       {/* Silme Onay Dialog */}
       {deleteConfirm && (
         <div className="modal-overlay" onClick={cancelDelete}>
@@ -176,5 +212,3 @@ export default function ExhibitionsPanel() {
     </div>
   );
 }
-
-
