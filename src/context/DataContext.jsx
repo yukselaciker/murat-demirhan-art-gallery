@@ -27,23 +27,31 @@ const DEFAULT_DATA = {
 
 /**
  * Generates an optimized thumbnail URL for faster initial load.
+ * Handles: Supabase Storage, Cloudinary, Cloudflare R2, and generic URLs
  */
 function getThumbnailUrl(imageUrl, width = 600, quality = 75) {
     if (!imageUrl) return null;
     if (imageUrl.startsWith('data:')) return imageUrl;
     if (imageUrl.includes('width=') || imageUrl.includes('quality=')) return imageUrl;
 
+    // Cloudflare R2 - return as-is (R2 doesn't support transformations)
+    if (imageUrl.includes('.r2.dev') || imageUrl.includes('r2.cloudflarestorage.com')) {
+        return imageUrl;
+    }
+
+    // Supabase Storage - add transformation params
     if (imageUrl.includes('supabase.co/storage')) {
         const separator = imageUrl.includes('?') ? '&' : '?';
         return `${imageUrl}${separator}width=${width}&quality=${quality}`;
     }
 
+    // Cloudinary - use transformation syntax
     if (imageUrl.includes('cloudinary.com')) {
         return imageUrl.replace('/upload/', `/upload/w_${width},q_${quality}/`);
     }
 
-    const separator = imageUrl.includes('?') ? '&' : '?';
-    return `${imageUrl}${separator}width=${width}&quality=${quality}`;
+    // Generic URL - try adding params (may not work for all hosts)
+    return imageUrl;
 }
 
 /**
