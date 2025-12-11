@@ -1,72 +1,49 @@
-import { useState, useEffect } from 'react';
-import { useSiteData } from '../data/siteData.js';
+import React, { useState, useEffect } from 'react';
+import { PageHeader } from '../components/admin/ui/PageHeader';
+import { Card } from '../components/admin/ui/Card';
+import { Input } from '../components/admin/ui/Input';
+import { Button } from '../components/admin/ui/Button';
+import { FormGrid } from '../components/admin/ui/FormGrid';
+import { DangerZone } from '../components/admin/ui/DangerZone';
+import { useAdmin } from '../context/AdminContext';
 
 export default function SettingsPanel() {
-    const { data, updateContactInfo, resetData, isInitialized } = useSiteData();
-
-    // Safe access with fallbacks
-    const contactInfo = data?.contactInfo || {};
-    const [email, setEmail] = useState(contactInfo.email || '');
-    const [location, setLocation] = useState(contactInfo.location || '');
-    const [phone, setPhone] = useState(contactInfo.phone || '');
-    const [message, setMessage] = useState('');
+    const { themeMode, toggleTheme } = useAdmin();
+    const [formData, setFormData] = useState({
+        siteName: 'Murat Demirhan | Official Web Site',
+        email: 'contact@muratdemirhan.com',
+        instagram: 'https://instagram.com/mood_art_s',
+        phone: '+90 555 123 45 67',
+        address: 'Nişantaşı, İstanbul',
+    });
     const [isSaving, setIsSaving] = useState(false);
+    const [passwordData, setPasswordData] = useState({ current: '', new: '', confirm: '' });
 
-    // Update form when data loads
-    useEffect(() => {
-        if (data?.contactInfo) {
-            setEmail(data.contactInfo.email || '');
-            setLocation(data.contactInfo.location || '');
-            setPhone(data.contactInfo.phone || '');
-        }
-    }, [data?.contactInfo]);
-
-    const handleSave = async () => {
+    const handleSave = () => {
         setIsSaving(true);
-        setMessage('');
-        try {
-            await updateContactInfo({ email, location, phone });
-            setMessage('success:İletişim bilgileri güncellendi.');
-            setTimeout(() => setMessage(''), 3000);
-        } catch (e) {
-            console.error(e);
-            setMessage('error:Kaydetme hatası.');
-        } finally {
+        setTimeout(() => {
             setIsSaving(false);
-        }
+            alert('Ayarlar kaydedildi (Demo)');
+        }, 800);
     };
 
-    const messageType = message.split(':')[0];
-    const messageText = message.split(':').slice(1).join(':');
-
-    if (!isInitialized) {
-        return (
-            <div className="artworks-panel">
-                <div className="loading-state">
-                    <div className="spinner"></div>
-                    <p>Ayarlar yükleniyor...</p>
-                </div>
-            </div>
-        );
-    }
+    const handlePasswordReset = () => {
+        alert('Şifre güncelleme (Demo)');
+    };
 
     return (
-        <div className="artworks-panel">
-            <div className="panel-header-modern">
-                <div>
-                    <h2>⚙️ Ayarlar</h2>
-                    <p className="subtitle">Site genel ayarları ve iletişim bilgileri.</p>
-                </div>
-                <button className="btn-add-new" onClick={handleSave} disabled={isSaving}>
-                    {isSaving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
-                </button>
-            </div>
+        <div className="fade-in">
+            <PageHeader
+                title="Ayarlar"
+                subtitle="Web sitesi genel ayarları ve hesap yönetimi"
+                actions={
+                    <Button variant="secondary" onClick={toggleTheme}>
+                        {themeMode === 'light' ? '🌙 Koyu Mod' : '☀️ Açık Mod'}
+                    </Button>
+                }
+            />
 
-            {message && (
-                <div className={`toast ${messageType}`}>
-                    {messageType === 'success' ? '✅' : '❌'} {messageText}
-                </div>
-            )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
 
             <div className="panel" style={{ gap: '2rem' }}>
                 {/* Contact Info Card */}
@@ -117,19 +94,6 @@ export default function SettingsPanel() {
                     </div>
                 </div>
 
-                {/* Danger Zone Card */}
-                <div className="form-card" style={{ borderColor: 'var(--danger-200)', backgroundColor: '#fff5f5' }}>
-                    <h3 style={{ color: 'var(--danger-600)' }}>⚠️ Tehlikeli Bölge</h3>
-                    <p style={{ color: 'var(--slate-600)', marginBottom: '1.5rem' }}>
-                        Bu işlem veritabanındaki tüm verileri (eserler, sergiler, ayarlar) silerek başlangıç varsayılanlarına döndürür.
-                        Bu işlem <strong>geri alınamaz</strong>.
-                    </p>
-                    <button className="btn danger" onClick={() => {
-                        if (confirm('TÜM VERİLER SİLİNECEK! Emin misiniz?')) resetData();
-                    }}>
-                        Verileri Sıfırla (Factory Reset)
-                    </button>
-                </div>
             </div>
         </div>
     );

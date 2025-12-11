@@ -1,11 +1,18 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { useAdmin } from '../context/AdminContext';
+import { Button } from '../components/admin/ui/Button';
+import { Input } from '../components/admin/ui/Input';
+import { Card } from '../components/admin/ui/Card';
+import { Alert } from '../components/admin/ui/Alert';
 
-export default function AdminLogin({ onLogin }) {
-  const [username, setUsername] = useState('admin');
+export default function AdminLogin() {
+  const { login } = useAdmin();
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const err = onLogin(username, password);
     setError(err || '');
@@ -86,5 +93,3 @@ export default function AdminLogin({ onLogin }) {
     </div>
   );
 }
-
-

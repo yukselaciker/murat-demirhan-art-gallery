@@ -1,158 +1,67 @@
-import { useMemo, useState } from 'react';
-import { useSiteData } from '../data/siteData.js';
-import ImageUploader from './ImageUploader.jsx';
-
-
-const emptyArtwork = {
-  title: '',
-  year: '',
-  technique: '',
-  size: '',
-  category: '',
-  image: '',
-};
+import React, { useState, useMemo } from 'react';
+import { PageHeader } from '../components/admin/ui/PageHeader';
+import { Card } from '../components/admin/ui/Card';
+import { Button } from '../components/admin/ui/Button';
+import { Input } from '../components/admin/ui/Input';
+import { Select } from '../components/admin/ui/Select';
+import { FormGrid } from '../components/admin/ui/FormGrid';
+import { ImageUpload } from '../components/admin/ui/ImageUpload';
+import { EmptyState } from '../components/admin/ui/EmptyState';
+import { Badge } from '../components/admin/ui/Badge';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 export default function ArtworksPanel() {
-  const { data, addArtwork, updateArtwork, deleteArtwork, setFeaturedArtwork, isInitialized } = useSiteData();
-  const [form, setForm] = useState(emptyArtwork);
-  const [editingId, setEditingId] = useState(null);
-  const [message, setMessage] = useState('');
-  const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const [isSaving, setIsSaving] = useState(false);
+  const [artworks, setArtworks] = useLocalStorage('admin_artworks', []);
+
+  const [formData, setFormData] = useState({
+    title: '', year: '', technique: '', size: '', category: '', image: '', tags: ''
+  });
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
-  // Sort by created_at (newest first)
-  const sorted = useMemo(() => {
-    if (!data?.artworks) return [];
-    return [...data.artworks].sort((a, b) => {
-      const dateA = new Date(a.created_at || 0);
-      const dateB = new Date(b.created_at || 0);
-      return dateB - dateA;
-    });
-  }, [data]);
+  const categoryOptions = [
+    { value: 'Yağlıboya', label: 'Yağlıboya' },
+    { value: 'Akrilik', label: 'Akrilik' },
+    { value: 'Suluboya', label: 'Suluboya' },
+    { value: 'Karikatür', label: 'Karikatür' },
+    { value: 'Desen', label: 'Desen' },
+    { value: 'Dijital', label: 'Dijital' },
+    { value: 'Diğer', label: 'Diğer' }
+  ];
 
-  // Loading state
-  if (!isInitialized) {
-    return (
-      <div className="artworks-panel">
-        <div className="loading-state">
-          <div className="spinner"></div>
-          <p>Eserler yükleniyor...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    const title = form.title?.trim();
-    const rawYear = form.year?.toString().trim();
-    const parsedYear = rawYear ? Number(rawYear) : null;
-
-    if (!title) {
-      setMessage('error:Eser adı gereklidir.');
-      return;
+    if (editingId) {
+      setArtworks(prev => prev.map(a => a.id === editingId ? { ...formData, id: editingId } : a));
+    } else {
+      setArtworks(prev => [{ ...formData, id: Date.now() }, ...prev]);
     }
-
-    if (rawYear && Number.isNaN(parsedYear)) {
-      setMessage('error:Yıl sadece rakam olmalıdır.');
-      return;
-    }
-
-    const payload = {
-      ...form,
-      title,
-      year: parsedYear,
-      technique: form.technique?.trim() || null,
-      size: form.size?.trim() || null,
-      category: form.category?.trim() || '',
-      image: form.image?.trim() || '',
-      tags: form.tags ? form.tags.split(',').map((t) => t.trim()).filter(Boolean) : [],
-    };
-
-    setIsSaving(true);
-    setMessage('');
-
-    try {
-      if (editingId) {
-        await updateArtwork(editingId, payload);
-        setMessage('success:Eser güncellendi!');
-      } else {
-        await addArtwork(payload);
-        setMessage('success:Yeni eser eklendi!');
-      }
-
-      setForm(emptyArtwork);
-      setEditingId(null);
-      setIsFormOpen(false);
-      setTimeout(() => setMessage(''), 3000);
-
-    } catch (error) {
-      console.error('Save error:', error);
-      setMessage('error:Kaydetme hatası: ' + error.message);
-    } finally {
-      setIsSaving(false);
-    }
+    resetForm();
   };
 
-  const handleEdit = (art) => {
-    setForm({
-      title: art.title || '',
-      year: art.year ? String(art.year) : '',
-      technique: art.technique || '',
-      size: art.size || '',
-      category: art.category || '',
-      image: art.image || art.image_url || art.imageUrl || '',
-      tags: art.tags?.join(', ') || '',
-    });
-    setEditingId(art.id);
-    setIsFormOpen(true);
-    setMessage('');
-    // Scroll to form on mobile
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleDelete = (id) => setDeleteConfirm(id);
-  const cancelDelete = () => setDeleteConfirm(null);
-
-  const confirmDelete = async () => {
-    if (deleteConfirm) {
-      await deleteArtwork(deleteConfirm);
-      setMessage('success:Eser silindi.');
-      if (editingId === deleteConfirm) {
-        setEditingId(null);
-        setForm(emptyArtwork);
-      }
-      setDeleteConfirm(null);
-      setTimeout(() => setMessage(''), 3000);
-    }
-  };
-
-  const handleSetFeatured = (id) => {
-    setFeaturedArtwork(id);
-    setMessage('success:Öne çıkan eser ayarlandı.');
-    setTimeout(() => setMessage(''), 3000);
-  };
-
-  const cancelForm = () => {
+  const resetForm = () => {
+    setFormData({ title: '', year: '', technique: '', size: '', category: '', image: '', tags: '' });
     setEditingId(null);
-    setForm(emptyArtwork);
     setIsFormOpen(false);
   };
 
-  const getImageUrl = (art) => {
-    const url = art.image || art.image_url || art.imageUrl;
-    if (!url) return null;
-    return url;
+  const handleEdit = (art) => {
+    setFormData(art);
+    setEditingId(art.id);
+    setIsFormOpen(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const messageType = message.split(':')[0];
-  const messageText = message.split(':').slice(1).join(':');
+  const handleDelete = (id) => {
+    if (confirm('Eseri silmek istediğinize emin misiniz?')) {
+      setArtworks(prev => prev.filter(a => a.id !== id));
+    }
+  };
+
+  // Convert image object/file to URL for preview if needed
+  // In our simple mock specific implementation, we just expect data URL or string.
+
+  const sortedArtworks = useMemo(() => [...artworks].reverse(), [artworks]); // Newest first if array appended
 
   return (
     <div className="artworks-panel">
@@ -211,152 +120,106 @@ export default function ArtworksPanel() {
                 />
               </div>
 
-              <div className="form-group">
-                <label>Teknik</label>
-                <input
-                  name="technique"
-                  value={form.technique}
-                  onChange={handleChange}
-                  placeholder="Tuval üzerine yağlıboya"
-                />
+              {/* Right: Fields */}
+              <div style={{ order: 2 }}>
+                <FormGrid columns={2}>
+                  <Input
+                    label="Eser Adı *"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    required
+                    placeholder="Örn: Gece Yürüyüşü"
+                    fullWidth
+                    style={{ gridColumn: '1 / -1' }}
+                  />
+                  <Select
+                    label="Kategori *"
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    options={categoryOptions}
+                    required
+                  />
+                  <Input
+                    label="Yıl"
+                    type="number"
+                    value={formData.year}
+                    onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+                    placeholder="2024"
+                  />
+                  <Input
+                    label="Teknik"
+                    value={formData.technique}
+                    onChange={(e) => setFormData({ ...formData, technique: e.target.value })}
+                    placeholder="Tuval üzeri yağlıboya"
+                  />
+                  <Input
+                    label="Ölçü (cm)"
+                    value={formData.size}
+                    onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+                    placeholder="100x80"
+                  />
+                </FormGrid>
+
+                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
+                  <Button variant="ghost" onClick={resetForm} type="button">İptal</Button>
+                  <Button type="submit">{editingId ? 'Güncelle' : 'Kaydet'}</Button>
+                </div>
               </div>
-
-              <div className="form-group">
-                <label>Ölçü</label>
-                <input
-                  name="size"
-                  value={form.size}
-                  onChange={handleChange}
-                  placeholder="100x80 cm"
-                />
-              </div>
-
-              <div className="form-group full-width">
-                <label>Kategori *</label>
-                <select name="category" value={form.category} onChange={handleChange} required>
-                  <option value="">Kategori Seçin</option>
-                  <option value="Yağlıboya">Yağlıboya</option>
-                  <option value="Akrilik">Akrilik</option>
-                  <option value="Suluboya">Suluboya</option>
-                  <option value="Karikatür">Karikatür</option>
-                  <option value="Desen">Desen</option>
-                  <option value="Dijital">Dijital</option>
-                  <option value="Diğer">Diğer</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="form-group full-width">
-              <ImageUploader
-                value={form.image}
-                onChange={(url) => setForm(prev => ({ ...prev, image: url }))}
-                label="Eser Görseli"
-              />
-            </div>
-
-            <div className="form-buttons">
-              <button type="submit" className="btn-primary" disabled={isSaving}>
-                {isSaving ? (
-                  <>
-                    <span className="spinner-small"></span>
-                    Kaydediliyor...
-                  </>
-                ) : (
-                  editingId ? 'Güncelle' : 'Kaydet'
-                )}
-              </button>
-              {(editingId || isFormOpen) && (
-                <button type="button" className="btn-secondary" onClick={cancelForm}>
-                  İptal
-                </button>
-              )}
             </div>
           </form>
-        </div>
-      </div>
-
-      {/* Card Grid */}
-      <div className="artworks-grid">
-        {sorted.map((art) => (
-          <div key={art.id} className={`artwork-card ${data.featuredArtworkId === art.id ? 'featured' : ''}`}>
-            {/* Card Image */}
-            <div className="card-image">
-              {getImageUrl(art) ? (
-                <img src={getImageUrl(art)} alt={art.title} loading="lazy" />
-              ) : (
-                <div className="no-image">🖼️</div>
-              )}
-              {data.featuredArtworkId === art.id && (
-                <span className="featured-badge">⭐ Öne Çıkan</span>
-              )}
-            </div>
-
-            {/* Card Content */}
-            <div className="card-content">
-              <h4>{art.title}</h4>
-              <div className="card-meta">
-                {art.year && <span className="meta-item">📅 {art.year}</span>}
-                {art.technique && <span className="meta-item">🎨 {art.technique}</span>}
-              </div>
-              <span className="category-badge">{art.category}</span>
-            </div>
-
-            {/* Card Actions */}
-            <div className="card-actions">
-              <div className="action-group">
-                <button className="action-btn edit" onClick={() => handleEdit(art)} title="Düzenle">
-                  ✏️
-                  <span className="action-label">Düzenle</span>
-                </button>
-                <button
-                  className={`action-btn star ${data.featuredArtworkId === art.id ? 'active' : ''}`}
-                  onClick={() => handleSetFeatured(art.id)}
-                  title="Öne Çıkar"
-                >
-                  ⭐
-                  <span className="action-label">Öne Çıkar</span>
-                </button>
-                <button className="action-btn delete" onClick={() => handleDelete(art.id)} title="Sil">
-                  🗑️
-                  <span className="action-label">Sil</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Empty State */}
-      {sorted.length === 0 && (
-        <div className="empty-state">
-          <div className="empty-icon">🎨</div>
-          <h3>Henüz eser yok</h3>
-          <p>İlk eserinizi eklemek için yukarıdaki "Yeni Eser" butonuna tıklayın.</p>
-        </div>
+        </Card>
       )}
 
-      {/* Floating Action Button (Mobile) */}
-      <button
-        className="fab"
-        onClick={() => {
-          setIsFormOpen(true);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
-      >
-        +
-      </button>
+      {sortedArtworks.length === 0 ? (
+        <EmptyState
+          icon="🎨"
+          title="Eser Bulunamadı"
+          description="Portföyünüze henüz hiç eser eklemediniz."
+        />
+      ) : (
+        <div className="artworks-grid" style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          gap: 'var(--space-6)'
+        }}>
+          {sortedArtworks.map((art) => (
+            <Card key={art.id} noPadding className="hover-scale">
+              <div style={{ position: 'relative', aspectRatio: '4/3', backgroundColor: 'var(--color-neutral-100)' }}>
+                {art.image ? (
+                  <img src={art.image} alt={art.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontSize: '2rem' }}>🖼️</div>
+                )}
+                <span className="category-badge" style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(255,255,255,0.9)' }}>
+                  {art.category}
+                </span>
+              </div>
 
-      {/* Delete Confirmation Modal */}
-      {deleteConfirm && (
-        <div className="modal-overlay" onClick={cancelDelete}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>🗑️ Eser Silinecek</h3>
-            <p>Bu eseri silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</p>
-            <div className="modal-buttons">
-              <button className="btn-secondary" onClick={cancelDelete}>İptal</button>
-              <button className="btn-danger" onClick={confirmDelete}>Evet, Sil</button>
-            </div>
-          </div>
+              <div style={{ padding: '1rem' }}>
+                <h4 style={{ margin: '0 0 0.25rem 0', fontSize: '1rem', fontWeight: 700 }}>{art.title}</h4>
+                <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', display: 'flex', gap: '0.5rem' }}>
+                  <span>{art.year}</span>
+                  <span>•</span>
+                  <span>{art.technique}</span>
+                </div>
+              </div>
+
+              <div style={{ borderTop: '1px solid var(--border-color)', display: 'flex' }}>
+                <button
+                  style={{ flex: 1, border: 'none', background: 'transparent', padding: '0.75rem', cursor: 'pointer', borderRight: '1px solid var(--border-color)' }}
+                  onClick={() => handleEdit(art)}
+                >
+                  ✏️ Düzenle
+                </button>
+                <button
+                  style={{ flex: 1, border: 'none', background: 'transparent', padding: '0.75rem', cursor: 'pointer', color: 'var(--color-danger)' }}
+                  onClick={() => handleDelete(art.id)}
+                >
+                  🗑️ Sil
+                </button>
+              </div>
+            </Card>
+          ))}
         </div>
       )}
     </div>
