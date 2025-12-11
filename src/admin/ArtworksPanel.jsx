@@ -305,12 +305,7 @@ export default function ArtworksPanel() {
                 )}
               </div>
 
-              {/* 3. VISUAL DEBUGGER (Updated for string return) */}
-              <div style={{ padding: '8px', background: '#fee2e2', borderBottom: '1px solid #fca5a5' }}>
-                <p style={{ fontSize: '10px', color: '#dc2626', wordBreak: 'break-all', margin: 0, fontWeight: 'bold' }}>
-                  PROXY: {imageUrl}
-                </p>
-              </div>
+
 
               {/* Card Content */}
               <div className="card-content">
