@@ -148,7 +148,10 @@ export default function ArtworksPanel() {
   const getImageUrl = (art) => {
     const url = art.image || art.image_url || art.imageUrl;
     if (!url) return null;
-    return url;
+
+    // Use Weserv proxy to bypass mobile network blocks (CORS/SSL/Format)
+    // This fetches the image via their server and delivers it cleanly
+    return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=800&output=jpg`;
   };
 
   const messageType = message.split(':')[0];
