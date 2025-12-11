@@ -306,10 +306,11 @@ export default function ArtworksPanel() {
                   <img
                     src={url}
                     alt={art.title}
-                    loading="lazy"
                     onError={(e) => { e.currentTarget.style.border = '5px solid red'; }}
                     style={{
                       width: '100%',
+                      height: '100%',
+                      minHeight: '300px', /* Force inline min-height for mobile */
                       objectFit: 'cover',
                       display: 'block',
                       flexShrink: 0,

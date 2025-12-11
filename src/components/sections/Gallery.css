@@ -172,9 +172,10 @@
 @media (max-width: 768px) {
     .artwork-card__image-wrapper {
         display: block !important;
-        height: auto !important;
-        min-height: 250px;
+        height: 300px !important;
+        min-height: 300px !important;
         aspect-ratio: unset !important;
+        position: relative;
     }
 
     .artwork-card__image {
@@ -183,6 +184,9 @@
         visibility: visible !important;
         height: 100% !important;
         width: 100% !important;
+        position: absolute;
+        top: 0;
+        left: 0;
         position: absolute;
         /* Force fill */
         top: 0;
