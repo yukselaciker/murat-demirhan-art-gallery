@@ -4,19 +4,21 @@ import './ImageUploader.css';
 
 /**
  * ImageUploader Component
- * Uploads images to Cloudflare R2 (or falls back to base64)
- * Shows preview and upload progress
+ * Uploads images DIRECTLY to Cloudflare R2
+ * NO base64 fallback - R2 must be configured!
  */
 export default function ImageUploader({ value, onChange, label = "Görsel Yükle", folder = "artworks" }) {
     const [isDragging, setIsDragging] = useState(false);
     const [preview, setPreview] = useState(value || null);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadError, setUploadError] = useState(null);
+    const [uploadSuccess, setUploadSuccess] = useState(false);
     const fileInputRef = useRef(null);
 
     const handleFile = async (file) => {
-        // Reset error state
+        // Reset states
         setUploadError(null);
+        setUploadSuccess(false);
 
         // Validate file type
         if (!file.type.startsWith('image/')) {
@@ -24,49 +26,49 @@ export default function ImageUploader({ value, onChange, label = "Görsel Yükle
             return;
         }
 
-        // Validate file size (max 10MB for R2)
-        const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+        // Validate file size (max 10MB)
+        const maxSize = 10 * 1024 * 1024;
         if (file.size > maxSize) {
             setUploadError('Dosya boyutu çok büyük. Maksimum 10MB olmalıdır.');
             return;
         }
 
-        // Show preview immediately from file
+        // Show preview immediately using blob URL (NOT base64!)
         const previewUrl = URL.createObjectURL(file);
         setPreview(previewUrl);
 
         // Check if R2 is configured
-        if (isR2Configured()) {
-            // Upload to Cloudflare R2
-            setIsUploading(true);
-            try {
-                const r2Url = await uploadToR2(file, folder);
-                console.log('[ImageUploader] R2 upload successful:', r2Url);
-                setPreview(r2Url);
-                onChange(r2Url);
-            } catch (error) {
-                console.error('[ImageUploader] R2 upload failed:', error);
-                setUploadError('Yükleme başarısız. Tekrar deneyin.');
-                // Fall back to base64 if R2 fails
-                fallbackToBase64(file);
-            } finally {
-                setIsUploading(false);
-            }
-        } else {
-            // R2 not configured, use base64 (legacy fallback)
-            console.log('[ImageUploader] R2 not configured, using base64');
-            fallbackToBase64(file);
-        }
-    };
+        const r2Ready = isR2Configured();
+        console.log('[ImageUploader] R2 configured:', r2Ready);
 
-    const fallbackToBase64 = (file) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const dataUrl = e.target.result;
-            setPreview(dataUrl);
-            onChange(dataUrl);
-        };
-        reader.readAsDataURL(file);
+        if (!r2Ready) {
+            setUploadError('❌ R2 yapılandırılmamış! .env.local dosyasını kontrol edin.');
+            console.error('[ImageUploader] R2 NOT configured! Check VITE_R2_* env vars');
+            // DO NOT fall back to base64 - just show error
+            return;
+        }
+
+        // Upload to Cloudflare R2
+        setIsUploading(true);
+        try {
+            console.log('[ImageUploader] Starting R2 upload...');
+            const r2Url = await uploadToR2(file, folder);
+            console.log('[ImageUploader] ✅ R2 upload successful:', r2Url);
+
+            // Update preview and call onChange with the R2 URL
+            setPreview(r2Url);
+            onChange(r2Url);
+            setUploadSuccess(true);
+
+        } catch (error) {
+            console.error('[ImageUploader] ❌ R2 upload failed:', error);
+            setUploadError(`Yükleme hatası: ${error.message}`);
+            // Clear the preview since upload failed
+            setPreview(null);
+            onChange('');
+        } finally {
+            setIsUploading(false);
+        }
     };
 
     const handleDragOver = (e) => {
@@ -102,6 +104,7 @@ export default function ImageUploader({ value, onChange, label = "Görsel Yükle
     const handleRemove = () => {
         setPreview(null);
         setUploadError(null);
+        setUploadSuccess(false);
         onChange('');
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
@@ -113,29 +116,50 @@ export default function ImageUploader({ value, onChange, label = "Görsel Yükle
             <label className="upload-label">{label}</label>
 
             {uploadError && (
-                <div className="upload-error" style={{ color: '#ef4444', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+                <div className="upload-error" style={{
+                    color: '#ef4444',
+                    fontSize: '0.875rem',
+                    marginBottom: '0.5rem',
+                    padding: '0.5rem',
+                    background: '#fef2f2',
+                    borderRadius: '4px'
+                }}>
                     ⚠️ {uploadError}
                 </div>
             )}
 
+            {uploadSuccess && (
+                <div style={{
+                    color: '#10b981',
+                    fontSize: '0.875rem',
+                    marginBottom: '0.5rem',
+                    padding: '0.5rem',
+                    background: '#ecfdf5',
+                    borderRadius: '4px'
+                }}>
+                    ✅ Görsel R2'ye yüklendi!
+                </div>
+            )}
+
             {preview ? (
-                <div className="upload-preview">
+                <div className="upload-preview" style={{ position: 'relative' }}>
                     <img src={preview} alt="Preview" />
                     {isUploading && (
-                        <div className="upload-overlay" style={{
+                        <div style={{
                             position: 'absolute',
                             top: 0,
                             left: 0,
                             right: 0,
                             bottom: 0,
-                            background: 'rgba(0,0,0,0.5)',
+                            background: 'rgba(0,0,0,0.6)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             color: 'white',
-                            borderRadius: '8px'
+                            borderRadius: '8px',
+                            fontSize: '1rem'
                         }}>
-                            Yükleniyor...
+                            ⏳ R2'ye yükleniyor...
                         </div>
                     )}
                     <div className="preview-actions">
@@ -185,7 +209,7 @@ export default function ImageUploader({ value, onChange, label = "Görsel Yükle
                         veya tıklayarak dosya seçin
                     </p>
                     <p className="upload-hint">
-                        JPG, PNG, WebP • Maks. 10MB • Cloudflare R2
+                        JPG, PNG, WebP • Maks. 10MB • ☁️ Cloudflare R2
                     </p>
                 </div>
             )}
