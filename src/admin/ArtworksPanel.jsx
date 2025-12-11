@@ -17,6 +17,7 @@ export default function ArtworksPanel() {
   const [editingId, setEditingId] = useState(null);
   const [message, setMessage] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [isSaving, setIsSaving] = useState(false); // MOVED HERE - hooks must be before returns!
 
   // IMPORTANT: Tüm hook'lar early return'den ÖNCE çağrılmalı!
   // React Hooks Kuralı: Hook'lar koşulsuz ve aynı sırada çağrılmalı
@@ -44,8 +45,6 @@ export default function ArtworksPanel() {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
-
-  const [isSaving, setIsSaving] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
