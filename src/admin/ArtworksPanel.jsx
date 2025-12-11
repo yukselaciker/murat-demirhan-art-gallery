@@ -145,18 +145,24 @@ export default function ArtworksPanel() {
     setIsFormOpen(false);
   };
 
-  const getImageUrl = (art) => {
-    const url = art.image || art.image_url || art.imageUrl;
-    if (!url) return null;
+  /* SANITIZE & PROXY INPUT (Strict Security) */
+  const getImageUrl = (path) => {
+    if (!path) return 'https://via.placeholder.com/300?text=No+Image';
+    if (path.startsWith('data:')) return path;
 
-    // Use Weserv proxy to bypass mobile network blocks (CORS/SSL/Format)
-    // This fetches the image via their server and delivers it cleanly
-    // Options:
-    // w=800: Resize to 800px width (sufficient for mobile/desktop cards)
-    // q=75: Quality 75% (good balance of size/quality)
-    // fit=cover: Ensure it covers the dimensions without distortion
-    // output=jpg: Force legacy format compatibility
-    return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=800&q=75&fit=cover&output=jpg`;
+    // 1. Construct Base URL safely
+    let url = path;
+    if (!path.startsWith('http')) {
+      const baseUrl = import.meta.env.VITE_R2_PUBLIC_URL || `${import.meta.env.VITE_SUPABASE_URL || ''}/storage/v1/object/public/artworks/`;
+      // Remove trailing slash from base and leading slash from path
+      url = `${baseUrl.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+    }
+
+    // 2. FORCE HTTPS (Mixed Content Fix)
+    url = url.replace(/^http:\/\//i, 'https://');
+
+    // 3. Return Proxy URL (wsrv.nl is strictly HTTPS)
+    return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=600&output=jpg`;
   };
 
   const messageType = message.split(':')[0];
