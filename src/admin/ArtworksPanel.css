@@ -310,6 +310,7 @@
     height: 220px;
     overflow: hidden;
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    display: block;
 }
 
 .card-image img {
@@ -317,6 +318,21 @@
     height: 100%;
     object-fit: cover;
     transition: transform 0.3s ease;
+    display: block;
+}
+
+@media (max-width: 600px) {
+    .card-image {
+        height: 220px !important;
+        min-height: 220px;
+        display: block !important;
+    }
+
+    .card-image img {
+        opacity: 1 !important;
+        visibility: visible !important;
+        height: 100% !important;
+    }
 }
 
 .artwork-card:hover .card-image img {
