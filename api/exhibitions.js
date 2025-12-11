@@ -19,19 +19,21 @@ export default async function handler(req, res) {
     }
 
     try {
-        // GET - Fetch all exhibitions
+        // GET - Fetch all exhibitions (OPTIMIZED)
         if (req.method === "GET") {
+            // Select only essential columns for timeline display
             const { data, error } = await supabase
                 .from("exhibitions")
-                .select("*")
-                .order("year", { ascending: false });
+                .select("id, title, year, city, venue, type, description")
+                .order("year", { ascending: false })
+                .limit(30);  // Limit initial load
 
             if (error) {
                 console.error("GET /api/exhibitions error:", error);
                 return res.status(500).json({ error: error.message });
             }
 
-            // Vercel Edge Caching - 1 saat cache, 5 dk stale-while-revalidate
+            // Vercel Edge Caching - 1 hour cache
             res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=300');
 
             return res.status(200).json(data || []);
