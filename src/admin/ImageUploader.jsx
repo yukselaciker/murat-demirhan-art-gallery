@@ -1,32 +1,65 @@
 import { useState, useRef } from 'react';
+import { uploadToR2, isR2Configured } from '../lib/r2Config.js';
 import './ImageUploader.css';
 
 /**
  * ImageUploader Component
- * Allows drag-and-drop or click-to-upload image files
- * Converts to base64 data URL for storage
- * Shows preview of uploaded image
+ * Uploads images to Cloudflare R2 (or falls back to base64)
+ * Shows preview and upload progress
  */
-export default function ImageUploader({ value, onChange, label = "Görsel Yükle" }) {
+export default function ImageUploader({ value, onChange, label = "Görsel Yükle", folder = "artworks" }) {
     const [isDragging, setIsDragging] = useState(false);
     const [preview, setPreview] = useState(value || null);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadError, setUploadError] = useState(null);
     const fileInputRef = useRef(null);
 
-    const handleFile = (file) => {
+    const handleFile = async (file) => {
+        // Reset error state
+        setUploadError(null);
+
         // Validate file type
         if (!file.type.startsWith('image/')) {
-            alert('Lütfen sadece resim dosyası yükleyin (JPG, PNG, WebP)');
+            setUploadError('Lütfen sadece resim dosyası yükleyin (JPG, PNG, WebP)');
             return;
         }
 
-        // Validate file size (max 5MB)
-        const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+        // Validate file size (max 10MB for R2)
+        const maxSize = 10 * 1024 * 1024; // 10MB in bytes
         if (file.size > maxSize) {
-            alert('Dosya boyutu çok büyük. Maksimum 5MB olmalıdır.');
+            setUploadError('Dosya boyutu çok büyük. Maksimum 10MB olmalıdır.');
             return;
         }
 
-        // Convert to base64
+        // Show preview immediately from file
+        const previewUrl = URL.createObjectURL(file);
+        setPreview(previewUrl);
+
+        // Check if R2 is configured
+        if (isR2Configured()) {
+            // Upload to Cloudflare R2
+            setIsUploading(true);
+            try {
+                const r2Url = await uploadToR2(file, folder);
+                console.log('[ImageUploader] R2 upload successful:', r2Url);
+                setPreview(r2Url);
+                onChange(r2Url);
+            } catch (error) {
+                console.error('[ImageUploader] R2 upload failed:', error);
+                setUploadError('Yükleme başarısız. Tekrar deneyin.');
+                // Fall back to base64 if R2 fails
+                fallbackToBase64(file);
+            } finally {
+                setIsUploading(false);
+            }
+        } else {
+            // R2 not configured, use base64 (legacy fallback)
+            console.log('[ImageUploader] R2 not configured, using base64');
+            fallbackToBase64(file);
+        }
+    };
+
+    const fallbackToBase64 = (file) => {
         const reader = new FileReader();
         reader.onload = (e) => {
             const dataUrl = e.target.result;
@@ -68,6 +101,7 @@ export default function ImageUploader({ value, onChange, label = "Görsel Yükle
 
     const handleRemove = () => {
         setPreview(null);
+        setUploadError(null);
         onChange('');
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
@@ -78,14 +112,38 @@ export default function ImageUploader({ value, onChange, label = "Görsel Yükle
         <div className="image-uploader">
             <label className="upload-label">{label}</label>
 
+            {uploadError && (
+                <div className="upload-error" style={{ color: '#ef4444', fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+                    ⚠️ {uploadError}
+                </div>
+            )}
+
             {preview ? (
                 <div className="upload-preview">
                     <img src={preview} alt="Preview" />
+                    {isUploading && (
+                        <div className="upload-overlay" style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            background: 'rgba(0,0,0,0.5)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                            borderRadius: '8px'
+                        }}>
+                            Yükleniyor...
+                        </div>
+                    )}
                     <div className="preview-actions">
                         <button
                             type="button"
                             className="btn tiny ghost"
                             onClick={() => fileInputRef.current?.click()}
+                            disabled={isUploading}
                         >
                             Değiştir
                         </button>
@@ -93,6 +151,7 @@ export default function ImageUploader({ value, onChange, label = "Görsel Yükle
                             type="button"
                             className="btn tiny danger"
                             onClick={handleRemove}
+                            disabled={isUploading}
                         >
                             Kaldır
                         </button>
@@ -126,7 +185,7 @@ export default function ImageUploader({ value, onChange, label = "Görsel Yükle
                         veya tıklayarak dosya seçin
                     </p>
                     <p className="upload-hint">
-                        JPG, PNG, WebP • Maks. 5MB
+                        JPG, PNG, WebP • Maks. 10MB • Cloudflare R2
                     </p>
                 </div>
             )}
