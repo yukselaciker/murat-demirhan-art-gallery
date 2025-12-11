@@ -13,7 +13,18 @@ export default function AdminLogin({ onLogin }) {
 
   return (
     <div className="admin-page">
-      <div className="admin-card">
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="login-video-bg"
+      >
+        <source src="/login-bg.mp4" type="video/mp4" />
+        {/* Fallback: If video doesn't load, show dark background */}
+      </video>
+      <div className="admin-card glass-card">
+        <div style={{ textAlign: 'center', fontSize: '3rem', marginBottom: '1rem' }}>🎨</div>
         <h1>Admin Panel</h1>
         <p className="muted">Giriş yaparak yönetim paneline erişin</p>
 

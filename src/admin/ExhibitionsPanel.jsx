@@ -136,14 +136,14 @@ export default function ExhibitionsPanel() {
         </div>
         {sorted.map((item) => (
           <div key={item.id} className="table-row">
-            <div>
-              <strong>{item.title}</strong>
-              <p className="muted tiny">
+            <div style={{ maxWidth: '100%', overflow: 'hidden' }}>
+              <strong style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>{item.title}</strong>
+              <p className="muted tiny" style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>
                 {item.venue}, {item.city} — {item.type}
               </p>
             </div>
-            <span>{item.year}</span>
-            <span>{item.city}</span>
+            <span style={{ whiteSpace: 'nowrap' }}>{item.year}</span>
+            <span style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>{item.city}</span>
             <div className="row-actions">
               <button className="btn tiny" onClick={() => handleEdit(item)}>
                 Düzenle

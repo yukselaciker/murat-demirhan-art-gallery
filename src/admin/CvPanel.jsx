@@ -80,13 +80,15 @@ export default function CvPanel() {
           </div>
           <div className="table mini">
             {education.map((ed, idx) => (
-              <div key={ed.id || idx} className="table-row">
+              <div key={ed.id || idx} className="table-row" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
                 <input
+                  style={{ flex: '2 1 200px', minWidth: '150px' }}
                   placeholder="Okul / Program"
                   value={ed.school}
                   onChange={(e) => updateItem(education, setEducation, ed.id ?? idx, 'school', e.target.value)}
                 />
                 <input
+                  style={{ flex: '1 1 100px', minWidth: '80px' }}
                   placeholder="Yıl"
                   value={ed.year}
                   onChange={(e) => updateItem(education, setEducation, ed.id ?? idx, 'year', e.target.value)}
@@ -108,18 +110,21 @@ export default function CvPanel() {
           </div>
           <div className="table mini">
             {awards.map((aw, idx) => (
-              <div key={aw.id || idx} className="table-row">
+              <div key={aw.id || idx} className="table-row" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
                 <input
+                  style={{ flex: '2 1 150px', minWidth: '120px' }}
                   placeholder="Ödül"
                   value={aw.title}
                   onChange={(e) => updateItem(awards, setAwards, aw.id ?? idx, 'title', e.target.value)}
                 />
                 <input
+                  style={{ flex: '1 1 120px', minWidth: '100px' }}
                   placeholder="Kurum"
                   value={aw.org}
                   onChange={(e) => updateItem(awards, setAwards, aw.id ?? idx, 'org', e.target.value)}
                 />
                 <input
+                  style={{ flex: '0 1 80px', minWidth: '60px' }}
                   placeholder="Yıl"
                   value={aw.year}
                   onChange={(e) => updateItem(awards, setAwards, aw.id ?? idx, 'year', e.target.value)}
@@ -141,8 +146,9 @@ export default function CvPanel() {
           </div>
           <div className="stack">
             {highlights.map((hl, idx) => (
-              <div key={idx} className="table-row">
+              <div key={idx} className="table-row" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
                 <input
+                  style={{ flex: '1 1 300px', minWidth: '200px' }}
                   className="full"
                   value={hl}
                   onChange={(e) =>
