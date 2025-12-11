@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSiteData } from '../data/siteData.js';
 import ImageUploader from './ImageUploader.jsx';
 
@@ -7,12 +7,32 @@ const emptyAward = { title: '', org: '', year: '' };
 
 export default function CvPanel() {
   const { data, updateCv } = useSiteData();
-  const [bio, setBio] = useState(data.cv.bio || '');
-  const [artistPhoto, setArtistPhoto] = useState(data.cv.artistPhoto || '');
-  const [education, setEducation] = useState(data.cv.education || []);
-  const [awards, setAwards] = useState(data.cv.awards || []);
-  const [highlights, setHighlights] = useState(data.cv.highlights || []);
+
+  // Safe access with fallbacks
+  const cv = data?.cv || {};
+  const [bio, setBio] = useState(cv.bio || '');
+  const [artistPhoto, setArtistPhoto] = useState(cv.artistPhoto || '');
+  const [education, setEducation] = useState(cv.education || []);
+  const [awards, setAwards] = useState(cv.awards || []);
+  const [highlights, setHighlights] = useState(cv.highlights || []);
   const [message, setMessage] = useState('');
+
+  // Debug logging
+  useEffect(() => {
+    console.log('[CvPanel] Data received:', data);
+    console.log('[CvPanel] CV:', data?.cv);
+  }, [data]);
+
+  // Update form when async data loads
+  useEffect(() => {
+    if (data?.cv) {
+      setBio(data.cv.bio || '');
+      setArtistPhoto(data.cv.artistPhoto || '');
+      setEducation(data.cv.education || []);
+      setAwards(data.cv.awards || []);
+      setHighlights(data.cv.highlights || []);
+    }
+  }, [data?.cv]);
 
   const save = () => {
     updateCv({ bio, artistPhoto, education, awards, highlights });

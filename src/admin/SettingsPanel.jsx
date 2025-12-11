@@ -1,12 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSiteData } from '../data/siteData.js';
 
 export default function SettingsPanel() {
-    const { data, updateContactInfo, resetData } = useSiteData();
-    const [email, setEmail] = useState(data.contactInfo.email || '');
-    const [location, setLocation] = useState(data.contactInfo.location || '');
-    const [phone, setPhone] = useState(data.contactInfo.phone || '');
+    const { data, updateContactInfo, resetData, isInitialized } = useSiteData();
+
+    // Debug: Log what data we receive
+    useEffect(() => {
+        console.log('[SettingsPanel] Data received:', data);
+        console.log('[SettingsPanel] ContactInfo:', data?.contactInfo);
+        console.log('[SettingsPanel] isInitialized:', isInitialized);
+    }, [data, isInitialized]);
+
+    // Safe access with fallbacks
+    const contactInfo = data?.contactInfo || {};
+    const [email, setEmail] = useState(contactInfo.email || '');
+    const [location, setLocation] = useState(contactInfo.location || '');
+    const [phone, setPhone] = useState(contactInfo.phone || '');
     const [message, setMessage] = useState('');
+
+    // Update form when data loads
+    useEffect(() => {
+        if (data?.contactInfo) {
+            setEmail(data.contactInfo.email || '');
+            setLocation(data.contactInfo.location || '');
+            setPhone(data.contactInfo.phone || '');
+        }
+    }, [data?.contactInfo]);
 
     const handleSave = () => {
         updateContactInfo({ email, location, phone });
