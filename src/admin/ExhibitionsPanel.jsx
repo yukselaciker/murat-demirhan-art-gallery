@@ -17,7 +17,13 @@ export default function ExhibitionsPanel() {
   const [message, setMessage] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
-  // Loading state
+  // All hooks MUST be called before any early return!
+  const sorted = useMemo(() => {
+    if (!data?.exhibitions) return [];
+    return [...data.exhibitions].sort((a, b) => Number(b.year) - Number(a.year));
+  }, [data?.exhibitions]);
+
+  // Loading state - AFTER all hooks
   if (!isInitialized) {
     return (
       <div className="panel">
@@ -74,31 +80,6 @@ export default function ExhibitionsPanel() {
 
   const cancelDelete = () => {
     setDeleteConfirm(null);
-  };
-
-  const sorted = useMemo(() => {
-    if (!data?.exhibitions) return [];
-    return [...data.exhibitions].sort((a, b) => Number(b.year) - Number(a.year));
-  }, [data?.exhibitions]);
-
-  /* 1. SANITIZE & PROXY INPUT (Strict Security) */
-  const getImageUrl = (path) => {
-    if (!path) return 'https://via.placeholder.com/300?text=No+Image';
-    if (path.startsWith('data:')) return path;
-
-    // 1. Construct Base URL safely
-    let url = path;
-    if (!path.startsWith('http')) {
-      const baseUrl = import.meta.env.VITE_R2_PUBLIC_URL || `${import.meta.env.VITE_SUPABASE_URL || ''}/storage/v1/object/public/exhibitions/`;
-      // Remove trailing slash from base and leading slash from path
-      url = `${baseUrl.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
-    }
-
-    // 2. FORCE HTTPS (Mixed Content Fix)
-    url = url.replace(/^http:\/\//i, 'https://');
-
-    // 3. Return Proxy URL (wsrv.nl is strictly HTTPS)
-    return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=600&output=jpg`;
   };
 
   return (
@@ -169,46 +150,26 @@ export default function ExhibitionsPanel() {
           <span>İşlemler</span>
         </div>
 
-        {sorted.map((item) => {
-          const imageUrl = getImageUrl(item.image);
-          return (
-            <div key={item.id} className="table-row" style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 2fr) 60px 100px 140px', gap: '10px', alignItems: 'center' }}>
-              <div style={{ maxWidth: '100%', overflow: 'hidden' }}>
-                <strong style={{ wordWrap: 'break-word', overflowWrap: 'break-word', display: 'block' }}>{item.title}</strong>
-                <p className="muted tiny" style={{ wordWrap: 'break-word', overflowWrap: 'break-word', margin: 0 }}>
-                  {item.venue}, {item.city} — {item.type}
-                </p>
-                {/* VISUAL DEBUGGER - Thumbnail */}
-                {item.image && (
-                  <div style={{ marginTop: '5px', fontSize: '9px', color: '#dc2626' }}>
-                    <img
-                      src={imageUrl}
-                      alt="thumb"
-                      /* SECURITY ATTRIBUTES */
-                      referrerPolicy="no-referrer"
-                      crossOrigin="anonymous"
-                      loading="eager"
-                      style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd', marginRight: '5px', float: 'left' }}
-                    />
-                    <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      PROXY: {imageUrl}
-                    </span>
-                  </div>
-                )}
-              </div>
-              <span style={{ whiteSpace: 'nowrap' }}>{item.year}</span>
-              <span style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>{item.city}</span>
-              <div className="row-actions">
-                <button className="btn tiny" onClick={() => handleEdit(item)}>
-                  Düzenle
-                </button>
-                <button className="btn danger tiny" onClick={() => handleDelete(item.id)}>
-                  Sil
-                </button>
-              </div>
+        {sorted.map((item) => (
+          <div key={item.id} className="table-row">
+            <div style={{ maxWidth: '100%', overflow: 'hidden' }}>
+              <strong style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>{item.title}</strong>
+              <p className="muted tiny" style={{ wordWrap: 'break-word', overflowWrap: 'break-word', margin: 0 }}>
+                {item.venue}, {item.city} — {item.type}
+              </p>
             </div>
-          );
-        })}
+            <span style={{ whiteSpace: 'nowrap' }}>{item.year}</span>
+            <span style={{ wordWrap: 'break-word', overflowWrap: 'break-word' }}>{item.city}</span>
+            <div className="row-actions">
+              <button className="btn tiny" onClick={() => handleEdit(item)}>
+                Düzenle
+              </button>
+              <button className="btn danger tiny" onClick={() => handleDelete(item.id)}>
+                Sil
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Silme Onay Dialog */}
@@ -228,7 +189,6 @@ export default function ExhibitionsPanel() {
           </div>
         </div>
       )}
-
     </div>
   );
 }
