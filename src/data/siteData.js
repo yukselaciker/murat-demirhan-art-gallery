@@ -452,21 +452,32 @@ export function useSiteData() {
       addArtwork: async (payload) => {
         if (USE_API) {
           try {
-            await ApiDataService.addArtwork(payload);
-            // Ekleme sonrası cache temizle ve veriyi tazele
+            // Add artwork and get the returned data
+            const newArtwork = await ApiDataService.addArtwork(payload);
+            console.log('[useSiteData] New artwork returned:', newArtwork);
+
+            // OPTIMISTIC UI: Immediately add to top of list
+            if (newArtwork && (Array.isArray(newArtwork) ? newArtwork[0] : newArtwork)) {
+              const artworkToAdd = Array.isArray(newArtwork) ? newArtwork[0] : newArtwork;
+              setData((prev) => ({
+                ...prev,
+                artworks: [artworkToAdd, ...(prev.artworks || [])],
+              }));
+              console.log('[useSiteData] Optimistically added artwork to state');
+            }
+
+            // Invalidate cache for next full load
             ApiDataService.invalidateCache();
-            const freshData = await ApiDataService.load();
-            setData(freshData);
+
             return true;
           } catch (e) {
             console.error('Add failed', e);
-            alert('Eser eklenirken hata oluştu');
-            return false;
+            throw e; // Re-throw so caller can handle
           }
         } else {
           setData((prev) => ({
             ...prev,
-            artworks: [...prev.artworks, { ...payload, id: nextId(prev.artworks) }],
+            artworks: [{ ...payload, id: nextId(prev.artworks) }, ...prev.artworks],
           }));
         }
       },
