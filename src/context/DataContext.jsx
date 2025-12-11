@@ -48,9 +48,14 @@ function getThumbnailUrl(imageUrl, width = 600, quality = 75) {
 
 /**
  * Normalize raw API data to frontend format
+ * Handles EAV (key-value) structure from site_settings table
  */
 function normalizeData(rawData) {
     const { artworks: rawArtworks, exhibitions: rawExhibitions, settings } = rawData;
+
+    // Debug: Log what we received
+    console.log('[normalizeData] Settings received:', settings);
+    console.log('[normalizeData] Settings keys:', settings ? Object.keys(settings) : 'null');
 
     // Normalize artworks with thumbnails
     const artworks = Array.isArray(rawArtworks)
@@ -65,15 +70,22 @@ function normalizeData(rawData) {
         : [];
 
     const exhibitions = Array.isArray(rawExhibitions) ? rawExhibitions : [];
+
+    // Settings is now an object with keys like: cv, contact, featuredArtworkId
+    // from the parseSettings transformation in index.html
     const cv = settings?.cv || DEFAULT_DATA.cv;
     const contactInfo = settings?.contact || DEFAULT_DATA.contactInfo;
+    const featuredArtworkId = settings?.featuredArtworkId || null;
+
+    console.log('[normalizeData] CV:', cv);
+    console.log('[normalizeData] ContactInfo:', contactInfo);
 
     return {
         artworks,
         exhibitions,
         cv,
         contactInfo,
-        featuredArtworkId: settings?.featuredArtworkId || null,
+        featuredArtworkId,
     };
 }
 
