@@ -2,6 +2,7 @@
 // DATA CONTEXT - MURAT DEMİRHAN PORTFOLYO
 // Centralized data fetching to eliminate waterfall pattern
 // This provider fetches ALL data ONCE at app startup
+// Build: 2025-12-11T12:15 - Parallel fetch optimization
 // ============================================
 
 import { createContext, useContext, useState, useEffect } from 'react';
