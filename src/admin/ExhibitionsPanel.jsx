@@ -11,11 +11,22 @@ const emptyExhibition = {
 };
 
 export default function ExhibitionsPanel() {
-  const { data, addExhibition, updateExhibition, deleteExhibition } = useSiteData();
+  const { data, addExhibition, updateExhibition, deleteExhibition, isInitialized } = useSiteData();
   const [form, setForm] = useState(emptyExhibition);
   const [editingId, setEditingId] = useState(null);
   const [message, setMessage] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+
+  // Loading state
+  if (!isInitialized) {
+    return (
+      <div className="panel">
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <p>Sergiler yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -65,7 +76,10 @@ export default function ExhibitionsPanel() {
     setDeleteConfirm(null);
   };
 
-  const sorted = useMemo(() => [...data.exhibitions].sort((a, b) => Number(b.year) - Number(a.year)), [data.exhibitions]);
+  const sorted = useMemo(() => {
+    if (!data?.exhibitions) return [];
+    return [...data.exhibitions].sort((a, b) => Number(b.year) - Number(a.year));
+  }, [data?.exhibitions]);
 
   /* 1. SANITIZE & PROXY INPUT (Strict Security) */
   const getImageUrl = (path) => {
@@ -214,23 +228,7 @@ export default function ExhibitionsPanel() {
           </div>
         </div>
       )}
-      {/* Silme Onay Dialog */}
-      {deleteConfirm && (
-        <div className="modal-overlay" onClick={cancelDelete}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-            <h3>Emin misiniz?</h3>
-            <p>Bu sergiyi silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</p>
-            <div className="modal-actions">
-              <button className="btn ghost" onClick={cancelDelete}>
-                İptal
-              </button>
-              <button className="btn danger" onClick={confirmDelete}>
-                Evet, Sil
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }
