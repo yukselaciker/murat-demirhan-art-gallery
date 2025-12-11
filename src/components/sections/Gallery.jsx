@@ -145,6 +145,7 @@ export function Gallery() {
                                                 alt={`${title} - ${technique}`}
                                                 artworkTitle={title}
                                                 className="artwork-card__image"
+                                                loading="eager"
                                             />
                                         ) : (
                                             <div className="placeholder-image">
