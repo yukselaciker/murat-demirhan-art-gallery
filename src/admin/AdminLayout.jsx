@@ -1,16 +1,26 @@
 export default function AdminLayout({ tabs, activeTab, onSelectTab, onLogout, children }) {
+  // Navigation icons
+  const getIcon = (key) => {
+    switch (key) {
+      case 'artworks': return '🎨';
+      case 'exhibitions': return '🏛️';
+      case 'cv': return '📄';
+      case 'messages': return '✉️';
+      case 'settings': return '⚙️';
+      default: return '📍';
+    }
+  };
+
   return (
     <div className="admin-shell">
       <aside className="admin-sidebar">
         <div className="admin-sidebar-top">
           <div className="admin-brand">
             <span>🎨</span>
-            <strong>Murat Demirhan</strong>
+            <div>Murat Demirhan</div>
           </div>
-          <button className="btn ghost" onClick={onLogout}>
-            Çıkış
-          </button>
         </div>
+
         <nav className="admin-nav">
           {tabs.map((tab) => (
             <button
@@ -18,9 +28,17 @@ export default function AdminLayout({ tabs, activeTab, onSelectTab, onLogout, ch
               className={`nav-btn ${activeTab === tab.key ? 'active' : ''}`}
               onClick={() => onSelectTab(tab.key)}
             >
+              <span className="nav-icon">{getIcon(tab.key)}</span>
               {tab.label}
             </button>
           ))}
+
+          <div style={{ flex: 1 }} /> {/* Spacer */}
+
+          <button className="nav-btn" onClick={onLogout}>
+            <span className="nav-icon">🚪</span>
+            Çıkış
+          </button>
         </nav>
       </aside>
 

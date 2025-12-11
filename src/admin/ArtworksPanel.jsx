@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useSiteData } from '../data/siteData.js';
 import ImageUploader from './ImageUploader.jsx';
-import './ArtworksPanel.css';
+
 
 const emptyArtwork = {
   title: '',
