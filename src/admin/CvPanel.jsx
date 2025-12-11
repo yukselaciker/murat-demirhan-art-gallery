@@ -1,279 +1,117 @@
-import { useState, useEffect } from 'react';
-import { useSiteData } from '../data/siteData.js';
-import ImageUploader from './ImageUploader.jsx';
-
-const emptyEducation = { school: '', year: '' };
-const emptyAward = { title: '', org: '', year: '' };
+import React, { useState } from 'react';
+import { PageHeader } from '../components/admin/ui/PageHeader';
+import { Card } from '../components/admin/ui/Card';
+import { Button } from '../components/admin/ui/Button';
+import { Input } from '../components/admin/ui/Input';
+import { Textarea } from '../components/admin/ui/Textarea';
+import { ImageUpload } from '../components/admin/ui/ImageUpload';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 export default function CvPanel() {
-  const { data, updateCv } = useSiteData();
+  const [cvData, setCvData] = useLocalStorage('admin_cv', {
+    bio: '',
+    title: 'Ressam & Sanat Eğitmeni',
+    artistPhoto: null
+  });
 
-  // Safe access with fallbacks
-  const cv = data?.cv || {};
-  const [bio, setBio] = useState(cv.bio || '');
-  const [artistPhoto, setArtistPhoto] = useState(cv.artistPhoto || '');
-  const [education, setEducation] = useState(cv.education || []);
-  const [awards, setAwards] = useState(cv.awards || []);
-  const [highlights, setHighlights] = useState(cv.highlights || []);
-  const [message, setMessage] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
-  // Update form when async data loads
-  useEffect(() => {
-    if (data?.cv) {
-      setBio(data.cv.bio || '');
-      setArtistPhoto(data.cv.artistPhoto || '');
-      setEducation(data.cv.education || []);
-      setAwards(data.cv.awards || []);
-      setHighlights(data.cv.highlights || []);
-    }
-  }, [data?.cv]);
-
-  const save = async () => {
+  const handleSave = () => {
     setIsSaving(true);
-    setMessage('');
-    try {
-      await updateCv({ bio, artistPhoto, education, awards, highlights });
-      setMessage('success:Özgeçmiş güncellendi.');
-      setTimeout(() => setMessage(''), 3000);
-    } catch (e) {
-      console.error(e);
-      setMessage('error:Kaydetme hatası.');
-    } finally {
+    // Simulate API call
+    setTimeout(() => {
       setIsSaving(false);
-    }
+      // Toast or notification would go here
+    }, 800);
   };
 
-  const addEducation = () => setEducation((prev) => [...prev, { ...emptyEducation, id: crypto.randomUUID() }]);
-  const addAward = () => setAwards((prev) => [...prev, { ...emptyAward, id: crypto.randomUUID() }]);
-  const addHighlight = () => setHighlights((prev) => [...prev, '']);
-
-  const updateItem = (list, setList, id, field, value) =>
-    setList((prev) => prev.map((item, idx) => (item.id ? (item.id === id ? { ...item, [field]: value } : item) : idx === id ? { ...item, [field]: value } : item)));
-
-  const deleteItem = (list, setList, id) =>
-    setList((prev) => prev.filter((item, idx) => (item.id ? item.id !== id : idx !== id)));
-
-  const messageType = message.split(':')[0];
-  const messageText = message.split(':').slice(1).join(':');
-
   return (
-    <div className="artworks-panel">
-      <div className="panel-header-modern">
-        <div>
-          <h2>📄 Özgeçmiş / CV</h2>
-          <p className="subtitle">Biyografi, portre ve kariyer detaylarını yönetin.</p>
+    <div className="fade-in">
+      <PageHeader
+        title="Özgeçmiş / CV"
+        subtitle="Biyografi ve profil bilgilerinizi düzenleyin"
+        actions={
+          <Button onClick={handleSave} isLoading={isSaving}>Değişiklikleri Kaydet</Button>
+        }
+      />
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'var(--space-6)' }}>
+
+        {/* Left Column: Bio & Info - Takes up more space on desktop usually, but grid-cols-12 is better */}
+        <div style={{ gridColumn: 'span 2' }}>
+          {/* Custom Grid Helper for 2/3 vs 1/3 if we had a full grid system, but using flex/grid here */}
         </div>
-        <button className="btn-add-new" onClick={save} disabled={isSaving}>
-          {isSaving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
-        </button>
       </div>
 
-      {message && (
-        <div className={`toast ${messageType}`}>
-          {messageType === 'success' ? '✅' : '❌'} {messageText}
-        </div>
-      )}
+      {/* Better Layout: Grid with specific tracks */}
+      <div className="cv-layout" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--space-6)' }}>
+        {/* Desktop switch to side-by-side */}
+        <style>{`
+            @media (min-width: 1024px) {
+                .cv-layout { grid-template-columns: 2fr 1fr; }
+            }
+         `}</style>
 
-      <div className="panel" style={{ gap: '2rem' }}>
-        {/* BIO & PHOTO Section */}
-        <div className="form-grid-modern" style={{ alignItems: 'start' }}>
-          <div className="card">
-            <h3>Kısa Biyografi</h3>
-            <div className="form-group">
-              <textarea
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                rows={8}
-                placeholder="Sanatçı hakkında kısa bir yazı..."
-                style={{ minHeight: '200px' }}
-              />
+        {/* Left: Bio */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+          <Card>
+            <Input
+              label="Ünvan / Başlık"
+              value={cvData.title}
+              onChange={(e) => setCvData({ ...cvData, title: e.target.value })}
+              placeholder="Örn: Ressam & Sanatçı"
+            />
+            <Textarea
+              label="Biyografi"
+              value={cvData.bio}
+              onChange={(e) => setCvData({ ...cvData, bio: e.target.value })}
+              rows={12}
+              placeholder="Sanatçının özgeçmişi..."
+              helperText="Markdown formatı desteklenir."
+            />
+          </Card>
+
+          <Card>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1.125rem' }}>Eğitim & Deneyim</h3>
+              <Button variant="secondary" size="sm">+ Ekle</Button>
             </div>
-          </div>
-
-          <div className="card">
-            <h3>Sanatçı Portresi</h3>
-            <div className="form-group">
-              <ImageUploader
-                value={artistPhoto}
-                onChange={setArtistPhoto}
-                label="Fotoğraf Yükle"
-              />
+            {/* Placeholder list */}
+            <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', textAlign: 'center', padding: '1rem' }}>
+              Eğitim bilgileri listesi buraya gelecek (Geliştirme aşamasında)
             </div>
-          </div>
+          </Card>
         </div>
 
-        {/* EDUCATION Section */}
-        <div className="card">
-          <div className="panel-section-header">
-            <h2>Eğitimler</h2>
-            <button className="btn secondary" onClick={addEducation}>+ Ekle</button>
-          </div>
+        {/* Right: Portrait & Actions */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+          <Card>
+            <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem' }}>Profil Fotoğrafı</h3>
+            <ImageUpload
+              currentImage={cvData.artistPhoto}
+              onImageSelected={(file) => {
+                // Mock upload - just set preview for now
+                const reader = new FileReader();
+                reader.onloadend = () => setCvData({ ...cvData, artistPhoto: reader.result });
+                reader.readAsDataURL(file);
+              }}
+              onImageRemoved={() => setCvData({ ...cvData, artistPhoto: null })}
+              label=""
+              helperText="400x500px önerilir"
+            />
+          </Card>
 
-          <div className="table-container">
-            <table className="modern-table">
-              <thead>
-                <tr>
-                  <th>Okul / Program</th>
-                  <th style={{ width: '150px' }}>Yıl</th>
-                  <th style={{ width: '80px' }}></th>
-                </tr>
-              </thead>
-              <tbody>
-                {education.map((ed, idx) => (
-                  <tr key={ed.id || idx}>
-                    <td>
-                      <input
-                        className="no-border-input"
-                        value={ed.school}
-                        onChange={(e) => updateItem(education, setEducation, ed.id ?? idx, 'school', e.target.value)}
-                        placeholder="Okul adı"
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="no-border-input"
-                        value={ed.year}
-                        onChange={(e) => updateItem(education, setEducation, ed.id ?? idx, 'year', e.target.value)}
-                        placeholder="Tarih"
-                      />
-                    </td>
-                    <td>
-                      <button className="btn-icon" onClick={() => deleteItem(education, setEducation, ed.id ?? idx)} title="Sil">
-                        🗑️
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                {education.length === 0 && (
-                  <tr>
-                    <td colSpan="3" style={{ textAlign: 'center', color: 'var(--slate-400)', padding: '2rem' }}>
-                      Henüz eğitim bilgisi eklenmemiş
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+          <Card>
+            <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem' }}>CV Dosyası</h3>
+            <Button variant="secondary" fullWidth style={{ marginBottom: '0.5rem' }}>
+              📄 PDF Yükle
+            </Button>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
+              Ziyaretçilerin indirebileceği dosya
+            </div>
+          </Card>
         </div>
 
-        {/* AWARDS Section */}
-        <div className="card">
-          <div className="panel-section-header">
-            <h2>Ödüller</h2>
-            <button className="btn secondary" onClick={addAward}>+ Ekle</button>
-          </div>
-
-          <div className="table-container">
-            <table className="modern-table">
-              <thead>
-                <tr>
-                  <th>Ödül</th>
-                  <th>Kurum</th>
-                  <th style={{ width: '150px' }}>Yıl</th>
-                  <th style={{ width: '80px' }}></th>
-                </tr>
-              </thead>
-              <tbody>
-                {awards.map((aw, idx) => (
-                  <tr key={aw.id || idx}>
-                    <td>
-                      <input
-                        className="no-border-input"
-                        value={aw.title}
-                        onChange={(e) => updateItem(awards, setAwards, aw.id ?? idx, 'title', e.target.value)}
-                        placeholder="Ödül adı"
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="no-border-input"
-                        value={aw.org}
-                        onChange={(e) => updateItem(awards, setAwards, aw.id ?? idx, 'org', e.target.value)}
-                        placeholder="Kurum"
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="no-border-input"
-                        value={aw.year}
-                        onChange={(e) => updateItem(awards, setAwards, aw.id ?? idx, 'year', e.target.value)}
-                        placeholder="Yıl"
-                      />
-                    </td>
-                    <td>
-                      <button className="btn-icon" onClick={() => deleteItem(awards, setAwards, aw.id ?? idx)} title="Sil">
-                        🗑️
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                {awards.length === 0 && (
-                  <tr>
-                    <td colSpan="4" style={{ textAlign: 'center', color: 'var(--slate-400)', padding: '2rem' }}>
-                      Henüz ödül eklenmemiş
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* HIGHLIGHTS Section */}
-        <div className="card">
-          <div className="panel-section-header">
-            <h2>Öne Çıkanlar</h2>
-            <button className="btn secondary" onClick={addHighlight}>+ Ekle</button>
-          </div>
-
-          <div className="table-container">
-            <table className="modern-table">
-              <thead>
-                <tr>
-                  <th>Madde (Hakkında kısmında liste olarak görünür)</th>
-                  <th style={{ width: '80px' }}></th>
-                </tr>
-              </thead>
-              <tbody>
-                {highlights.map((hl, idx) => (
-                  <tr key={idx}>
-                    <td>
-                      <input
-                        className="no-border-input"
-                        value={hl}
-                        onChange={(e) =>
-                          setHighlights((prev) => prev.map((item, i) => (i === idx ? e.target.value : item)))
-                        }
-                        placeholder="Örn: 2024 Pera Müzesi kişisel sergi"
-                        style={{ width: '100%' }}
-                      />
-                    </td>
-                    <td>
-                      <button className="btn-icon" onClick={() => deleteItem(highlights, setHighlights, idx)} title="Sil">
-                        🗑️
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                {highlights.length === 0 && (
-                  <tr>
-                    <td colSpan="2" style={{ textAlign: 'center', color: 'var(--slate-400)', padding: '2rem' }}>
-                      Henüz öne çıkan madde eklenmemiş
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Global Save Button (Bottom) */}
-        <div className="form-buttons">
-          <button className="btn-primary" onClick={save} disabled={isSaving} style={{ width: '100%', padding: '1rem' }}>
-            {isSaving ? 'Kaydediliyor...' : 'Tüm Değişiklikleri Kaydet'}
-          </button>
-        </div>
       </div>
     </div>
   );

@@ -1,0 +1,194 @@
+/* ============================================
+   MURAT DEMIRHAN STUDIO - UNIFIED THEME SYSTEM
+   ============================================ */
+
+:root {
+    /* --- COLORS: NEUTRALS (Slate-based for modern clean look) --- */
+    --color-neutral-0: #ffffff;
+    --color-neutral-50: #f8fafc;
+    /* Canvas/Page BG */
+    --color-neutral-100: #f1f5f9;
+    /* Panel BG / Hover */
+    --color-neutral-200: #e2e8f0;
+    /* Borders */
+    --color-neutral-300: #cbd5e1;
+    /* Disabled text / Icons */
+    --color-neutral-400: #94a3b8;
+    /* Placeholder */
+    --color-neutral-500: #64748b;
+    /* Secondary text */
+    --color-neutral-600: #475569;
+    /* Primary text soft */
+    --color-neutral-700: #334155;
+    /* Primary text strong */
+    --color-neutral-800: #1e293b;
+    /* Headings */
+    --color-neutral-900: #0f172a;
+    /* Heavy contrast */
+    --color-neutral-950: #020617;
+    /* Sidebar / Black */
+
+    /* --- COLORS: BRAND (Primary - Burgundy/Purple hint from request) --- */
+    /* Using a refined Palette based on the "Primary" requested or existing */
+    --color-primary-50: #fdf2f8;
+    --color-primary-100: #fce7f3;
+    --color-primary-200: #fbcfe8;
+    --color-primary-300: #f9a8d4;
+    --color-primary-400: #f472b6;
+    --color-primary-500: #ec4899;
+    --color-primary-600: #db2777;
+    /* Main Action */
+    --color-primary-700: #be185d;
+    /* Active State */
+    --color-primary-800: #9d174d;
+    --color-primary-900: #831843;
+
+    /* --- COLORS: SEMANTIC --- */
+    --color-success: #10b981;
+    --color-success-bg: #ecfdf5;
+    --color-warning: #f59e0b;
+    --color-warning-bg: #fffbeb;
+    --color-danger: #ef4444;
+    --color-danger-bg: #fef2f2;
+    --color-info: #3b82f6;
+    --color-info-bg: #eff6ff;
+
+    /* --- SPACING --- */
+    --space-0: 0px;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+    --space-16: 64px;
+
+    /* --- BORDER RADIUS --- */
+    --radius-xs: 4px;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    /* Standard Inputs/Buttons */
+    --radius-lg: 12px;
+    /* Cards */
+    --radius-xl: 16px;
+    /* Panels */
+    --radius-full: 9999px;
+
+    /* --- SHADOWS --- */
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+
+    /* --- TYPOGRAPHY --- */
+    --font-sans: 'Inter', -apple-system, system-ui, sans-serif;
+    --font-display: 'Playfair Display', Georgia, serif;
+    /* As per existing branding */
+
+    /* --- COMPONENT TOKENS (Light Defaults) --- */
+    --bg-canvas: var(--color-neutral-50);
+    --bg-surface: var(--color-neutral-0);
+    --bg-panel: var(--color-neutral-0);
+    --bg-sidebar: var(--color-neutral-900);
+    --border-color: var(--color-neutral-200);
+    --text-primary: var(--color-neutral-800);
+    --text-secondary: var(--color-neutral-500);
+    --text-on-dark: var(--color-neutral-0);
+}
+
+/* --- DARK MODE OVERRIDES --- */
+[data-theme='dark'] {
+    --color-neutral-0: #020617;
+    /* Reverse scale somewhat for simplicity mapping */
+    --color-neutral-50: #0f172a;
+    --color-neutral-100: #1e293b;
+    --color-neutral-200: #334155;
+    --color-neutral-300: #475569;
+    --color-neutral-400: #64748b;
+    --color-neutral-500: #94a3b8;
+    --color-neutral-600: #cbd5e1;
+    --color-neutral-700: #e2e8f0;
+    --color-neutral-800: #f1f5f9;
+    --color-neutral-900: #f8fafc;
+    --color-neutral-950: #ffffff;
+
+    /* Re-assign semantic tokens for Dark Mode */
+    --bg-canvas: #020617;
+    /* Very dark blue/black */
+    --bg-surface: #0f172a;
+    /* Slightly lighter */
+    --bg-panel: #1e293b;
+    /* Card bg */
+    --bg-sidebar: #020617;
+    /* Keep sidebar dark */
+
+    --border-color: #334155;
+    /* Visible border in dark mode */
+
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-on-dark: #f8fafc;
+
+    /* Adjust shadows for dark mode (white glow or just subtle black) */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+}
+
+/* --- UTILITIES --- */
+.text-h1 {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
+.text-h2 {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+}
+
+.text-h3 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.text-h4 {
+    font-family: var(--font-sans);
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.text-body {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.text-sm {
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.text-xs {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    line-height: 1.4;
+}
+
+body {
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}

@@ -1,142 +1,143 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { PageHeader } from '../components/admin/ui/PageHeader';
+import { Card } from '../components/admin/ui/Card';
+import { Button } from '../components/admin/ui/Button';
+import { Badge } from '../components/admin/ui/Badge';
+import { MessageSkeleton } from '../components/admin/ui/MessageSkeleton'; // Explicit requirement
+import { EmptyState } from '../components/admin/ui/EmptyState';
+import { useAdmin } from '../context/AdminContext';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 export default function MessagesPanel() {
-    const [messages, setMessages] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    // Using LocalStorage for persistence as requested
+    const [messages, setMessages] = useLocalStorage('admin_messages', [
+        {
+            id: 1,
+            name: 'Ahmet Yılmaz',
+            email: 'ahmet@example.com',
+            message: 'Sergi açılışına katılmak istiyorum, davetiye alabilir miyim?',
+            date: '2024-03-10T14:30:00',
+            read: false
+        },
+        {
+            id: 2,
+            name: 'Ayşe Demir',
+            email: 'ayse@artgallery.com',
+            message: 'Eserleriniz hakkında fiyat bilgisi alabilir miyim?',
+            date: '2024-03-09T09:15:00',
+            read: true
+        }
+    ]);
 
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Simulate loading delay for skeleton demo
     useEffect(() => {
-        fetchMessages();
+        const timer = setTimeout(() => setIsLoading(false), 2000);
+        return () => clearTimeout(timer);
     }, []);
 
-    const fetchMessages = async () => {
-        try {
-            const res = await fetch('/api/messages');
-            if (!res.ok) throw new Error('Failed to fetch messages');
-            const data = await res.json();
-            // Sort by date desc
-            const sorted = data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-            setMessages(sorted);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
+    const handleMarkAsRead = (id) => {
+        setMessages(prev => prev.map(msg =>
+            msg.id === id ? { ...msg, read: true } : msg
+        ));
+    };
+
+    const handleDelete = (id) => {
+        if (confirm('Bu mesajı silmek istediğinize emin misiniz?')) {
+            setMessages(prev => prev.filter(msg => msg.id !== id));
         }
     };
 
-    const markAsRead = async (id) => {
-        try {
-            await fetch(`/api/messages?id=${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ read: true })
-            });
-            setMessages(prev => prev.map(m => m.id === id ? { ...m, read: true } : m));
-        } catch (err) {
-            console.error('Failed to mark as read:', err);
-        }
+    const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleDateString('tr-TR', {
+            day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+        });
     };
-
-    const deleteMessage = async (id) => {
-        if (!confirm('Bu mesajı silmek istediğinize emin misiniz?')) return;
-        try {
-            await fetch(`/api/messages?id=${id}`, { method: 'DELETE' });
-            setMessages(prev => prev.filter(m => m.id !== id));
-        } catch (err) {
-            console.error('Failed to delete:', err);
-        }
-    };
-
-    if (loading) {
-        return (
-            <div className="artworks-panel">
-                <div className="loading-state">
-                    <div className="spinner"></div>
-                    <p>Mesajlar yükleniyor...</p>
-                </div>
-            </div>
-        );
-    }
 
     const unreadCount = messages.filter(m => !m.read).length;
 
     return (
-        <div className="artworks-panel">
-            <div className="panel-header-modern">
-                <div>
-                    <h2>✉️ Mesajlar</h2>
-                    <p className="subtitle">{messages.length} mesaj ({unreadCount} okunmamış)</p>
+        <div className="fade-in">
+            <PageHeader
+                title="Mesajlar"
+                subtitle="Web sitesinden gelen iletişim formları"
+                actions={
+                    unreadCount > 0 && <Badge variant="primary">{unreadCount} Okunmamış</Badge>
+                }
+            />
+
+            {isLoading ? (
+                <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
+                    <MessageSkeleton />
+                    <MessageSkeleton />
+                    <MessageSkeleton />
                 </div>
-                {/* Refresh button could go here */}
-            </div>
-
-            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-                {messages.length === 0 ? (
-                    <div className="empty-state">
-                        <div className="empty-icon">📭</div>
-                        <h3>Hiç mesaj yok</h3>
-                        <p>Web sitenizden gelen iletişim formları burada listelenir.</p>
-                    </div>
-                ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        {messages.map((msg) => (
-                            <div
-                                key={msg.id}
-                                style={{
-                                    padding: '1.5rem',
-                                    borderBottom: '1px solid var(--slate-100)',
-                                    backgroundColor: msg.read ? 'white' : 'var(--indigo-50)',
-                                    transition: 'background-color 0.2s'
-                                }}
-                            >
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <span style={{ fontWeight: msg.read ? 600 : 700, fontSize: '1rem', color: 'var(--slate-900)' }}>
-                                            {msg.name}
-                                        </span>
-                                        <span style={{ fontSize: '0.875rem', color: 'var(--slate-500)' }}>&lt;{msg.email}&gt;</span>
-                                        {!msg.read && <span className="category-badge" style={{ fontSize: '0.7rem' }}>YENİ</span>}
-                                    </div>
-                                    <div style={{ fontSize: '0.85rem', color: 'var(--slate-500)' }}>
-                                        {new Date(msg.created_at).toLocaleDateString('tr-TR', {
-                                            day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
-                                        })}
-                                    </div>
+            ) : messages.length === 0 ? (
+                <EmptyState
+                    icon="📭"
+                    title="Mesaj Kutusu Boş"
+                    description="Henüz hiç mesaj almadınız."
+                />
+            ) : (
+                <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))' }}>
+                    {messages.map((msg) => (
+                        <Card key={msg.id} style={{
+                            borderLeft: msg.read ? '1px solid var(--border-color)' : '4px solid var(--color-primary-500)',
+                            opacity: msg.read ? 0.8 : 1
+                        }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', alignItems: 'flex-start' }}>
+                                <div>
+                                    <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700 }}>{msg.name}</h4>
+                                    <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{msg.email}</span>
                                 </div>
-
-                                {msg.subject && (
-                                    <div style={{ fontWeight: 600, marginBottom: '0.5rem', color: 'var(--slate-800)' }}>
-                                        {msg.subject}
-                                    </div>
-                                )}
-
-                                <div style={{ color: 'var(--slate-600)', lineHeight: 1.5, marginBottom: '1rem', whiteSpace: 'pre-wrap' }}>
-                                    {msg.message}
-                                </div>
-
-                                <div className="card-actions" style={{ borderTop: 'none', padding: 0 }}>
-                                    {!msg.read && (
-                                        <button className="btn secondary" onClick={() => markAsRead(msg.id)} style={{ height: '32px', fontSize: '0.8rem', padding: '0 0.75rem' }}>
-                                            ✓ Okundu işaretle
-                                        </button>
-                                    )}
-                                    <a
-                                        href={`mailto:${msg.email}?subject=Re: ${msg.subject || 'Portfolyo İletişim'}`}
-                                        className="btn primary"
-                                        style={{ height: '32px', fontSize: '0.8rem', padding: '0 0.75rem', textDecoration: 'none', display: 'flex', alignItems: 'center' }}
-                                    >
-                                        ↪ Yanıtla
-                                    </a>
-                                    <div style={{ flex: 1 }}></div>
-                                    <button className="btn-icon" onClick={() => deleteMessage(msg.id)} title="Sil">
-                                        🗑️
-                                    </button>
-                                </div>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                                    {formatDate(msg.date)}
+                                </span>
                             </div>
-                        ))}
-                    </div>
-                )}
-            </div>
+
+                            <p style={{
+                                margin: '1rem 0',
+                                fontSize: '0.9375rem',
+                                lineHeight: 1.6,
+                                color: 'var(--text-primary)',
+                                backgroundColor: 'var(--bg-canvas)',
+                                padding: '0.75rem',
+                                borderRadius: 'var(--radius-md)'
+                            }}>
+                                {msg.message}
+                            </p>
+
+                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDelete(msg.id)}
+                                    style={{ color: 'var(--color-danger)' }}
+                                >
+                                    Sil
+                                </Button>
+                                {!msg.read && (
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={() => handleMarkAsRead(msg.id)}
+                                    >
+                                        Okundu İşaretle
+                                    </Button>
+                                )}
+                                <Button
+                                    variant="primary"
+                                    size="sm"
+                                    onClick={() => window.location.href = `mailto:${msg.email}`}
+                                >
+                                    Yanıtla
+                                </Button>
+                            </div>
+                        </Card>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

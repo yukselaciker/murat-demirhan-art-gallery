@@ -1,133 +1,131 @@
-import { useState, useEffect } from 'react';
-import { useSiteData } from '../data/siteData.js';
+import React, { useState, useEffect } from 'react';
+import { PageHeader } from '../components/admin/ui/PageHeader';
+import { Card } from '../components/admin/ui/Card';
+import { Input } from '../components/admin/ui/Input';
+import { Button } from '../components/admin/ui/Button';
+import { FormGrid } from '../components/admin/ui/FormGrid';
+import { DangerZone } from '../components/admin/ui/DangerZone';
+import { useAdmin } from '../context/AdminContext';
 
 export default function SettingsPanel() {
-    const { data, updateContactInfo, resetData, isInitialized } = useSiteData();
-
-    // Safe access with fallbacks
-    const contactInfo = data?.contactInfo || {};
-    const [email, setEmail] = useState(contactInfo.email || '');
-    const [location, setLocation] = useState(contactInfo.location || '');
-    const [phone, setPhone] = useState(contactInfo.phone || '');
-    const [message, setMessage] = useState('');
+    const { themeMode, toggleTheme } = useAdmin();
+    const [formData, setFormData] = useState({
+        siteName: 'Murat Demirhan | Official Web Site',
+        email: 'contact@muratdemirhan.com',
+        instagram: 'https://instagram.com/mood_art_s',
+        phone: '+90 555 123 45 67',
+        address: 'Nişantaşı, İstanbul',
+    });
     const [isSaving, setIsSaving] = useState(false);
+    const [passwordData, setPasswordData] = useState({ current: '', new: '', confirm: '' });
 
-    // Update form when data loads
-    useEffect(() => {
-        if (data?.contactInfo) {
-            setEmail(data.contactInfo.email || '');
-            setLocation(data.contactInfo.location || '');
-            setPhone(data.contactInfo.phone || '');
-        }
-    }, [data?.contactInfo]);
-
-    const handleSave = async () => {
+    const handleSave = () => {
         setIsSaving(true);
-        setMessage('');
-        try {
-            await updateContactInfo({ email, location, phone });
-            setMessage('success:İletişim bilgileri güncellendi.');
-            setTimeout(() => setMessage(''), 3000);
-        } catch (e) {
-            console.error(e);
-            setMessage('error:Kaydetme hatası.');
-        } finally {
+        setTimeout(() => {
             setIsSaving(false);
-        }
+            alert('Ayarlar kaydedildi (Demo)');
+        }, 800);
     };
 
-    const messageType = message.split(':')[0];
-    const messageText = message.split(':').slice(1).join(':');
-
-    if (!isInitialized) {
-        return (
-            <div className="artworks-panel">
-                <div className="loading-state">
-                    <div className="spinner"></div>
-                    <p>Ayarlar yükleniyor...</p>
-                </div>
-            </div>
-        );
-    }
+    const handlePasswordReset = () => {
+        alert('Şifre güncelleme (Demo)');
+    };
 
     return (
-        <div className="artworks-panel">
-            <div className="panel-header-modern">
-                <div>
-                    <h2>⚙️ Ayarlar</h2>
-                    <p className="subtitle">Site genel ayarları ve iletişim bilgileri.</p>
-                </div>
-                <button className="btn-add-new" onClick={handleSave} disabled={isSaving}>
-                    {isSaving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
-                </button>
-            </div>
+        <div className="fade-in">
+            <PageHeader
+                title="Ayarlar"
+                subtitle="Web sitesi genel ayarları ve hesap yönetimi"
+                actions={
+                    <Button variant="secondary" onClick={toggleTheme}>
+                        {themeMode === 'light' ? '🌙 Koyu Mod' : '☀️ Açık Mod'}
+                    </Button>
+                }
+            />
 
-            {message && (
-                <div className={`toast ${messageType}`}>
-                    {messageType === 'success' ? '✅' : '❌'} {messageText}
-                </div>
-            )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
 
-            <div className="panel" style={{ gap: '2rem' }}>
-                {/* Contact Info Card */}
-                <div className="form-card">
-                    <h3>İletişim Bilgileri</h3>
-                    <div className="form-grid-modern">
-                        <div className="form-group">
-                            <label>E-posta Adresi</label>
-                            <input
+                {/* Genel Bilgiler */}
+                <section>
+                    <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem' }}>Genel Bilgiler</h3>
+                    <Card>
+                        <FormGrid columns={2}>
+                            <Input
+                                label="Site Başlığı"
+                                value={formData.siteName}
+                                onChange={(e) => setFormData({ ...formData, siteName: e.target.value })}
+                            />
+                            <Input
+                                label="E-posta Adresi"
                                 type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="info@muratdemirhan.com"
+                                value={formData.email}
+                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             />
-                            <div style={{ fontSize: '0.8rem', color: 'var(--slate-500)' }}>İletişim sayfasında görünür.</div>
-                        </div>
-
-                        <div className="form-group">
-                            <label>Konum / Şehir</label>
-                            <input
-                                type="text"
-                                value={location}
-                                onChange={(e) => setLocation(e.target.value)}
-                                placeholder="İstanbul, Türkiye"
+                            <Input
+                                label="Instagram URL"
+                                value={formData.instagram}
+                                onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
                             />
-                            <div style={{ fontSize: '0.8rem', color: 'var(--slate-500)' }}>İletişim sayfasında görünür.</div>
-                        </div>
-
-                        <div className="form-group full-width">
-                            <label>Telefon (Opsiyonel)</label>
-                            <input
-                                type="tel"
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
-                                placeholder="+90 5XX XXX XX XX"
-                                style={{ maxWidth: '50%' }}
+                            <Input
+                                label="Telefon"
+                                value={formData.phone}
+                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                             />
-                            <div style={{ fontSize: '0.8rem', color: 'var(--slate-500)' }}>Boş bırakılırsa sitede görünmez.</div>
+                            <Input
+                                label="Konum / Adres"
+                                value={formData.address}
+                                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                fullWidth
+                                style={{ gridColumn: '1 / -1' }}
+                            />
+                        </FormGrid>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
+                            <Button onClick={handleSave} isLoading={isSaving}>Değişiklikleri Kaydet</Button>
                         </div>
-                    </div>
+                    </Card>
+                </section>
 
-                    <div className="form-buttons">
-                        <button className="btn-primary" onClick={handleSave} disabled={isSaving} style={{ width: '100%', padding: '1rem' }}>
-                            {isSaving ? 'Kaydediliyor...' : 'Bilgileri Güncelle'}
-                        </button>
-                    </div>
-                </div>
+                {/* Güvenlik */}
+                <section>
+                    <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem' }}>Güvenlik</h3>
+                    <Card>
+                        <FormGrid columns={3}>
+                            <Input
+                                label="Mevcut Şifre"
+                                type="password"
+                                value={passwordData.current}
+                                onChange={(e) => setPasswordData({ ...passwordData, current: e.target.value })}
+                            />
+                            <Input
+                                label="Yeni Şifre"
+                                type="password"
+                                value={passwordData.new}
+                                onChange={(e) => setPasswordData({ ...passwordData, new: e.target.value })}
+                            />
+                            <Input
+                                label="Yeni Şifre (Tekrar)"
+                                type="password"
+                                value={passwordData.confirm}
+                                onChange={(e) => setPasswordData({ ...passwordData, confirm: e.target.value })}
+                            />
+                        </FormGrid>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
+                            <Button variant="secondary" onClick={handlePasswordReset}>Şifreyi Güncelle</Button>
+                        </div>
+                    </Card>
+                </section>
 
-                {/* Danger Zone Card */}
-                <div className="form-card" style={{ borderColor: 'var(--danger-200)', backgroundColor: '#fff5f5' }}>
-                    <h3 style={{ color: 'var(--danger-600)' }}>⚠️ Tehlikeli Bölge</h3>
-                    <p style={{ color: 'var(--slate-600)', marginBottom: '1.5rem' }}>
-                        Bu işlem veritabanındaki tüm verileri (eserler, sergiler, ayarlar) silerek başlangıç varsayılanlarına döndürür.
-                        Bu işlem <strong>geri alınamaz</strong>.
-                    </p>
-                    <button className="btn danger" onClick={() => {
-                        if (confirm('TÜM VERİLER SİLİNECEK! Emin misiniz?')) resetData();
-                    }}>
-                        Verileri Sıfırla (Factory Reset)
-                    </button>
-                </div>
+                {/* Tehlikeli Bölge */}
+                <section>
+                    <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', color: 'var(--color-danger)' }}>Tehlikeli Bölge</h3>
+                    <DangerZone
+                        title="Sistemi Sıfırla"
+                        description="Bu işlem tüm veritabanını temizler ve varsayılan ayarlara döndürür. Bu işlem geri alınamaz."
+                        actionText="Sistemi Sıfırla"
+                        onAction={() => confirm('Emin misiniz?')}
+                    />
+                </section>
+
             </div>
         </div>
     );

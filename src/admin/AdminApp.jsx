@@ -1,78 +1,57 @@
-// ============================================
-// ADMIN APP - MURAT DEMİRHAN PORTFOLYO
-// Basit giriş + sekmeli yönetim paneli
-// GERÇEK PROJEDE ŞİFRE SABİT TUTULMAMALIDIR, ORTAM DEĞİŞKENİNE ALINMALIDIR.
-// ============================================
+import React from 'react';
+import { AdminProvider, useAdmin } from '../context/AdminContext';
+import { Layout } from '../components/admin/ui/Layout';
+import AdminLogin from './AdminLogin';
 
-import { useEffect, useMemo, useState } from 'react';
-import AdminLogin from './AdminLogin.jsx';
-import AdminLayout from './AdminLayout.jsx';
-import ArtworksPanel from './ArtworksPanel.jsx';
-import ExhibitionsPanel from './ExhibitionsPanel.jsx';
-import CvPanel from './CvPanel.jsx';
-import SettingsPanel from './SettingsPanel.jsx';
-import MessagesPanel from './MessagesPanel.jsx';
-import '../styles/admin.css';
+// Import Panels (We will refactor these one by one)
+import ArtworksPanel from './ArtworksPanel';
+import ExhibitionsPanel from './ExhibitionsPanel';
+import CvPanel from './CvPanel';
+import MessagesPanel from './MessagesPanel';
+import SettingsPanel from './SettingsPanel';
 
-const STORAGE_KEY = 'md-admin-session';
-// Environment variables'dan kullanıcı adı ve şifre okunur
-const USERNAME = import.meta.env.VITE_ADMIN_USERNAME || 'admin';
-const PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'murat2025!';
+const AdminContent = () => {
+  const { isAuthenticated, activeTab, setActiveTab, logout } = useAdmin();
 
-export default function AdminApp() {
-  const [session, setSession] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || null;
-    } catch {
-      return null;
-    }
-  });
-  const [activeTab, setActiveTab] = useState('artworks');
-
-  useEffect(() => {
-    if (session) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
-    } else {
-      localStorage.removeItem(STORAGE_KEY);
-    }
-  }, [session]);
-
-  const handleLogin = (username, password) => {
-    if (username === USERNAME && password === PASSWORD) {
-      const payload = { user: USERNAME, ts: Date.now() };
-      setSession(payload);
-    } else {
-      return 'Kullanıcı adı veya şifre hatalı';
-    }
-    return null;
-  };
-
-  const handleLogout = () => {
-    setSession(null);
-  };
-
-  const tabs = useMemo(
-    () => [
-      { key: 'artworks', label: 'Eserler' },
-      { key: 'exhibitions', label: 'Sergiler' },
-      { key: 'cv', label: 'Özgeçmiş / CV' },
-      { key: 'messages', label: 'Mesajlar' },
-      { key: 'settings', label: 'Ayarlar' },
-    ],
-    []
-  );
-
-  if (!session) {
-    return <AdminLogin onLogin={handleLogin} />;
+  if (!isAuthenticated) {
+    return <AdminLogin />;
   }
 
+  const tabs = [
+    { key: 'artworks', label: 'Eserler', icon: '🎨' },
+    { key: 'exhibitions', label: 'Sergiler', icon: '🏛️' },
+    { key: 'cv', label: 'Özgeçmiş', icon: '📄' },
+    { key: 'messages', label: 'Mesajlar', icon: '✉️' },
+    { key: 'settings', label: 'Ayarlar', icon: '⚙️' },
+  ];
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'artworks': return <ArtworksPanel />;
+      case 'exhibitions': return <ExhibitionsPanel />;
+      case 'cv': return <CvPanel />;
+      case 'messages': return <MessagesPanel />;
+      case 'settings': return <SettingsPanel />;
+      default: return <ArtworksPanel />;
+    }
+  };
+
   return (
-    <AdminLayout tabs={tabs} activeTab={activeTab} onSelectTab={setActiveTab} onLogout={handleLogout}>
-      {activeTab === 'artworks' && <ArtworksPanel />}
-      {activeTab === 'exhibitions' && <ExhibitionsPanel />}
-      {activeTab === 'cv' && <CvPanel />}
-      {activeTab === 'messages' && <MessagesPanel />}
-      {activeTab === 'settings' && <SettingsPanel />}
-    </AdminLayout>
+    <Layout
+      tabs={tabs}
+      activeTab={activeTab}
+      onSelectTab={setActiveTab}
+      onLogout={logout}
+    >
+      {renderContent()}
+    </Layout>
+  );
+};
+
+export default function AdminApp() {
+  return (
+    <AdminProvider>
+      <AdminContent />
+    </AdminProvider>
   );
 }
