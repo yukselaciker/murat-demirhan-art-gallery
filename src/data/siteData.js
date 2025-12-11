@@ -190,64 +190,84 @@ const ApiDataService = {
 
     // Start new fetch and store promise
     apiFetchPromise = (async () => {
+      console.log('[ApiDataService] Fetching all data from API...');
+
+      // FAIL-SAFE: Fetch each independently so one failure doesn't block others
+      let rawArtworks = [];
+      let rawExhibitions = [];
+      let settings = {};
+
+      // Fetch artworks
       try {
-        console.log('[ApiDataService] Fetching all data from API...');
-
-        // Fetch all entities in parallel
-        const [resArt, resExh, resSettings] = await Promise.all([
-          fetch('/api/artworks'),
-          fetch('/api/exhibitions'),
-          fetch('/api/settings')
-        ]);
-
-        // Parse responses
-        const [rawArtworks, rawExhibitions, settings] = await Promise.all([
-          resArt.ok ? resArt.json() : [],
-          resExh.ok ? resExh.json() : [],
-          resSettings.ok ? resSettings.json() : {}
-        ]);
-
-        // NORMALIZE: Supabase column names to frontend names
-        // Also generate optimized thumbnail URLs for faster initial grid load
-        const artworks = Array.isArray(rawArtworks)
-          ? rawArtworks.map(a => {
-            const fullImage = a.image_url || a.image || a.imageUrl;
-            return {
-              ...a,
-              image: fullImage,
-              // Thumbnail: 600px width, 75% quality for gallery grid
-              thumbnail: getThumbnailUrl(fullImage, 600, 75),
-            };
-          })
-          : [];
-
-        const exhibitions = Array.isArray(rawExhibitions) ? rawExhibitions : [];
-        const cv = settings.cv || DEFAULT_DATA.cv;
-        const contactInfo = settings.contact || DEFAULT_DATA.contactInfo;
-
-        console.log('[ApiDataService] Loaded:', artworks.length, 'artworks,', exhibitions.length, 'exhibitions');
-        console.log('[ApiDataService] Raw exhibitions response:', rawExhibitions);
-        console.log('[ApiDataService] Parsed exhibitions:', exhibitions);
-
-        const result = {
-          artworks,
-          exhibitions,
-          cv,
-          contactInfo,
-          featuredArtworkId: settings.featuredArtworkId || null,
-        };
-
-        // Store in cache with timestamp
-        apiDataCache = result;
-        cacheTimestamp = Date.now();
-        apiFetchPromise = null;
-
-        return result;
+        const res = await fetch('/api/artworks');
+        if (res.ok) {
+          rawArtworks = await res.json();
+          console.log('[ApiDataService] Artworks loaded:', rawArtworks.length);
+        } else {
+          console.error('[ApiDataService] Artworks fetch failed:', res.status);
+        }
       } catch (e) {
-        console.error('[ApiDataService] Load error:', e);
-        apiFetchPromise = null;
-        return DEFAULT_DATA;
+        console.error('[ApiDataService] Artworks error:', e);
       }
+
+      // Fetch exhibitions
+      try {
+        const res = await fetch('/api/exhibitions');
+        if (res.ok) {
+          rawExhibitions = await res.json();
+          console.log('[ApiDataService] Exhibitions loaded:', rawExhibitions.length);
+        } else {
+          console.error('[ApiDataService] Exhibitions fetch failed:', res.status);
+        }
+      } catch (e) {
+        console.error('[ApiDataService] Exhibitions error:', e);
+      }
+
+      // Fetch settings (most likely to fail - isolated so it doesn't break others)
+      try {
+        const res = await fetch('/api/settings');
+        if (res.ok) {
+          settings = await res.json();
+          console.log('[ApiDataService] Settings loaded:', Object.keys(settings));
+        } else {
+          console.error('[ApiDataService] Settings fetch failed:', res.status);
+        }
+      } catch (e) {
+        console.error('[ApiDataService] Settings error:', e);
+      }
+
+      // NORMALIZE: Supabase column names to frontend names
+      const artworks = Array.isArray(rawArtworks)
+        ? rawArtworks.map(a => {
+          const fullImage = a.image_url || a.image || a.imageUrl;
+          return {
+            ...a,
+            image: fullImage,
+            thumbnail: getThumbnailUrl(fullImage, 600, 75),
+          };
+        })
+        : [];
+
+      const exhibitions = Array.isArray(rawExhibitions) ? rawExhibitions : [];
+      const cv = settings.cv || DEFAULT_DATA.cv;
+      const contactInfo = settings.contact || DEFAULT_DATA.contactInfo;
+
+      console.log('[ApiDataService] Final:', artworks.length, 'artworks,', exhibitions.length, 'exhibitions');
+
+      const result = {
+        artworks,
+        exhibitions,
+        cv,
+        contactInfo,
+        featuredArtworkId: settings.featuredArtworkId || null,
+      };
+
+      // Store in cache with timestamp
+      apiDataCache = result;
+      cacheTimestamp = Date.now();
+      apiFetchPromise = null;
+
+      return result;
     })();
 
     return apiFetchPromise;
