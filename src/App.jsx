@@ -9,10 +9,14 @@ import { useEffect } from 'react';
 import { DataProvider } from './context/DataContext';
 
 // Other contexts (no blocking operations)
+import { useRef } from 'react';
+import { useLanguage } from './context/LanguageContext';
+import { useData } from './context/DataContext';
+import DebugImageList from './components/DebugImageList'; // TEMP DEBUG
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
 
-// Components
+// Layout Components
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import Hero from './components/sections/Hero';
@@ -86,6 +90,7 @@ function App() {
       <LanguageProvider>
         <DataProvider>
           <div className="app">
+            <DebugImageList /> {/* TEMP DEBUG */}
             <Header />
 
             <main>

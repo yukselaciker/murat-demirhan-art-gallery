@@ -35,6 +35,7 @@
 
     /* Canvas için ek koruma */
     -webkit-user-select: none;
+    user-select: none;
     -webkit-touch-callout: none;
     pointer-events: none;
     /* Shield üzerinden etkileşim */
@@ -43,6 +44,19 @@
 .protected-image__canvas.hidden {
     opacity: 0;
     position: absolute;
+    pointer-events: none;
+}
+
+/* Fallback image specific styles */
+.protected-image__fallback {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+    /* Ensure it receives pointer events if needed, though shield usually covers it */
+    pointer-events: none;
 }
 
 /* Skeleton loading */
@@ -104,6 +118,7 @@
 .artwork-card .protected-image {
     /* Kartlarda tam koruma */
     -webkit-touch-callout: none !important;
+    user-select: none;
 }
 
 /* Lightbox'ta görsel koruma */

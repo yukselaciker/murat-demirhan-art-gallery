@@ -146,7 +146,7 @@ export function ProtectedImage({
             {/* Canvas (korumalı görsel) */}
             <canvas
                 ref={canvasRef}
-                className={`protected-image__canvas ${isLoading ? 'hidden' : ''}`}
+                className={`protected-image__canvas ${isLoading || hasError ? 'hidden' : ''}`}
                 aria-label={alt}
                 role="img"
                 onContextMenu={handleContextMenu}
@@ -159,7 +159,7 @@ export function ProtectedImage({
                 <img
                     src={src}
                     alt={alt}
-                    className="protected-image__canvas"
+                    className="protected-image__fallback"
                     style={{ objectFit: 'cover' }}
                     referrerPolicy="no-referrer"
                     onContextMenu={handleContextMenu}
