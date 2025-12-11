@@ -277,7 +277,7 @@ export default function ArtworksPanel() {
             {/* Card Image */}
             <div className="card-image">
               {getImageUrl(art) ? (
-                <img src={getImageUrl(art)} alt={art.title} />
+                <img src={getImageUrl(art)} alt={art.title} loading="lazy" />
               ) : (
                 <div className="no-image">🖼️</div>
               )}
