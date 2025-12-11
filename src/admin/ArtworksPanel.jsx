@@ -45,7 +45,9 @@ export default function ArtworksPanel() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const title = form.title?.trim();
     const rawYear = form.year?.toString().trim();
@@ -72,16 +74,31 @@ export default function ArtworksPanel() {
       tags: form.tags ? form.tags.split(',').map((t) => t.trim()).filter(Boolean) : [],
     };
 
-    if (editingId) {
-      updateArtwork(editingId, payload);
-      setMessage('Eser güncellendi.');
-    } else {
-      addArtwork(payload);
-      setMessage('Yeni eser eklendi.');
-    }
+    setIsSaving(true);
+    setMessage('');
 
-    setForm(emptyArtwork);
-    setEditingId(null);
+    try {
+      if (editingId) {
+        await updateArtwork(editingId, payload);
+        setMessage('✅ Eser güncellendi!');
+      } else {
+        await addArtwork(payload);
+        setMessage('✅ Yeni eser eklendi!');
+      }
+
+      // Reset form AFTER successful save
+      setForm(emptyArtwork);
+      setEditingId(null);
+
+      // Auto-hide success message after 3 seconds
+      setTimeout(() => setMessage(''), 3000);
+
+    } catch (error) {
+      console.error('Save error:', error);
+      setMessage('❌ Kaydetme hatası: ' + error.message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleEdit = (art) => {
@@ -173,8 +190,8 @@ export default function ArtworksPanel() {
         />
 
         <div className="form-actions">
-          <button type="submit" className="btn primary">
-            {editingId ? 'Güncelle' : 'Kaydet'}
+          <button type="submit" className="btn primary" disabled={isSaving}>
+            {isSaving ? '⏳ Kaydediliyor...' : (editingId ? 'Güncelle' : 'Kaydet')}
           </button>
           {editingId && (
             <button
