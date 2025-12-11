@@ -895,7 +895,7 @@ textarea {
   flex-direction: row;
   align-items: center;
 }
-}
+
 
 /* Large desktop: 1200px+ */
 @media (min-width: 1200px) {
