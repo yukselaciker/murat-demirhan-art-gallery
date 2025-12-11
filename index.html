@@ -32,20 +32,51 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <!-- ============================================
-       CRITICAL: Start fetching data IMMEDIATELY
-       This runs BEFORE the React bundle downloads!
+       CRITICAL: Query Supabase DIRECTLY from client
+       Bypasses Vercel cold starts entirely!
        ============================================ -->
   <script>
-    // Start ALL API fetches immediately when HTML parses
-    // This data will be ready by the time React mounts
-    window.__PREFETCH_DATA__ = Promise.all([
-      fetch('/api/artworks').then(r => r.ok ? r.json() : []).catch(() => []),
-      fetch('/api/exhibitions').then(r => r.ok ? r.json() : []).catch(() => []),
-      fetch('/api/settings').then(r => r.ok ? r.json() : {}).catch(() => ({}))
-    ]).then(([artworks, exhibitions, settings]) => {
-      console.log('[Prefetch] All data loaded BEFORE React!');
-      return { artworks, exhibitions, settings };
-    });
+    // Supabase credentials from Vercel env (injected at build time)
+    // For development, we'll use the API fallback
+    (async function () {
+      const SUPABASE_URL = '%VITE_SUPABASE_URL%';
+      const SUPABASE_KEY = '%VITE_SUPABASE_ANON_KEY%';
+
+      // Check if we have direct Supabase access
+      const hasDirectAccess = SUPABASE_URL && !SUPABASE_URL.includes('VITE_') && SUPABASE_KEY && !SUPABASE_KEY.includes('VITE_');
+
+      if (hasDirectAccess) {
+        // DIRECT SUPABASE QUERY - instant, no cold start!
+        console.log('[Prefetch] Querying Supabase directly...');
+        const headers = {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`
+        };
+
+        window.__PREFETCH_DATA__ = Promise.all([
+          fetch(`${SUPABASE_URL}/rest/v1/artworks?select=id,title,image_url,year,technique,size,category,created_at&order=created_at.desc&limit=50`, { headers })
+            .then(r => r.ok ? r.json() : []).catch(() => []),
+          fetch(`${SUPABASE_URL}/rest/v1/exhibitions?select=id,title,year,city,venue,type,description&order=year.desc&limit=30`, { headers })
+            .then(r => r.ok ? r.json() : []).catch(() => []),
+          fetch(`${SUPABASE_URL}/rest/v1/settings?select=*&limit=1`, { headers })
+            .then(r => r.ok ? r.json() : []).then(arr => arr[0] || {}).catch(() => ({}))
+        ]).then(([artworks, exhibitions, settings]) => {
+          console.log('[Prefetch] Direct Supabase query complete!', artworks.length, 'artworks');
+          return { artworks, exhibitions, settings };
+        });
+      } else {
+        // Fallback to API routes (has cold start delay)
+        console.log('[Prefetch] Using API routes (direct Supabase not configured)...');
+        window.__PREFETCH_DATA__ = Promise.all([
+          fetch('/api/artworks').then(r => r.ok ? r.json() : []).catch(() => []),
+          fetch('/api/exhibitions').then(r => r.ok ? r.json() : []).catch(() => []),
+          fetch('/api/settings').then(r => r.ok ? r.json() : {}).catch(() => ({}))
+        ]).then(([artworks, exhibitions, settings]) => {
+          console.log('[Prefetch] API fetch complete');
+          return { artworks, exhibitions, settings };
+        });
+      }
+    })();
   </script>
 </head>
 
