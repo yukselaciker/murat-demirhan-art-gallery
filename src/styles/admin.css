@@ -871,7 +871,8 @@ textarea {
 
   .admin-nav {
     flex-direction: column;
-    flex: 0;
+    flex: 1;
+    overflow-y: auto;
   }
 
   .nav-btn {
