@@ -258,60 +258,59 @@ h6 {
 
 /* 3. FORM & INPUT POLISH (Exhibitions, Settings, CV) */
 /* Standard Input Style: w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all bg-gray-50 focus:bg-white */
-
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
-  input[type="number"],
-  input[type="date"],
-  input[type="tel"],
-  textarea,
-  select {
-    display: block;
-    width: 100%;
-    /* w-full */
-    padding: 0.75rem 1rem;
-    /* px-4 py-3 */
-    border-radius: 0.5rem;
-    /* rounded-lg */
-    border: 1px solid var(--gray-200);
-    /* border-gray-200 */
-    background-color: var(--gray-50);
-    /* bg-gray-50 */
-    color: var(--gray-900);
-    font-family: var(--font-sans);
-    font-size: 0.9375rem;
-    line-height: 1.5;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    /* transition-all */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="tel"],
+textarea,
+select {
+  display: block;
+  width: 100%;
+  /* w-full */
+  padding: 0.75rem 1rem;
+  /* px-4 py-3 */
+  border-radius: 0.5rem;
+  /* rounded-lg */
+  border: 1px solid var(--gray-200);
+  /* border-gray-200 */
+  background-color: var(--gray-50);
+  /* bg-gray-50 */
+  color: var(--gray-900);
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  /* transition-all */
   outline: none;
   /* outline-none */
 }
 
-  input:focus,
-  textarea:focus,
-  select:focus {
-    border-color: var(--brand-500);
-    /* focus:border-indigo-500 */
-    background-color: white;
-    /* focus:bg-white */
-    box-shadow: 0 0 0 2px var(--brand-100);
-    /* focus:ring-2 focus:ring-indigo-200 */
-  }
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--brand-500);
+  /* focus:border-indigo-500 */
+  background-color: white;
+  /* focus:bg-white */
+  box-shadow: 0 0 0 2px var(--brand-100);
+  /* focus:ring-2 focus:ring-indigo-200 */
+}
 
 /* Labels: block text-sm font-medium text-gray-700 mb-1 */
-  label {
-    display: block;
-    /* block */
-    font-size: 0.875rem;
-    /* text-sm */
-    font-weight: 500;
-    /* font-medium */
-    color: var(--gray-700);
-    /* text-gray-700 */
-    margin-bottom: 0.25rem;
-    /* mb-1 */
-  }
+label {
+  display: block;
+  /* block */
+  font-size: 0.875rem;
+  /* text-sm */
+  font-weight: 500;
+  /* font-medium */
+  color: var(--gray-700);
+  /* text-gray-700 */
+  margin-bottom: 0.25rem;
+  /* mb-1 */
+}
 
 /* 4. RESTORE 'ARTWORKS' CARD GRID */
 /* Desktop: 3 Columns (grid-cols-1 md:grid-cols-2 lg:grid-cols-3) */
@@ -432,13 +431,13 @@ h6 {
 }
 
 /* Card Actions: Edit/Delete clearly separated */
-  .card-actions {
-    display: flex;
-    border-top: 1px solid var(--gray-100);
-    padding: var(--space-2);
-    gap: var(--space-2);
-    background: var(--gray-50);
-  }
+.card-actions {
+  display: flex;
+  border-top: 1px solid var(--gray-100);
+  padding: var(--space-2);
+  gap: var(--space-2);
+  background: var(--gray-50);
+}
 
 .action-btn {
   flex: 1;
@@ -555,7 +554,7 @@ h6 {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-md);
   border: none;
   cursor: pointer;
   z-index: 100;
