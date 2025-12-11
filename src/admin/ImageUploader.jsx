@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { uploadToR2, isR2Configured } from '../lib/r2Config.js';
 import './ImageUploader.css';
 
@@ -14,6 +14,17 @@ export default function ImageUploader({ value, onChange, label = "Görsel Yükle
     const [uploadError, setUploadError] = useState(null);
     const [uploadSuccess, setUploadSuccess] = useState(false);
     const fileInputRef = useRef(null);
+
+    // SYNC: When parent value changes (e.g., form reset), update preview
+    useEffect(() => {
+        setPreview(value || null);
+        setUploadSuccess(false);
+        setUploadError(null);
+        // Also clear the file input when value is reset
+        if (!value && fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    }, [value]);
 
     const handleFile = async (file) => {
         // Reset states
