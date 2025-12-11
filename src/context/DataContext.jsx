@@ -4,6 +4,10 @@
 // Data fetching starts BEFORE React bundle even downloads!
 // ============================================
 
+// Data fetching starts BEFORE React bundle even downloads!
+// ============================================
+
+import { getPublicImageUrl } from '../lib/imageUrl';
 import { createContext, useContext, useState, useEffect } from 'react';
 
 // Default data structure
@@ -30,28 +34,7 @@ const DEFAULT_DATA = {
  * Handles: Supabase Storage, Cloudinary, Cloudflare R2, and generic URLs
  */
 function getThumbnailUrl(imageUrl, width = 600, quality = 75) {
-    if (!imageUrl) return null;
-    if (imageUrl.startsWith('data:')) return imageUrl;
-    if (imageUrl.includes('width=') || imageUrl.includes('quality=')) return imageUrl;
-
-    // Cloudflare R2 - return as-is (R2 doesn't support transformations)
-    if (imageUrl.includes('.r2.dev') || imageUrl.includes('r2.cloudflarestorage.com')) {
-        return imageUrl;
-    }
-
-    // Supabase Storage - add transformation params
-    if (imageUrl.includes('supabase.co/storage')) {
-        const separator = imageUrl.includes('?') ? '&' : '?';
-        return `${imageUrl}${separator}width=${width}&quality=${quality}`;
-    }
-
-    // Cloudinary - use transformation syntax
-    if (imageUrl.includes('cloudinary.com')) {
-        return imageUrl.replace('/upload/', `/upload/w_${width},q_${quality}/`);
-    }
-
-    // Generic URL - try adding params (may not work for all hosts)
-    return imageUrl;
+    return getPublicImageUrl(imageUrl);
 }
 
 /**
@@ -71,8 +54,8 @@ function normalizeData(rawData) {
             const fullImage = a.image_url || a.image || a.imageUrl;
             return {
                 ...a,
-                image: fullImage,
-                thumbnail: getThumbnailUrl(fullImage, 600, 75),
+                image: getPublicImageUrl(fullImage),
+                thumbnail: getPublicImageUrl(fullImage),
             };
         })
         : [];
@@ -81,7 +64,11 @@ function normalizeData(rawData) {
 
     // Settings is now an object with keys like: cv, contact, featuredArtworkId
     // from the parseSettings transformation in index.html
-    const cv = settings?.cv || DEFAULT_DATA.cv;
+    // from the parseSettings transformation in index.html
+    const cv = settings?.cv ? {
+        ...settings.cv,
+        artistPhoto: getPublicImageUrl(settings.cv.artistPhoto)
+    } : DEFAULT_DATA.cv;
     const contactInfo = settings?.contact || DEFAULT_DATA.contactInfo;
     const featuredArtworkId = settings?.featuredArtworkId || null;
 

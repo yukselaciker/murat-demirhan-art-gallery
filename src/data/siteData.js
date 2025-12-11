@@ -31,33 +31,17 @@ import { useEffect, useMemo, useState } from 'react';
  * @param {number} quality - JPEG quality 1-100 (default: 75)
  * @returns {string} Optimized thumbnail URL
  */
+// ============================================
+// IMAGE OPTIMIZATION HELPER
+// ============================================
+import { getPublicImageUrl } from '../lib/imageUrl';
+
+/**
+ * Generates public URL for images.
+ * Uses the Worker proxy for R2 consistency.
+ */
 function getThumbnailUrl(imageUrl, width = 600, quality = 75) {
-  if (!imageUrl) return null;
-
-  // Skip data URLs (base64 images)
-  if (imageUrl.startsWith('data:')) return imageUrl;
-
-  // Skip already optimized URLs
-  if (imageUrl.includes('width=') || imageUrl.includes('quality=')) return imageUrl;
-
-  // Handle Supabase Storage URLs
-  // Format: https://<project>.supabase.co/storage/v1/object/public/<bucket>/<path>
-  if (imageUrl.includes('supabase.co/storage')) {
-    // Supabase Storage supports image transformations via /render/image/
-    // But for simplicity, we'll use query params which work with many CDNs
-    const separator = imageUrl.includes('?') ? '&' : '?';
-    return `${imageUrl}${separator}width=${width}&quality=${quality}`;
-  }
-
-  // Handle Cloudinary URLs
-  if (imageUrl.includes('cloudinary.com')) {
-    // Insert transformation before /upload/
-    return imageUrl.replace('/upload/', `/upload/w_${width},q_${quality}/`);
-  }
-
-  // Default: append query parameters (works with many image CDNs)
-  const separator = imageUrl.includes('?') ? '&' : '?';
-  return `${imageUrl}${separator}width=${width}&quality=${quality}`;
+  return getPublicImageUrl(imageUrl);
 }
 
 // ============================================
@@ -242,14 +226,17 @@ const ApiDataService = {
           const fullImage = a.image_url || a.image || a.imageUrl;
           return {
             ...a,
-            image: fullImage,
-            thumbnail: getThumbnailUrl(fullImage, 600, 75),
+            image: getPublicImageUrl(fullImage),
+            thumbnail: getPublicImageUrl(fullImage),
           };
         })
         : [];
 
       const exhibitions = Array.isArray(rawExhibitions) ? rawExhibitions : [];
-      const cv = settings.cv || DEFAULT_DATA.cv;
+      const cv = settings.cv ? {
+        ...settings.cv,
+        artistPhoto: getPublicImageUrl(settings.cv.artistPhoto)
+      } : DEFAULT_DATA.cv;
       const contactInfo = settings.contact || DEFAULT_DATA.contactInfo;
 
       console.log('[ApiDataService] Final:', artworks.length, 'artworks,', exhibitions.length, 'exhibitions');

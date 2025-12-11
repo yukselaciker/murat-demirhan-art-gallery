@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useSiteData } from '../data/siteData.js';
 import ImageUploader from './ImageUploader.jsx';
+import { getPublicImageUrl } from '../lib/imageUrl';
 import './ArtworksPanel.css';
 
 const emptyArtwork = {
@@ -146,23 +147,9 @@ export default function ArtworksPanel() {
   };
 
   /* SANITIZE & PROXY INPUT (Strict Security) */
+  /* SANITIZE & PROXY INPUT */
   const getImageUrl = (path) => {
-    if (!path) return 'https://via.placeholder.com/300?text=No+Image';
-    if (path.startsWith('data:')) return path;
-
-    // 1. Construct Base URL safely
-    let url = path;
-    if (!path.startsWith('http')) {
-      const baseUrl = import.meta.env.VITE_R2_PUBLIC_URL || `${import.meta.env.VITE_SUPABASE_URL || ''}/storage/v1/object/public/artworks/`;
-      // Remove trailing slash from base and leading slash from path
-      url = `${baseUrl.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
-    }
-
-    // 2. FORCE HTTPS (Mixed Content Fix)
-    url = url.replace(/^http:\/\//i, 'https://');
-
-    // 3. Return Proxy URL (wsrv.nl is strictly HTTPS)
-    return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=600&output=jpg`;
+    return getPublicImageUrl(path);
   };
 
   const messageType = message.split(':')[0];

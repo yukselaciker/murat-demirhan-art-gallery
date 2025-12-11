@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { uploadToR2, isR2Configured } from '../lib/r2Config.js';
+import { getPublicImageUrl } from '../lib/imageUrl';
 import './ImageUploader.css';
 
 /**
@@ -9,7 +10,7 @@ import './ImageUploader.css';
  */
 export default function ImageUploader({ value, onChange, label = "Görsel Yükle", folder = "artworks" }) {
     const [isDragging, setIsDragging] = useState(false);
-    const [preview, setPreview] = useState(value || null);
+    const [preview, setPreview] = useState(value ? getPublicImageUrl(value) : null);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadError, setUploadError] = useState(null);
     const [uploadSuccess, setUploadSuccess] = useState(false);
@@ -17,7 +18,7 @@ export default function ImageUploader({ value, onChange, label = "Görsel Yükle
 
     // SYNC: When parent value changes (e.g., form reset), update preview
     useEffect(() => {
-        setPreview(value || null);
+        setPreview(value ? getPublicImageUrl(value) : null);
         setUploadSuccess(false);
         setUploadError(null);
         // Also clear the file input when value is reset
@@ -63,12 +64,13 @@ export default function ImageUploader({ value, onChange, label = "Görsel Yükle
         setIsUploading(true);
         try {
             console.log('[ImageUploader] Starting R2 upload...');
-            const r2Url = await uploadToR2(file, folder);
-            console.log('[ImageUploader] ✅ R2 upload successful:', r2Url);
+            const { key, publicUrl } = await uploadToR2(file, folder);
+            console.log('[ImageUploader] ✅ R2 upload successful. Key:', key);
 
-            // Update preview and call onChange with the R2 URL
-            setPreview(r2Url);
-            onChange(r2Url);
+            // Update preview with the full URL (for immediate feedback)
+            setPreview(publicUrl);
+            // Save ONLY the key to the form/database
+            onChange(key);
             setUploadSuccess(true);
 
         } catch (error) {

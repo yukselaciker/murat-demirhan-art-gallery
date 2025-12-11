@@ -141,22 +141,7 @@ export function Gallery() {
                                     <div className="artwork-card__image-wrapper">
                                         {artwork.image ? (
                                             <ProtectedImage
-                                                src={(() => {
-                                                    const raw = artwork.thumbnail || artwork.image;
-                                                    if (!raw) return '';
-                                                    if (raw.startsWith('data:')) return raw;
-
-                                                    let url = raw;
-                                                    if (!raw.startsWith('http')) {
-                                                        const baseUrl = import.meta.env.VITE_R2_PUBLIC_URL || `${import.meta.env.VITE_SUPABASE_URL || ''}/storage/v1/object/public/artworks/`;
-                                                        url = `${baseUrl.replace(/\/$/, '')}/${raw.replace(/^\//, '')}`;
-                                                    }
-
-                                                    // FORCE HTTPS
-                                                    url = url.replace(/^http:\/\//i, 'https://');
-
-                                                    return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=600&output=jpg`;
-                                                })()}
+                                                src={artwork.thumbnail || artwork.image}
                                                 alt={`${title} - ${technique}`}
                                                 artworkTitle={title}
                                                 className="artwork-card__image"
