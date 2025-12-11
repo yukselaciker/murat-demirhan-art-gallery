@@ -307,7 +307,6 @@ export default function ArtworksPanel() {
                     src={url}
                     alt={art.title}
                     referrerPolicy="no-referrer"
-                    crossOrigin="anonymous"
                     style={{
                       width: '100%',
                       height: '100%',
@@ -324,6 +323,13 @@ export default function ArtworksPanel() {
               {data.featuredArtworkId === art.id && (
                 <span className="featured-badge">⭐ Öne Çıkan</span>
               )}
+            </div>
+
+            {/* DEBUG INFO */}
+            <div style={{ padding: '5px', background: '#f3f4f6', borderBottom: '1px solid #ccc' }}>
+              <p style={{ fontSize: '10px', color: '#666', wordBreak: 'break-all', margin: 0 }}>
+                SRC: {getImageUrl(art)}
+              </p>
             </div>
 
             {/* Card Content */}

@@ -24,15 +24,28 @@ export function ProtectedImage({
     useEffect(() => {
         if (!src || !canvasRef.current) return;
 
+        // Mobile/Touch detection to bypass Canvas
+        const isMobile = window.matchMedia('(max-width: 768px)').matches ||
+            ('ontouchstart' in window) ||
+            (navigator.maxTouchPoints > 0);
+
+        if (isMobile) {
+            // On mobile, skip canvas drawing to avoid CORS/Tainted Canvas issues
+            // and performance bottlenecks.
+            setHasError(true); // Triggers fallback <img>
+            setIsLoading(false);
+            return;
+        }
+
         const loadImage = async () => {
             try {
                 setIsLoading(true);
                 setHasError(false);
 
-                // Canvas'a filigranlı görsel çiz
+                // ... (rest of the drawing logic)
                 await drawWatermarkedImage(src, canvasRef.current, {
                     artworkTitle,
-                    opacity: 0, // Görünmez filigran
+                    opacity: 0,
                     fontSize: 12,
                     spacing: 150
                 });
@@ -45,7 +58,7 @@ export function ProtectedImage({
             }
         };
 
-        // Lazy loading simülasyonu
+        // Lazy loading logic...
         if (loading === 'lazy') {
             const observer = new IntersectionObserver(
                 (entries) => {
@@ -56,9 +69,7 @@ export function ProtectedImage({
                 },
                 { threshold: 0.1 }
             );
-
             observer.observe(canvasRef.current);
-
             return () => observer.disconnect();
         } else {
             loadImage();
