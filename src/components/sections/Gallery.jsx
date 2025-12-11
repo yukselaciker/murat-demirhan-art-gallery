@@ -141,7 +141,7 @@ export function Gallery() {
                                     <div className="artwork-card__image-wrapper">
                                         {artwork.image ? (
                                             <ProtectedImage
-                                                src={artwork.image}
+                                                src={artwork.thumbnail || artwork.image}
                                                 alt={`${title} - ${technique}`}
                                                 artworkTitle={title}
                                                 className="artwork-card__image"

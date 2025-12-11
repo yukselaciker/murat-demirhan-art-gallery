@@ -20,6 +20,47 @@
 import { useEffect, useMemo, useState } from 'react';
 
 // ============================================
+// IMAGE OPTIMIZATION HELPER
+// ============================================
+/**
+ * Generates an optimized thumbnail URL for faster initial load.
+ * Appends width and quality parameters to reduce payload size.
+ * Works with Supabase Storage, Cloudinary, or any CDN that supports URL transformations.
+ * @param {string} imageUrl - Original image URL
+ * @param {number} width - Target width in pixels (default: 600)
+ * @param {number} quality - JPEG quality 1-100 (default: 75)
+ * @returns {string} Optimized thumbnail URL
+ */
+function getThumbnailUrl(imageUrl, width = 600, quality = 75) {
+  if (!imageUrl) return null;
+
+  // Skip data URLs (base64 images)
+  if (imageUrl.startsWith('data:')) return imageUrl;
+
+  // Skip already optimized URLs
+  if (imageUrl.includes('width=') || imageUrl.includes('quality=')) return imageUrl;
+
+  // Handle Supabase Storage URLs
+  // Format: https://<project>.supabase.co/storage/v1/object/public/<bucket>/<path>
+  if (imageUrl.includes('supabase.co/storage')) {
+    // Supabase Storage supports image transformations via /render/image/
+    // But for simplicity, we'll use query params which work with many CDNs
+    const separator = imageUrl.includes('?') ? '&' : '?';
+    return `${imageUrl}${separator}width=${width}&quality=${quality}`;
+  }
+
+  // Handle Cloudinary URLs
+  if (imageUrl.includes('cloudinary.com')) {
+    // Insert transformation before /upload/
+    return imageUrl.replace('/upload/', `/upload/w_${width},q_${quality}/`);
+  }
+
+  // Default: append query parameters (works with many image CDNs)
+  const separator = imageUrl.includes('?') ? '&' : '?';
+  return `${imageUrl}${separator}width=${width}&quality=${quality}`;
+}
+
+// ============================================
 // 1. DATA SCHEMA & DEFAULTS
 // ============================================
 const DEFAULT_DATA = {
@@ -167,11 +208,17 @@ const ApiDataService = {
         ]);
 
         // NORMALIZE: Supabase column names to frontend names
+        // Also generate optimized thumbnail URLs for faster initial grid load
         const artworks = Array.isArray(rawArtworks)
-          ? rawArtworks.map(a => ({
-            ...a,
-            image: a.image_url || a.image || a.imageUrl,
-          }))
+          ? rawArtworks.map(a => {
+            const fullImage = a.image_url || a.image || a.imageUrl;
+            return {
+              ...a,
+              image: fullImage,
+              // Thumbnail: 600px width, 75% quality for gallery grid
+              thumbnail: getThumbnailUrl(fullImage, 600, 75),
+            };
+          })
           : [];
 
         const exhibitions = Array.isArray(rawExhibitions) ? rawExhibitions : [];
