@@ -6,7 +6,18 @@ const emptyEducation = { school: '', year: '' };
 const emptyAward = { title: '', org: '', year: '' };
 
 export default function CvPanel() {
-  const { data, updateCv } = useSiteData();
+  const { data, updateCv, isInitialized } = useSiteData();
+
+  // Loading state
+  if (!isInitialized) {
+    return (
+      <div className="panel">
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <p>CV yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Safe access with fallbacks
   const cv = data?.cv || {};

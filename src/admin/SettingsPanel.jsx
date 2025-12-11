@@ -27,6 +27,17 @@ export default function SettingsPanel() {
         }
     }, [data?.contactInfo]);
 
+    // Loading state
+    if (!isInitialized) {
+        return (
+            <div className="panel">
+                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                    <p>Ayarlar yükleniyor...</p>
+                </div>
+            </div>
+        );
+    }
+
     const handleSave = () => {
         updateContactInfo({ email, location, phone });
         setMessage('İletişim bilgileri güncellendi.');
