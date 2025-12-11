@@ -19,22 +19,45 @@ export default async function handler(req, res) {
     }
 
     try {
-        // GET - Tüm eserleri getir (OPTIMIZED)
+        // GET - Fetch artworks (OPTIMIZED with View)
         if (req.method === "GET") {
-            // Check if full data is requested (for admin panel)
+            // Check if full data is requested (for admin panel CRUD)
             const isFullRequest = req.query.full === 'true';
 
-            // Select only essential columns for gallery grid (reduces payload ~80%)
-            // Full data only requested by admin panel for editing
-            const columns = isFullRequest
-                ? '*'  // Admin needs everything
-                : 'id, title, image_url, year, technique, size, category, created_at';
+            let data, error;
 
-            const { data, error } = await supabase
-                .from("artworks")
-                .select(columns)
-                .order("created_at", { ascending: false })  // Use created_at for better index performance
-                .limit(50);  // Limit initial load - implement pagination if more needed
+            if (isFullRequest) {
+                // Admin panel needs full data from artworks table for editing
+                const result = await supabase
+                    .from("artworks")
+                    .select("*")
+                    .order("created_at", { ascending: false });
+                data = result.data;
+                error = result.error;
+            } else {
+                // Public requests use the VIEW (bypasses RLS, 30-60x faster!)
+                // NOTE: You must create the view first. See supabase_performance_guide.md
+                // If view doesn't exist, fallback to table query
+                const result = await supabase
+                    .from("public_artworks")  // Uses the view, not the table!
+                    .select("*")  // View already has only needed columns
+                    .limit(50);
+
+                if (result.error && result.error.code === 'PGRST200') {
+                    // View doesn't exist yet, fallback to table
+                    console.log("[artworks] View not found, falling back to table query");
+                    const fallback = await supabase
+                        .from("artworks")
+                        .select("id, title, image_url, year, technique, size, category, created_at")
+                        .order("created_at", { ascending: false })
+                        .limit(50);
+                    data = fallback.data;
+                    error = fallback.error;
+                } else {
+                    data = result.data;
+                    error = result.error;
+                }
+            }
 
             if (error) {
                 console.error("GET /api/artworks error:", error);
@@ -42,7 +65,6 @@ export default async function handler(req, res) {
             }
 
             // Vercel Edge Caching - 1 hour cache, 5 min stale-while-revalidate
-            // This dramatically speeds up repeat visits
             res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=300');
 
             return res.status(200).json(data);

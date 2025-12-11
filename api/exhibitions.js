@@ -19,24 +19,33 @@ export default async function handler(req, res) {
     }
 
     try {
-        // GET - Fetch all exhibitions (OPTIMIZED)
+        // GET - Fetch all exhibitions (OPTIMIZED with View)
         if (req.method === "GET") {
-            // Select only essential columns for timeline display
-            const { data, error } = await supabase
-                .from("exhibitions")
-                .select("id, title, year, city, venue, type, description")
-                .order("year", { ascending: false })
-                .limit(30);  // Limit initial load
+            // Try the view first (bypasses RLS, faster)
+            let result = await supabase
+                .from("public_exhibitions")  // Uses the view!
+                .select("*")
+                .limit(30);
 
-            if (error) {
-                console.error("GET /api/exhibitions error:", error);
-                return res.status(500).json({ error: error.message });
+            // Fallback to table if view doesn't exist
+            if (result.error && result.error.code === 'PGRST200') {
+                console.log("[exhibitions] View not found, falling back to table");
+                result = await supabase
+                    .from("exhibitions")
+                    .select("id, title, year, city, venue, type, description")
+                    .order("year", { ascending: false })
+                    .limit(30);
+            }
+
+            if (result.error) {
+                console.error("GET /api/exhibitions error:", result.error);
+                return res.status(500).json({ error: result.error.message });
             }
 
             // Vercel Edge Caching - 1 hour cache
             res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=300');
 
-            return res.status(200).json(data || []);
+            return res.status(200).json(result.data || []);
         }
 
         // POST - Add new exhibition
