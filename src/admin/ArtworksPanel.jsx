@@ -276,31 +276,59 @@ export default function ArtworksPanel() {
           <div key={art.id} className={`artwork-card ${data.featuredArtworkId === art.id ? 'featured' : ''}`}>
             {/* Card Image */}
             <div className="card-image">
-              {getImageUrl(art) ? (
-                <img
-                  src={getImageUrl(art)}
-                  alt={art.title}
-                  loading="lazy"
-                  onError={(e) => { e.currentTarget.style.border = '5px solid red'; }}
-                />
-              ) : (
-                <div className="no-image">🖼️</div>
-              )}
+              {(() => {
+                const url = getImageUrl(art);
+                if (!url) return <div className="no-image">🖼️</div>;
+
+                const isHeic = url.toLowerCase().endsWith('.heic') || url.toLowerCase().endsWith('.heif');
+
+                if (isHeic) {
+                  return (
+                    <div style={{
+                      width: '100%',
+                      height: '300px',
+                      backgroundColor: '#fee2e2',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      textAlign: 'center',
+                      padding: '1rem',
+                      color: '#dc2626',
+                      fontWeight: 'bold',
+                      border: '2px dashed #ef4444'
+                    }}>
+                      Mobile Error: Please convert this image to JPG and re-upload.
+                    </div>
+                  );
+                }
+
+                return (
+                  <img
+                    src={url}
+                    alt={art.title}
+                    loading="lazy"
+                    onError={(e) => { e.currentTarget.style.border = '5px solid red'; }}
+                    style={{
+                      width: '100%',
+                      objectFit: 'cover',
+                      display: 'block',
+                      flexShrink: 0,
+                      backgroundColor: '#e5e7eb'
+                    }}
+                  />
+                );
+              })()}
+
               {data.featuredArtworkId === art.id && (
                 <span className="featured-badge">⭐ Öne Çıkan</span>
               )}
             </div>
 
             {/* DEBUG INFO */}
-            <div style={{ padding: '5px', background: '#fee2e2', borderBottom: '1px solid #ccc' }}>
-              <p style={{ fontSize: '10px', color: 'red', wordBreak: 'break-all', margin: 0 }}>
+            <div style={{ padding: '5px', background: '#f3f4f6', borderBottom: '1px solid #ccc' }}>
+              <p style={{ fontSize: '10px', color: '#666', wordBreak: 'break-all', margin: 0 }}>
                 SRC: {getImageUrl(art)}
               </p>
-              {(getImageUrl(art)?.toLowerCase().endsWith('.heic') || getImageUrl(art)?.toLowerCase().endsWith('.heif')) && (
-                <span style={{ color: 'red', fontWeight: 'bold', fontSize: '12px', display: 'block', marginTop: '4px' }}>
-                  WARNING: HEIC FORMAT DETECTED (Not supported on mobile web)
-                </span>
-              )}
             </div>
 
             {/* Card Content */}

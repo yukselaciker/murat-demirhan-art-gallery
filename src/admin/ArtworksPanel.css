@@ -307,12 +307,14 @@
 .card-image {
     position: relative;
     width: 100%;
-    /* Default: Fixed height for mobile/tablet robustness */
+    /* Desktop Default (md:h-64 equivalent) */
     height: 16rem;
     /* 256px */
     overflow: hidden;
-    background-color: #1f2937;
+    background-color: #e5e7eb;
+    /* bg-gray-200 */
     display: block;
+    flex-shrink: 0;
 }
 
 .card-image img {
@@ -321,22 +323,21 @@
     object-fit: cover;
     transition: transform 0.3s ease;
     display: block;
-    background-color: #1f2937;
+    background-color: #e5e7eb;
 }
 
-/* Desktop: Use modern Aspect Ratio */
+/* Desktop: ensure it stays 16rem as per md:h-64 */
 @media (min-width: 768px) {
     .card-image {
-        height: auto;
-        aspect-ratio: 4/3;
+        height: 16rem;
     }
 }
 
-/* Force fix for smaller screens just in case */
+/* Mobile: Force 300px as per h-[300px] */
 @media (max-width: 767px) {
     .card-image {
-        height: 16rem !important;
-        min-height: 16rem !important;
+        height: 300px !important;
+        min-height: 300px !important;
         width: 100% !important;
         display: block !important;
     }
