@@ -4,9 +4,15 @@
 // ============================================
 
 import { useEffect } from 'react';
+
+// CRITICAL: Import DataContext FIRST - it starts fetching immediately!
+import { DataProvider } from './context/DataContext';
+
+// Other contexts (no blocking operations)
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
-import { DataProvider } from './context/DataContext';
+
+// Components
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import Hero from './components/sections/Hero';
@@ -16,22 +22,32 @@ import Exhibitions from './components/sections/Exhibitions';
 import Contact from './components/sections/Contact';
 import CookieBanner from './components/ui/CookieBanner';
 
-// Güvenlik sistemleri
-import { initSecurityProtection } from './utils/security';
-import { initScreenshotProtection } from './utils/screenshotProtection';
-
+// Styles
 import './styles/index.css';
 
 function App() {
-  // Sayfa yüklendiğinde güvenlik sistemlerini başlat
+  // Initialize security AFTER first paint using requestIdleCallback
+  // This prevents security scripts from blocking data fetch
   useEffect(() => {
-    // Sağ tık, kopyalama ve klavye kısayolları engelleme
-    initSecurityProtection();
+    const initSecurity = async () => {
+      // Dynamically import security modules to avoid blocking initial load
+      const [securityModule, screenshotModule] = await Promise.all([
+        import('./utils/security'),
+        import('./utils/screenshotProtection')
+      ]);
 
-    // Screenshot algılama ve koruma
-    initScreenshotProtection();
+      securityModule.initSecurityProtection();
+      screenshotModule.initScreenshotProtection();
+    };
 
-    // Scroll animasyonları için Intersection Observer
+    // Use requestIdleCallback if available, otherwise setTimeout
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(() => initSecurity());
+    } else {
+      setTimeout(initSecurity, 100);
+    }
+
+    // Scroll animations - run after data is visible
     const observeElements = () => {
       const elements = document.querySelectorAll('.fade-in, .slide-in-left, .slide-in-right');
 
@@ -54,8 +70,6 @@ function App() {
     const timer = setTimeout(observeElements, 100);
 
     // [SAFETY NET] Fallback for visibility
-    // Eğer 1 saniye içinde animasyonlar çalışmazsa, hepsini görünür yap.
-    // Bu, JS hatası veya observer sorunu durumunda içeriğin kaybolmasını önler.
     const fallbackTimer = setTimeout(() => {
       const elements = document.querySelectorAll('.fade-in, .slide-in-left, .slide-in-right');
       elements.forEach(el => el.classList.add('visible'));

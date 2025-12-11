@@ -5,6 +5,12 @@
 
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+
+// CRITICAL: Import DataContext FIRST to start fetching IMMEDIATELY
+// This import triggers the module-level startFetching() call
+import './context/DataContext';
+
+// Then load the app components
 import App from './App.jsx';
 import AdminApp from './admin/AdminApp.jsx';
 
