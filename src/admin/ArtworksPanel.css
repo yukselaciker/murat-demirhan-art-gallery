@@ -307,10 +307,12 @@
 .card-image {
     position: relative;
     width: 100%;
-    height: 240px;
+    /* Desktop Default: Aspect Ratio strategy */
+    height: auto;
+    aspect-ratio: 4/3;
     overflow: hidden;
-    background-color: #e5e7eb;
-    /* Placeholder color */
+    background-color: #1f2937;
+    /* Safety gray background (bg-gray-800) */
     display: block;
 }
 
@@ -320,13 +322,17 @@
     object-fit: cover;
     transition: transform 0.3s ease;
     display: block;
-    background-color: #e5e7eb;
+    background-color: #1f2937;
 }
 
 @media (max-width: 600px) {
+
+    /* Mobile Force: Explicit Height strategy (h-64 equivalent) */
     .card-image {
-        height: 260px !important;
-        min-height: 260px !important;
+        aspect-ratio: unset;
+        height: 16rem !important;
+        /* ~256px */
+        min-height: 16rem !important;
         display: block !important;
         width: 100% !important;
     }
