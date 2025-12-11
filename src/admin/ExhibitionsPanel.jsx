@@ -67,6 +67,26 @@ export default function ExhibitionsPanel() {
 
   const sorted = useMemo(() => [...data.exhibitions].sort((a, b) => Number(b.year) - Number(a.year)), [data.exhibitions]);
 
+  /* 1. SANITIZE & PROXY INPUT (Strict Security) */
+  const getImageUrl = (path) => {
+    if (!path) return 'https://via.placeholder.com/300?text=No+Image';
+    if (path.startsWith('data:')) return path;
+
+    // 1. Construct Base URL safely
+    let url = path;
+    if (!path.startsWith('http')) {
+      const baseUrl = import.meta.env.VITE_R2_PUBLIC_URL || `${import.meta.env.VITE_SUPABASE_URL || ''}/storage/v1/object/public/exhibitions/`;
+      // Remove trailing slash from base and leading slash from path
+      url = `${baseUrl.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+    }
+
+    // 2. FORCE HTTPS (Mixed Content Fix)
+    url = url.replace(/^http:\/\//i, 'https://');
+
+    // 3. Return Proxy URL (wsrv.nl is strictly HTTPS)
+    return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=600&output=jpg`;
+  };
+
   return (
     <div className="panel">
       <div className="panel-header">
@@ -136,7 +156,7 @@ export default function ExhibitionsPanel() {
         </div>
 
         {sorted.map((item) => {
-          const imgData = getImageUrl(item.image);
+          const imageUrl = getImageUrl(item.image);
           return (
             <div key={item.id} className="table-row" style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 2fr) 60px 100px 140px', gap: '10px', alignItems: 'center' }}>
               <div style={{ maxWidth: '100%', overflow: 'hidden' }}>
@@ -144,18 +164,20 @@ export default function ExhibitionsPanel() {
                 <p className="muted tiny" style={{ wordWrap: 'break-word', overflowWrap: 'break-word', margin: 0 }}>
                   {item.venue}, {item.city} — {item.type}
                 </p>
-                {/* VISUAL DEBUGGER - Small thumbnail inside the row logic */}
+                {/* VISUAL DEBUGGER - Thumbnail */}
                 {item.image && (
                   <div style={{ marginTop: '5px', fontSize: '9px', color: '#dc2626' }}>
                     <img
-                      src={imgData.display}
+                      src={imageUrl}
                       alt="thumb"
+                      /* SECURITY ATTRIBUTES */
                       referrerPolicy="no-referrer"
                       crossOrigin="anonymous"
+                      loading="eager"
                       style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd', marginRight: '5px', float: 'left' }}
                     />
                     <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      RAW: {imgData.raw}
+                      PROXY: {imageUrl}
                     </span>
                   </div>
                 )}

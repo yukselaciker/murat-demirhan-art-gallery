@@ -283,16 +283,16 @@ export default function ArtworksPanel() {
         {sorted.map((art) => {
           // Resolve Image
           const rawPath = art.image || art.image_url || art.imageUrl;
-          const imgData = getImageUrl(rawPath);
+          const imageUrl = getImageUrl(rawPath);
 
           return (
             <div key={art.id} className={`artwork-card ${data.featuredArtworkId === art.id ? 'featured' : ''}`}>
               {/* Card Image */}
               <div className="card-image">
                 <img
-                  src={imgData.display}
+                  src={imageUrl}
                   alt={art.title}
-                  /* 2. MAGIC ATTRIBUTES */
+                  /* 2. SECURITY ATTRIBUTES */
                   referrerPolicy="no-referrer"
                   crossOrigin="anonymous"
                   loading="eager"
@@ -312,10 +312,10 @@ export default function ArtworksPanel() {
                 )}
               </div>
 
-              {/* 3. VISUAL DEBUGGER */}
+              {/* 3. VISUAL DEBUGGER (Updated for string return) */}
               <div style={{ padding: '8px', background: '#fee2e2', borderBottom: '1px solid #fca5a5' }}>
                 <p style={{ fontSize: '10px', color: '#dc2626', wordBreak: 'break-all', margin: 0, fontWeight: 'bold' }}>
-                  RAW: {imgData.raw}
+                  PROXY: {imageUrl}
                 </p>
               </div>
 

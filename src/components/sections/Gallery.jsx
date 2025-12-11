@@ -146,23 +146,23 @@ export function Gallery() {
                                                     if (!raw) return '';
                                                     if (raw.startsWith('data:')) return raw;
 
-                                                    let fullUrl = raw;
+                                                    let url = raw;
                                                     if (!raw.startsWith('http')) {
-                                                        const baseUrl = import.meta.env.VITE_SUPABASE_URL
-                                                            ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/artworks/`
-                                                            : '';
-                                                        if (baseUrl) {
-                                                            fullUrl = `${baseUrl.replace(/\/$/, '')}/${raw.replace(/^\//, '')}`;
-                                                        }
+                                                        const baseUrl = import.meta.env.VITE_R2_PUBLIC_URL || `${import.meta.env.VITE_SUPABASE_URL || ''}/storage/v1/object/public/artworks/`;
+                                                        url = `${baseUrl.replace(/\/$/, '')}/${raw.replace(/^\//, '')}`;
                                                     }
 
-                                                    return `https://wsrv.nl/?url=${encodeURIComponent(fullUrl)}&w=800&q=75&fit=cover&output=jpg`;
+                                                    // FORCE HTTPS
+                                                    url = url.replace(/^http:\/\//i, 'https://');
+
+                                                    return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=600&output=jpg`;
                                                 })()}
                                                 alt={`${title} - ${technique}`}
                                                 artworkTitle={title}
                                                 className="artwork-card__image"
                                                 loading="eager"
                                                 referrerPolicy="no-referrer"
+                                                crossOrigin="anonymous"
                                             />
                                         ) : (
                                             <div className="placeholder-image">
