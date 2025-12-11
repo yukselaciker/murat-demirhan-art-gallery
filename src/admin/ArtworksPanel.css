@@ -564,39 +564,3 @@
 .modal-buttons button {
     flex: 1;
 }
-
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-    .artworks-panel {
-        background: #1a1a2e;
-    }
-
-    .form-card,
-    .artwork-card {
-        background: #16213e;
-        border-color: #374151;
-    }
-
-    .panel-header-modern h2,
-    .card-content h4,
-    .form-card h3 {
-        color: #f5f5f5;
-    }
-
-    .panel-header-modern .subtitle,
-    .form-group label {
-        color: #9ca3af;
-    }
-
-    .form-group input,
-    .form-group select {
-        background: #1f2937;
-        border-color: #374151;
-        color: #f5f5f5;
-    }
-
-    .modal-content {
-        background: #16213e;
-        color: #f5f5f5;
-    }
-}
