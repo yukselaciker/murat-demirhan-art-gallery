@@ -12,7 +12,6 @@ import { DataProvider } from './context/DataContext';
 import { useRef } from 'react';
 import { useLanguage } from './context/LanguageContext';
 import { useData } from './context/DataContext';
-import DebugImageList from './components/DebugImageList'; // TEMP DEBUG
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
 
@@ -90,7 +89,6 @@ function App() {
       <LanguageProvider>
         <DataProvider>
           <div className="app">
-            <DebugImageList /> {/* TEMP DEBUG */}
             <Header />
 
             <main>

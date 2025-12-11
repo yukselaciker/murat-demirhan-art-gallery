@@ -7,7 +7,7 @@
 // Data fetching starts BEFORE React bundle even downloads!
 // ============================================
 
-import { getPublicImageUrl } from '../lib/imageUrl';
+import { resolveImageUrl } from '../lib/resolveImageUrl';
 import { createContext, useContext, useState, useEffect } from 'react';
 
 // Default data structure
@@ -34,7 +34,7 @@ const DEFAULT_DATA = {
  * Handles: Supabase Storage, Cloudinary, Cloudflare R2, and generic URLs
  */
 function getThumbnailUrl(imageUrl, width = 600, quality = 75) {
-    return getPublicImageUrl(imageUrl);
+    return resolveImageUrl(imageUrl);
 }
 
 /**
@@ -54,8 +54,8 @@ function normalizeData(rawData) {
             const fullImage = a.image_url || a.image || a.imageUrl;
             return {
                 ...a,
-                image: getPublicImageUrl(fullImage),
-                thumbnail: getPublicImageUrl(fullImage),
+                image: resolveImageUrl(fullImage),
+                thumbnail: resolveImageUrl(fullImage),
             };
         })
         : [];
@@ -67,7 +67,7 @@ function normalizeData(rawData) {
     // from the parseSettings transformation in index.html
     const cv = settings?.cv ? {
         ...settings.cv,
-        artistPhoto: getPublicImageUrl(settings.cv.artistPhoto)
+        artistPhoto: resolveImageUrl(settings.cv.artistPhoto)
     } : DEFAULT_DATA.cv;
     const contactInfo = settings?.contact || DEFAULT_DATA.contactInfo;
     const featuredArtworkId = settings?.featuredArtworkId || null;

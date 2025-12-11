@@ -34,14 +34,14 @@ import { useEffect, useMemo, useState } from 'react';
 // ============================================
 // IMAGE OPTIMIZATION HELPER
 // ============================================
-import { getPublicImageUrl } from '../lib/imageUrl';
+import { resolveImageUrl } from '../lib/resolveImageUrl';
 
 /**
  * Generates public URL for images.
  * Uses the Worker proxy for R2 consistency.
  */
 function getThumbnailUrl(imageUrl, width = 600, quality = 75) {
-  return getPublicImageUrl(imageUrl);
+  return resolveImageUrl(imageUrl);
 }
 
 // ============================================
@@ -226,8 +226,8 @@ const ApiDataService = {
           const fullImage = a.image_url || a.image || a.imageUrl;
           return {
             ...a,
-            image: getPublicImageUrl(fullImage),
-            thumbnail: getPublicImageUrl(fullImage),
+            image: resolveImageUrl(fullImage),
+            thumbnail: resolveImageUrl(fullImage),
           };
         })
         : [];
@@ -235,7 +235,7 @@ const ApiDataService = {
       const exhibitions = Array.isArray(rawExhibitions) ? rawExhibitions : [];
       const cv = settings.cv ? {
         ...settings.cv,
-        artistPhoto: getPublicImageUrl(settings.cv.artistPhoto)
+        artistPhoto: resolveImageUrl(settings.cv.artistPhoto)
       } : DEFAULT_DATA.cv;
       const contactInfo = settings.contact || DEFAULT_DATA.contactInfo;
 

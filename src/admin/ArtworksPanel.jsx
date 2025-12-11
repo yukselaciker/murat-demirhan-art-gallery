@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useSiteData } from '../data/siteData.js';
 import ImageUploader from './ImageUploader.jsx';
-import { getPublicImageUrl } from '../lib/imageUrl';
+import { resolveImageUrl } from '../lib/resolveImageUrl';
 import './ArtworksPanel.css';
 
 const emptyArtwork = {
@@ -149,7 +149,7 @@ export default function ArtworksPanel() {
   /* SANITIZE & PROXY INPUT (Strict Security) */
   /* SANITIZE & PROXY INPUT */
   const getImageUrl = (path) => {
-    return getPublicImageUrl(path);
+    return resolveImageUrl(path);
   };
 
   const messageType = message.split(':')[0];

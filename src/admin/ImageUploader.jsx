@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { uploadToR2, isR2Configured } from '../lib/r2Config.js';
-import { getPublicImageUrl } from '../lib/imageUrl';
+import { resolveImageUrl } from '../lib/resolveImageUrl';
 import './ImageUploader.css';
 
 /**
@@ -10,7 +10,7 @@ import './ImageUploader.css';
  */
 export default function ImageUploader({ value, onChange, label = "Görsel Yükle", folder = "artworks" }) {
     const [isDragging, setIsDragging] = useState(false);
-    const [preview, setPreview] = useState(value ? getPublicImageUrl(value) : null);
+    const [preview, setPreview] = useState(value ? resolveImageUrl(value) : null);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadError, setUploadError] = useState(null);
     const [uploadSuccess, setUploadSuccess] = useState(false);
@@ -18,7 +18,7 @@ export default function ImageUploader({ value, onChange, label = "Görsel Yükle
 
     // SYNC: When parent value changes (e.g., form reset), update preview
     useEffect(() => {
-        setPreview(value ? getPublicImageUrl(value) : null);
+        setPreview(value ? resolveImageUrl(value) : null);
         setUploadSuccess(false);
         setUploadError(null);
         // Also clear the file input when value is reset
