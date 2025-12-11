@@ -141,11 +141,12 @@ export function Gallery() {
                                     <div className="artwork-card__image-wrapper">
                                         {artwork.image ? (
                                             <ProtectedImage
-                                                src={artwork.thumbnail || artwork.image}
+                                                src={`https://wsrv.nl/?url=${encodeURIComponent(artwork.thumbnail || artwork.image)}&w=800&q=75&fit=cover&output=jpg`}
                                                 alt={`${title} - ${technique}`}
                                                 artworkTitle={title}
                                                 className="artwork-card__image"
                                                 loading="eager"
+                                                referrerPolicy="no-referrer"
                                             />
                                         ) : (
                                             <div className="placeholder-image">

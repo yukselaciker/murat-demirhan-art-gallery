@@ -151,7 +151,12 @@ export default function ArtworksPanel() {
 
     // Use Weserv proxy to bypass mobile network blocks (CORS/SSL/Format)
     // This fetches the image via their server and delivers it cleanly
-    return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=800&output=jpg`;
+    // Options:
+    // w=800: Resize to 800px width (sufficient for mobile/desktop cards)
+    // q=75: Quality 75% (good balance of size/quality)
+    // fit=cover: Ensure it covers the dimensions without distortion
+    // output=jpg: Force legacy format compatibility
+    return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=800&q=75&fit=cover&output=jpg`;
   };
 
   const messageType = message.split(':')[0];

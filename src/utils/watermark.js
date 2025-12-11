@@ -64,8 +64,8 @@ export async function drawWatermarkedImage(imageSrc, canvas, options = {}) {
         const img = new Image();
         // Cloudflare sıcak bağlantı korumasını aşmak için referrer gönderme
         img.referrerPolicy = 'no-referrer';
-        // Localhost/Same-origin için crossOrigin gerekmez, hatta bazen sorun çıkarabilir
-        // img.crossOrigin = 'anonymous';
+        // CDN kullandığımız için CORS izni şart
+        img.crossOrigin = 'anonymous';
 
         img.onload = async () => {
             try {
