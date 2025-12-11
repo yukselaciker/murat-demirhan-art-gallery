@@ -271,23 +271,6 @@ export default function ArtworksPanel() {
       </div>
 
       {/* Card Grid */}
-      <div style={{ marginBottom: '20px', padding: '15px', background: '#f0f9ff', border: '2px solid #0ea5e9', borderRadius: '12px' }}>
-        <h3 style={{ margin: '0 0 10px 0', color: '#0369a1' }}>📱 Mobile System Check</h3>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <div style={{ width: '100px', height: '100px', background: '#fff' }}>
-            <img
-              src="https://placehold.co/200x200/png?text=Test+Image"
-              alt="Test"
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-            />
-          </div>
-          <div>
-            <p style={{ fontSize: '12px', margin: 0 }}><strong>Test Image:</strong> If you can see the square to the left, your phone CAN load images.</p>
-            <p style={{ fontSize: '12px', margin: '5px 0 0 0', color: '#666' }}>If real artworks don't load, their URLs are broken (e.g. localhost).</p>
-          </div>
-        </div>
-      </div>
-
       <div className="artworks-grid">
         {sorted.map((art) => (
           <div key={art.id} className={`artwork-card ${data.featuredArtworkId === art.id ? 'featured' : ''}`}>
@@ -323,7 +306,6 @@ export default function ArtworksPanel() {
                   <img
                     src={url}
                     alt={art.title}
-                    onError={(e) => { e.currentTarget.style.border = '5px solid red'; }}
                     style={{
                       width: '100%',
                       height: '100%',
@@ -340,13 +322,6 @@ export default function ArtworksPanel() {
               {data.featuredArtworkId === art.id && (
                 <span className="featured-badge">⭐ Öne Çıkan</span>
               )}
-            </div>
-
-            {/* DEBUG INFO */}
-            <div style={{ padding: '5px', background: '#f3f4f6', borderBottom: '1px solid #ccc' }}>
-              <p style={{ fontSize: '10px', color: '#666', wordBreak: 'break-all', margin: 0 }}>
-                SRC: {getImageUrl(art)}
-              </p>
             </div>
 
             {/* Card Content */}
