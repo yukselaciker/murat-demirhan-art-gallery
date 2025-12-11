@@ -169,11 +169,12 @@
     transform: scale(1.05);
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
     .artwork-card__image-wrapper {
         display: block !important;
         height: auto !important;
         min-height: 250px;
+        aspect-ratio: unset !important;
     }
 
     .artwork-card__image {
@@ -182,6 +183,10 @@
         visibility: visible !important;
         height: 100% !important;
         width: 100% !important;
+        position: absolute;
+        /* Force fill */
+        top: 0;
+        left: 0;
     }
 }
 

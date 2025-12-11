@@ -307,12 +307,11 @@
 .card-image {
     position: relative;
     width: 100%;
-    /* Desktop Default: Aspect Ratio strategy */
-    height: auto;
-    aspect-ratio: 4/3;
+    /* Default: Fixed height for mobile/tablet robustness */
+    height: 16rem;
+    /* 256px */
     overflow: hidden;
     background-color: #1f2937;
-    /* Safety gray background (bg-gray-800) */
     display: block;
 }
 
@@ -325,16 +324,21 @@
     background-color: #1f2937;
 }
 
-@media (max-width: 600px) {
-
-    /* Mobile Force: Explicit Height strategy (h-64 equivalent) */
+/* Desktop: Use modern Aspect Ratio */
+@media (min-width: 768px) {
     .card-image {
-        aspect-ratio: unset;
+        height: auto;
+        aspect-ratio: 4/3;
+    }
+}
+
+/* Force fix for smaller screens just in case */
+@media (max-width: 767px) {
+    .card-image {
         height: 16rem !important;
-        /* ~256px */
         min-height: 16rem !important;
-        display: block !important;
         width: 100% !important;
+        display: block !important;
     }
 
     .card-image img {
