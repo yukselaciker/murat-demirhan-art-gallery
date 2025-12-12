@@ -10,7 +10,7 @@ import { useScrollSpy } from '../../hooks/useScrollSpy';
 import LanguageSwitcher from '../ui/LanguageSwitcher';
 import './Header.css';
 
-const SECTION_IDS = ['hero', 'hakkinda', 'galeri', 'sergiler', 'iletisim'];
+const SECTION_IDS = ['hero', 'hakkinda', 'galeri', 'updates', 'sergiler', 'iletisim'];
 
 export function Header() {
     const { t } = useLanguage();
@@ -41,6 +41,7 @@ export function Header() {
         { id: 'hero', label: t('nav.home') },
         { id: 'hakkinda', label: t('nav.about') },
         { id: 'galeri', label: t('nav.gallery') },
+        { id: 'updates', label: t('nav.updates') || 'Güncellemeler' },
         { id: 'sergiler', label: t('nav.exhibitions') },
         { id: 'iletisim', label: t('nav.contact') }
     ];

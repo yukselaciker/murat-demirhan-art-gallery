@@ -1,0 +1,333 @@
+/* ============================================
+   UPDATES PANEL STYLES - Admin Feed Management
+   ============================================ */
+
+.updates-panel {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.panel-card {
+    background: var(--admin-card-bg, #1e1e2e);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid var(--admin-border, rgba(255, 255, 255, 0.1));
+}
+
+.panel-card h2 {
+    font-size: 1.25rem;
+    color: var(--text-primary, #fff);
+    margin: 0 0 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--admin-border, rgba(255, 255, 255, 0.1));
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-secondary, #aaa);
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-input,
+.form-textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--admin-input-bg, #15151f);
+    border: 1px solid var(--admin-border, rgba(255, 255, 255, 0.15));
+    border-radius: 8px;
+    color: var(--text-primary, #fff);
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--accent-color, #d4af37);
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 120px;
+    font-family: inherit;
+}
+
+/* Image Drop Zone */
+.image-drop-zone {
+    border: 2px dashed var(--admin-border, rgba(255, 255, 255, 0.2));
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--admin-input-bg, #15151f);
+}
+
+.image-drop-zone:hover {
+    border-color: var(--accent-color, #d4af37);
+    background: rgba(212, 175, 55, 0.05);
+}
+
+.drop-zone-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.drop-icon {
+    font-size: 2.5rem;
+    opacity: 0.6;
+}
+
+.drop-zone-content p {
+    margin: 0;
+    color: var(--text-secondary, #aaa);
+}
+
+.drop-hint {
+    font-size: 0.8rem;
+    color: var(--text-muted, #666);
+}
+
+/* Image Preview Grid */
+.image-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.image-preview-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--admin-input-bg, #15151f);
+}
+
+.image-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-preview-item.error {
+    border: 2px solid #e74c3c;
+}
+
+.image-uploading {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    border-top-color: var(--accent-color, #d4af37);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.image-error {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    font-size: 1.2rem;
+}
+
+.image-remove-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.image-preview-item:hover .image-remove-btn {
+    opacity: 1;
+}
+
+.image-remove-btn:hover {
+    background: #e74c3c;
+}
+
+/* Status Selector */
+.status-selector {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.status-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--admin-input-bg, #15151f);
+    border: 1px solid var(--admin-border, rgba(255, 255, 255, 0.15));
+    border-radius: 8px;
+    color: var(--text-secondary, #aaa);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.status-btn:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.status-btn.active {
+    background: rgba(212, 175, 55, 0.1);
+    border-color: var(--accent-color, #d4af37);
+    color: var(--text-primary, #fff);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.status-dot.published {
+    background: #2ecc71;
+}
+
+.status-dot.draft {
+    background: #f39c12;
+}
+
+/* Form Messages */
+.form-message {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.form-message.error {
+    background: rgba(231, 76, 60, 0.1);
+    border: 1px solid rgba(231, 76, 60, 0.3);
+    color: #e74c3c;
+}
+
+.form-message.success {
+    background: rgba(46, 204, 113, 0.1);
+    border: 1px solid rgba(46, 204, 113, 0.3);
+    color: #2ecc71;
+}
+
+/* Submit Button */
+.submit-btn {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    background: var(--accent-color, #d4af37);
+    color: var(--bg-dark, #0d0d1a);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.submit-btn:hover:not(:disabled) {
+    background: var(--accent-hover, #e5c048);
+    transform: translateY(-1px);
+}
+
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Recent Posts */
+.recent-posts {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.posts-loading,
+.posts-empty {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted, #666);
+}
+
+.posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.post-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: var(--admin-input-bg, #15151f);
+    border-radius: 8px;
+}
+
+.post-item-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.post-item-date {
+    font-size: 0.75rem;
+    color: var(--text-muted, #666);
+}
+
+.post-item-title {
+    font-size: 0.9rem;
+    color: var(--text-primary, #fff);
+}
+
+.post-item-stats {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text-muted, #666);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .updates-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .recent-posts {
+        max-height: 400px;
+    }
+}

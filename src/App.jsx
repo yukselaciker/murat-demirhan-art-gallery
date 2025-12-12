@@ -22,6 +22,7 @@ import Hero from './components/sections/Hero';
 import About from './components/sections/About';
 import Gallery from './components/sections/Gallery';
 import Exhibitions from './components/sections/Exhibitions';
+import Updates from './components/sections/Updates';
 import Contact from './components/sections/Contact';
 import CookieBanner from './components/ui/CookieBanner';
 
@@ -95,6 +96,7 @@ function App() {
               <Hero />
               <About />
               <Gallery />
+              <Updates />
               <Exhibitions />
               <Contact />
             </main>

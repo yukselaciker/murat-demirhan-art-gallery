@@ -30,3 +30,6 @@ dist-ssr
 # Next.js test projects (not needed)
 next-supabase/
 next-v2/
+
+# Admin token documentation (contains token)
+docs/ADMIN_TOKEN_AUTH.md

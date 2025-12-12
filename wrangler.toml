@@ -1,0 +1,18 @@
+name = "murat-demirhan-worker"
+main = "worker/index.ts"
+compatibility_date = "2025-01-01"
+migrations_dir = "migrations"
+
+# D1 Database - artworks + feed
+[[d1_databases]]
+binding = "DB"
+database_name = "md_feed_db"
+database_id = "93c78ce1-ac94-4221-b207-62f8f80d5ed5"
+
+# R2 Bucket - mevcut resimler için (artworks + feed)
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "artworks"
+
+[vars]
+ENV = "production"

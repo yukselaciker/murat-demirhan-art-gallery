@@ -1,0 +1,244 @@
+/* ============================================
+   POST CARD STYLES - Feed Post Component
+   Theme-compatible with main site colors
+   ============================================ */
+
+.post-card {
+    background: var(--color-bg-card, #FFFFFF);
+    border-radius: var(--radius-lg, 12px);
+    padding: var(--space-lg, 1.5rem);
+    margin-bottom: var(--space-lg, 1.5rem);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--color-border, #E0DCD5);
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.post-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Date */
+.post-date {
+    display: block;
+    font-family: var(--font-body, sans-serif);
+    font-size: var(--text-sm, 0.85rem);
+    color: var(--color-text-light, #6B6B6B);
+    margin-bottom: var(--space-sm, 0.5rem);
+    font-weight: 500;
+}
+
+/* Title */
+.post-title {
+    font-family: var(--font-heading, 'Playfair Display', serif);
+    font-size: var(--text-2xl, 1.5rem);
+    font-weight: 600;
+    color: var(--color-text-primary, #1C1C1C);
+    margin: 0 0 var(--space-sm, 0.5rem);
+    line-height: var(--leading-tight, 1.2);
+}
+
+/* Body */
+.post-body {
+    font-family: var(--font-body, sans-serif);
+    font-size: var(--text-base, 1rem);
+    color: var(--color-text-secondary, #3D3D3D);
+    line-height: var(--leading-normal, 1.6);
+    margin: 0 0 var(--space-md, 1rem);
+    white-space: pre-wrap;
+}
+
+/* Images Container */
+.post-images {
+    position: relative;
+    margin: var(--space-md, 1rem) 0;
+    border-radius: var(--radius-md, 8px);
+    overflow: hidden;
+    background: var(--color-bg-tertiary, #EBE7E0);
+}
+
+.post-image {
+    width: 100%;
+    height: auto;
+    max-height: 500px;
+    object-fit: contain;
+    display: block;
+}
+
+/* Carousel Controls */
+.post-images.carousel .carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    font-size: 1.5rem;
+    border-radius: var(--radius-full, 9999px);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+}
+
+.post-images:hover .carousel-btn {
+    opacity: 1;
+}
+
+.carousel-btn:hover {
+    background: rgba(0, 0, 0, 0.7);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-btn.prev {
+    left: 10px;
+}
+
+.carousel-btn.next {
+    right: 10px;
+}
+
+/* Carousel Dots */
+.carousel-dots {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+}
+
+.carousel-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    border: none;
+    background: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    padding: 0;
+}
+
+.carousel-dot.active,
+.carousel-dot:hover {
+    background: #fff;
+    transform: scale(1.2);
+}
+
+/* Reaction Bar */
+.reaction-bar {
+    display: flex;
+    gap: var(--space-sm, 0.5rem);
+    margin-top: var(--space-md, 1rem);
+    padding-top: var(--space-md, 1rem);
+    border-top: 1px solid var(--color-border, #E0DCD5);
+}
+
+.reaction-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.85rem;
+    border: 1px solid var(--color-border, #E0DCD5);
+    background: var(--color-bg-secondary, #F4F1EC);
+    border-radius: var(--radius-full, 20px);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-size: var(--text-sm, 0.9rem);
+}
+
+.reaction-btn:hover:not(:disabled) {
+    background: var(--color-accent-muted, rgba(184, 134, 11, 0.12));
+    border-color: var(--color-accent, #B8860B);
+    transform: scale(1.05);
+}
+
+.reaction-btn:disabled {
+    cursor: default;
+}
+
+.reaction-btn.reacted {
+    background: var(--color-accent-muted, rgba(184, 134, 11, 0.12));
+    border-color: var(--color-accent, #B8860B);
+}
+
+.reaction-btn.reacting {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.reaction-btn .emoji {
+    font-size: 1.2rem;
+    transition: transform var(--transition-fast);
+}
+
+.reaction-btn:hover:not(:disabled) .emoji {
+    transform: scale(1.2);
+}
+
+.reaction-btn.reacted .emoji {
+    animation: pulse 0.3s ease;
+}
+
+.reaction-btn .count {
+    color: var(--color-text-light, #6B6B6B);
+    font-weight: 500;
+    min-width: 1.5ch;
+    text-align: center;
+}
+
+.reaction-btn.reacted .count {
+    color: var(--color-accent-dark, #8B6914);
+    font-weight: 600;
+}
+
+/* Pulse animation for reacted emoji */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.4);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 640px) {
+    .post-card {
+        padding: var(--space-md, 1rem);
+        margin-bottom: var(--space-md, 1rem);
+    }
+
+    .post-title {
+        font-size: var(--text-xl, 1.25rem);
+    }
+
+    .post-body {
+        font-size: var(--text-sm, 0.95rem);
+    }
+
+    .reaction-bar {
+        gap: 0.4rem;
+    }
+
+    .reaction-btn {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.85rem;
+    }
+
+    .carousel-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 1.2rem;
+        opacity: 1;
+    }
+}

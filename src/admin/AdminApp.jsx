@@ -1,59 +1,64 @@
 // ============================================
 // ADMIN APP - MURAT DEMİRHAN PORTFOLYO
-// Basit giriş + sekmeli yönetim paneli
-// GERÇEK PROJEDE ŞİFRE SABİT TUTULMAMALIDIR, ORTAM DEĞİŞKENİNE ALINMALIDIR.
+// Token guard + sebeli yönetim paneli
 // ============================================
 
-import { useEffect, useMemo, useState } from 'react';
-import AdminLogin from './AdminLogin.jsx';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import AdminLayout from './AdminLayout.jsx';
 import ArtworksPanel from './ArtworksPanel.jsx';
 import ExhibitionsPanel from './ExhibitionsPanel.jsx';
 import CvPanel from './CvPanel.jsx';
 import SettingsPanel from './SettingsPanel.jsx';
 import MessagesPanel from './MessagesPanel.jsx';
+import UpdatesPanel from './UpdatesPanel.jsx';
+import { hasAdminToken, setAdminToken, removeAdminToken } from '../lib/feedApi';
 import '../styles/admin.css';
 
 const STORAGE_KEY = 'md-admin-session';
-// Environment variables'dan kullanıcı adı ve şifre okunur
-const USERNAME = import.meta.env.VITE_ADMIN_USERNAME || 'admin';
-const PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'murat2025!';
 
 export default function AdminApp() {
-  const [session, setSession] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || null;
-    } catch {
-      return null;
-    }
-  });
+  // Token guard state
+  const [hasToken, setHasToken] = useState(false);
+  const [tokenInput, setTokenInput] = useState('');
+  const [tokenError, setTokenError] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Tab state
   const [activeTab, setActiveTab] = useState('artworks');
 
+  // Check for existing token on mount
   useEffect(() => {
-    if (session) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
-    } else {
-      localStorage.removeItem(STORAGE_KEY);
-    }
-  }, [session]);
+    setHasToken(hasAdminToken());
+    setIsLoading(false);
+  }, []);
 
-  const handleLogin = (username, password) => {
-    if (username === USERNAME && password === PASSWORD) {
-      const payload = { user: USERNAME, ts: Date.now() };
-      setSession(payload);
-    } else {
-      return 'Kullanıcı adı veya şifre hatalı';
-    }
-    return null;
-  };
+  // Handle token login
+  const handleTokenLogin = useCallback((e) => {
+    e.preventDefault();
 
-  const handleLogout = () => {
-    setSession(null);
-  };
+    const token = tokenInput.trim();
+    if (!token) {
+      setTokenError('Token gerekli');
+      return;
+    }
+
+    setAdminToken(token);
+    setHasToken(true);
+    setTokenError('');
+    setTokenInput('');
+  }, [tokenInput]);
+
+  // Handle logout - clears token and reloads
+  const handleLogout = useCallback(() => {
+    removeAdminToken();
+    localStorage.removeItem(STORAGE_KEY);
+    window.location.reload();
+  }, []);
 
   const tabs = useMemo(
     () => [
       { key: 'artworks', label: 'Eserler' },
+      { key: 'updates', label: 'Güncellemeler' },
       { key: 'exhibitions', label: 'Sergiler' },
       { key: 'cv', label: 'Özgeçmiş / CV' },
       { key: 'messages', label: 'Mesajlar' },
@@ -62,13 +67,56 @@ export default function AdminApp() {
     []
   );
 
-  if (!session) {
-    return <AdminLogin onLogin={handleLogin} />;
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="admin-guard-loading">
+        <div className="admin-spinner"></div>
+      </div>
+    );
   }
 
+  // No token - show minimal login
+  if (!hasToken) {
+    return (
+      <div className="admin-token-login">
+        <div className="token-login-card">
+          <h2>Admin Panel</h2>
+          <p className="token-login-hint">Erişim için admin token gerekli</p>
+
+          <form onSubmit={handleTokenLogin}>
+            <div className="form-group">
+              <input
+                type="password"
+                value={tokenInput}
+                onChange={(e) => setTokenInput(e.target.value)}
+                placeholder="Admin token"
+                className="token-input"
+                autoFocus
+                autoComplete="current-password"
+              />
+            </div>
+
+            {tokenError && (
+              <div className="token-error">
+                {tokenError}
+              </div>
+            )}
+
+            <button type="submit" className="token-login-btn">
+              Giriş Yap
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // Token exists - show admin panel
   return (
     <AdminLayout tabs={tabs} activeTab={activeTab} onSelectTab={setActiveTab} onLogout={handleLogout}>
       {activeTab === 'artworks' && <ArtworksPanel />}
+      {activeTab === 'updates' && <UpdatesPanel />}
       {activeTab === 'exhibitions' && <ExhibitionsPanel />}
       {activeTab === 'cv' && <CvPanel />}
       {activeTab === 'messages' && <MessagesPanel />}
