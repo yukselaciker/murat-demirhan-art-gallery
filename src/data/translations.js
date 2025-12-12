@@ -10,6 +10,7 @@ export const translations = {
             home: 'Ana Sayfa',
             about: 'Hakkında',
             gallery: 'Eserler',
+            updates: 'Güncellemeler',
             exhibitions: 'Sergiler',
             contact: 'İletişim'
         },
@@ -137,6 +138,7 @@ export const translations = {
             home: 'Home',
             about: 'About',
             gallery: 'Works',
+            updates: 'Updates',
             exhibitions: 'Exhibitions',
             contact: 'Contact'
         },
