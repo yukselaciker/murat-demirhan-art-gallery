@@ -53,7 +53,9 @@ const VALID_EMOJIS: EmojiType[] = ['heart', 'fire', 'clap', 'wow'];
 
 const ALLOWED_ORIGINS = [
     'https://murat-demirhan.vercel.app',
+    'https://muratdemirhan.vercel.app',
     'https://muratdemirhan.com',
+    'https://www.muratdemirhan.com',
     'http://localhost:5173',
     'http://localhost:3000',
 ];
@@ -150,6 +152,14 @@ export default {
             // ============ R2 IMAGE SERVE ============
             if (path.startsWith('/images/')) {
                 return await handleImages(request, env, path, origin);
+            }
+
+            // ============ ADMIN TOKEN VERIFY ============
+            if (path === '/api/admin/verify' && method === 'POST') {
+                if (isAdminAuthorized(request, env)) {
+                    return jsonResponse({ valid: true }, 200, origin);
+                }
+                return jsonResponse({ valid: false, error: 'Invalid token' }, 401, origin);
             }
 
             // ============ HEALTH CHECK ============

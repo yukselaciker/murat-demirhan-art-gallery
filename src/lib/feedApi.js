@@ -54,6 +54,28 @@ export function hasAdminToken() {
 }
 
 /**
+ * Verify admin token against backend
+ * @param {string} token - Token to verify
+ * @returns {Promise<{valid: boolean, error?: string}>}
+ */
+export async function verifyAdminToken(token) {
+    try {
+        const response = await fetch(`${API_BASE}/api/admin/verify`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json();
+        return { valid: response.ok && data.valid, error: data.error };
+    } catch (error) {
+        return { valid: false, error: 'Bağlantı hatası' };
+    }
+}
+
+/**
  * @typedef {Object} EmojiCounts
  * @property {number} heart
  * @property {number} fire

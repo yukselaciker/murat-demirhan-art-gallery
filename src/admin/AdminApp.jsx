@@ -11,7 +11,7 @@ import CvPanel from './CvPanel.jsx';
 import SettingsPanel from './SettingsPanel.jsx';
 import MessagesPanel from './MessagesPanel.jsx';
 import UpdatesPanel from './UpdatesPanel.jsx';
-import { hasAdminToken, setAdminToken, removeAdminToken } from '../lib/feedApi';
+import { hasAdminToken, setAdminToken, removeAdminToken, verifyAdminToken } from '../lib/feedApi';
 import '../styles/admin.css';
 
 const STORAGE_KEY = 'md-admin-session';
@@ -22,6 +22,7 @@ export default function AdminApp() {
   const [tokenInput, setTokenInput] = useState('');
   const [tokenError, setTokenError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   // Tab state
   const [activeTab, setActiveTab] = useState('artworks');
@@ -32,8 +33,8 @@ export default function AdminApp() {
     setIsLoading(false);
   }, []);
 
-  // Handle token login
-  const handleTokenLogin = useCallback((e) => {
+  // Handle token login with backend verification
+  const handleTokenLogin = useCallback(async (e) => {
     e.preventDefault();
 
     const token = tokenInput.trim();
@@ -42,10 +43,24 @@ export default function AdminApp() {
       return;
     }
 
-    setAdminToken(token);
-    setHasToken(true);
+    setIsVerifying(true);
     setTokenError('');
-    setTokenInput('');
+
+    try {
+      const result = await verifyAdminToken(token);
+
+      if (result.valid) {
+        setAdminToken(token);
+        setHasToken(true);
+        setTokenInput('');
+      } else {
+        setTokenError(result.error || 'Geçersiz token');
+      }
+    } catch (err) {
+      setTokenError('Doğrulama hatası');
+    } finally {
+      setIsVerifying(false);
+    }
   }, [tokenInput]);
 
   // Handle logout - clears token and reloads
@@ -103,8 +118,8 @@ export default function AdminApp() {
               </div>
             )}
 
-            <button type="submit" className="token-login-btn">
-              Giriş Yap
+            <button type="submit" className="token-login-btn" disabled={isVerifying}>
+              {isVerifying ? 'Doğrulanıyor...' : 'Giriş Yap'}
             </button>
           </form>
         </div>
