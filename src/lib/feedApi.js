@@ -152,6 +152,38 @@ export async function fetchPosts() {
 }
 
 /**
+ * Delete a post (Admin only)
+ * @param {string} postId - Post ID to delete
+ * @returns {Promise<{ok: boolean, deleted: string}>}
+ */
+export async function deletePost(postId) {
+    const token = getAdminToken();
+    if (!token) {
+        throw new Error('Not authenticated');
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/api/admin/posts/${postId}`, {
+            method: 'DELETE',
+            headers: getHeaders(true),
+        });
+
+        if (response.status === 401) {
+            throw new Error('Unauthorized');
+        }
+
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Failed to delete post:', error);
+        throw error;
+    }
+}
+
+/**
  * React to a post with an emoji
  * @param {string} postId - Post ID
  * @param {EmojiType} emoji - Emoji type

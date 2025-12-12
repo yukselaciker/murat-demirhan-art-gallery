@@ -138,6 +138,12 @@ export default {
                 return await handleCreatePost(request, env, origin);
             }
 
+            // DELETE /api/admin/posts/:id
+            const deletePostMatch = path.match(/^\/api\/admin\/posts\/([^/]+)$/);
+            if (deletePostMatch && method === 'DELETE') {
+                return await handleDeletePost(request, env, deletePostMatch[1], origin);
+            }
+
             // POST /api/posts/:id/react
             const reactMatch = path.match(/^\/api\/posts\/([^/]+)\/react$/);
             if (reactMatch && method === 'POST') {
@@ -390,6 +396,30 @@ async function handleCreatePost(
         status,
         reactions: { heart: 0, fire: 0, clap: 0, wow: 0 },
     }, 201, origin);
+}
+
+// Delete a post (Admin only)
+async function handleDeletePost(
+    request: Request,
+    env: Env,
+    postId: string,
+    origin: string | null
+): Promise<Response> {
+    if (!isAdminAuthorized(request, env)) {
+        return errorResponse('Unauthorized', 401, origin);
+    }
+
+    // Delete reactions first (foreign key constraint)
+    await env.DB.prepare('DELETE FROM reactions WHERE post_id = ?').bind(postId).run();
+
+    // Delete the post
+    const result = await env.DB.prepare('DELETE FROM posts WHERE id = ?').bind(postId).run();
+
+    if (result.meta.changes === 0) {
+        return errorResponse('Post not found', 404, origin);
+    }
+
+    return jsonResponse({ ok: true, deleted: postId }, 200, origin);
 }
 
 async function handleReaction(

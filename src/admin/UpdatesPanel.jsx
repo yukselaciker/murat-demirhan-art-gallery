@@ -4,7 +4,7 @@
 // ============================================
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { createPost, getUploadUrl, uploadImage, getImageUrl, fetchPosts } from '../lib/feedApi';
+import { createPost, getUploadUrl, uploadImage, getImageUrl, fetchPosts, deletePost } from '../lib/feedApi';
 import './UpdatesPanel.css';
 
 const MAX_IMAGES = 10;
@@ -356,9 +356,21 @@ export default function UpdatesPanel() {
                                         {post.title || '(Başlıksız)'}
                                     </span>
                                 </div>
-                                <div className="post-item-stats">
-                                    <span>❤️ {post.reactions?.heart || 0}</span>
-                                    <span>🔥 {post.reactions?.fire || 0}</span>
+                                <div className="post-item-actions">
+                                    <span className="post-stat">❤️ {post.reactions?.heart || 0}</span>
+                                    <button
+                                        className="btn-delete-post"
+                                        onClick={() => {
+                                            if (confirm('Bu güncellemeyi silmek istediğinize emin misiniz?')) {
+                                                deletePost(post.id)
+                                                    .then(() => setPosts(prev => prev.filter(p => p.id !== post.id)))
+                                                    .catch(err => alert('Silinemedi: ' + err.message));
+                                            }
+                                        }}
+                                        title="Sil"
+                                    >
+                                        🗑️
+                                    </button>
                                 </div>
                             </div>
                         ))}

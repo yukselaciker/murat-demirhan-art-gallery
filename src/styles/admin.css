@@ -973,10 +973,10 @@ textarea {
 .token-login-card .token-input {
   width: 100%;
   padding: 0.875rem 1rem;
-  background: #0f0f0f;
+  background: #0f0f0f !important;
   border: 1px solid #333;
   border-radius: 8px;
-  color: #fff;
+  color: #fff !important;
   font-size: 1rem;
   font-family: inherit;
   transition: border-color 0.2s ease;
@@ -989,7 +989,7 @@ textarea {
 }
 
 .token-login-card .token-input::placeholder {
-  color: #666;
+  color: #888;
 }
 
 .token-error {
