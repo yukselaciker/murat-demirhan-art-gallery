@@ -145,9 +145,9 @@ export function Gallery() {
                                                 alt={`${title} - ${technique}`}
                                                 artworkTitle={title}
                                                 className="artwork-card__image"
-                                                loading="eager"
-                                                referrerPolicy="no-referrer"
-                                                crossOrigin="anonymous"
+                                                loading={index < 4 ? "eager" : "lazy"}
+                                                fetchpriority={index < 4 ? "high" : "auto"}
+                                                decoding="async"
                                             />
                                         ) : (
                                             <div className="placeholder-image">

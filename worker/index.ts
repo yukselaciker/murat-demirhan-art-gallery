@@ -56,17 +56,28 @@ const ALLOWED_ORIGINS = [
     'https://muratdemirhan.vercel.app',
     'https://muratdemirhan.com',
     'https://www.muratdemirhan.com',
+    // Custom API/CDN domains
+    'https://api.muratdemirhan.com',
+    'https://cdn.muratdemirhan.com',
     'http://localhost:5173',
     'http://localhost:3000',
 ];
 
 function getCorsHeaders(origin: string | null): Record<string, string> {
-    const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+    // Determine allowed origin - support any *.vercel.app subdomain for preview deployments
+    let allowedOrigin = ALLOWED_ORIGINS[0];
+    if (origin) {
+        if (ALLOWED_ORIGINS.includes(origin) || origin.endsWith('.vercel.app')) {
+            allowedOrigin = origin;
+        }
+    }
+
     return {
         'Access-Control-Allow-Origin': allowedOrigin,
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
         'Access-Control-Max-Age': '86400',
+        'Vary': 'Origin', // Critical for CDN caching with mobile carrier proxies
     };
 }
 
@@ -535,7 +546,10 @@ async function handleImages(
         const headers = new Headers();
         object.writeHttpMetadata(headers);
         headers.set('etag', object.httpEtag);
-        headers.set('Cache-Control', 'public, max-age=31536000');
+        // Aggressive caching for immutable image assets - mobile CDN friendly
+        headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+        headers.set('CDN-Cache-Control', 'public, max-age=31536000');
+        headers.set('Vary', 'Accept-Encoding');
 
         return new Response(object.body, { headers });
     }

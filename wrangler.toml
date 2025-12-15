@@ -3,6 +3,26 @@ main = "worker/index.ts"
 compatibility_date = "2025-01-01"
 migrations_dir = "migrations"
 
+# Custom Domain Routes - CRITICAL for mobile carrier compatibility
+# These domains bypass workers.dev blocking by Turkish/EU mobile carriers
+# 
+# IMPORTANT: Routes require muratdemirhan.com zone to be in this Cloudflare account.
+# After adding the domain to Cloudflare, uncomment the routes below OR
+# configure routes manually in Cloudflare Dashboard -> Workers & Pages -> murat-demirhan-worker -> Triggers
+#
+# DNS Setup Required (in Cloudflare Dashboard):
+# 1. Add muratdemirhan.com to Cloudflare (if not already)
+# 2. Add CNAME: api -> murat-demirhan-worker.yukselaciker.workers.dev
+# 3. Add CNAME: cdn -> murat-demirhan-worker.yukselaciker.workers.dev
+# 4. Enable "Proxy" (orange cloud) for both records
+# 5. Add Worker routes in Workers & Pages -> Triggers
+
+# Uncomment after domain is added to Cloudflare:
+# routes = [
+#     { pattern = "api.muratdemirhan.com/*", zone_name = "muratdemirhan.com" },
+#     { pattern = "cdn.muratdemirhan.com/*", zone_name = "muratdemirhan.com" }
+# ]
+
 # D1 Database - artworks + feed
 [[d1_databases]]
 binding = "DB"
@@ -16,3 +36,7 @@ bucket_name = "artworks"
 
 [vars]
 ENV = "production"
+# Custom domain URLs - used by frontend
+API_DOMAIN = "https://api.muratdemirhan.com"
+CDN_DOMAIN = "https://cdn.muratdemirhan.com"
+

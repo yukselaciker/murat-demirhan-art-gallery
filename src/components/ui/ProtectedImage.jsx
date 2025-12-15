@@ -14,7 +14,9 @@ export function ProtectedImage({
     className = '',
     artworkTitle = '',
     onClick,
-    loading = 'lazy'
+    loading = 'lazy',
+    decoding = 'async',
+    fetchpriority = 'auto'
 }) {
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
@@ -162,6 +164,9 @@ export function ProtectedImage({
                     className="protected-image__fallback"
                     style={{ objectFit: 'cover' }}
                     referrerPolicy="no-referrer"
+                    loading={loading}
+                    decoding={decoding}
+                    fetchPriority={fetchpriority}
                     onContextMenu={handleContextMenu}
                     onDragStart={handleDragStart}
                     draggable={false}

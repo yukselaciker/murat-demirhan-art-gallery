@@ -7,11 +7,12 @@
 // SUPPORTED INPUTS:
 // 1. Raw R2 keys: "artworks/filename.jpg"
 // 2. Old R2 URLs: "https://pub-....r2.dev/artworks/filename.jpg"
-// 3. New Worker URLs: "https://r2-images-proxy.yukselaciker.workers.dev/artworks/filename.jpg"
+// 3. New Worker URLs: "https://cdn.muratdemirhan.com/artworks/filename.jpg"
 // 4. Supabase URLs: "https://xyz.supabase.co/storage/..."
 // 5. Local/Public images: "/images/artist.jpg" or "artist.jpg"
 
-const R2_WORKER_URL = "https://r2-images-proxy.yukselaciker.workers.dev";
+// Custom CDN domain (bypasses mobile carrier blocking of workers.dev)
+const R2_WORKER_URL = import.meta.env.VITE_CDN_URL || "https://r2-images-proxy.yukselaciker.workers.dev";
 
 /**
  * Resolves any image input to a production-ready URL.

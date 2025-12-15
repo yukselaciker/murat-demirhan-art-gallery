@@ -4,7 +4,7 @@
 // Uses localStorage ADMIN_TOKEN for authentication
 // ============================================
 
-// API Base URL - defaults to production worker
+// API Base URL - uses custom domain to bypass mobile carrier blocking
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://murat-demirhan-worker.yukselaciker.workers.dev';
 
 // Storage key for admin token

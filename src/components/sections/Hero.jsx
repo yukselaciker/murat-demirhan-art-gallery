@@ -72,6 +72,9 @@ export function Hero() {
                                         src={featuredArtwork.image}
                                         alt={featuredArtwork.title}
                                         className="hero__featured-image"
+                                        loading="eager"
+                                        fetchpriority="high"
+                                        decoding="async"
                                     />
                                     <div className="hero__artwork-info">
                                         <h3>{featuredArtwork.title}</h3>
