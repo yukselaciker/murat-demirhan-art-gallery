@@ -105,6 +105,22 @@ export function Hero() {
 
             {/* Dekoratif Arka Plan */}
             <div className="hero__decoration" aria-hidden="true"></div>
+
+            {/* DEBUG INFO - REMOVE BEFORE PRODUCTION */}
+            <div style={{
+                position: 'fixed',
+                bottom: 10,
+                left: 10,
+                background: 'rgba(0,0,0,0.8)',
+                color: '#0f0',
+                padding: '10px',
+                zIndex: 9999,
+                fontSize: '12px',
+                fontFamily: 'monospace',
+                pointerEvents: 'none'
+            }}>
+                DEBUG: FeaturedID={String(siteData.featuredArtworkId)} | Count={siteData.artworks?.length} | Match={featuredArtwork ? 'YES' : 'NO'}
+            </div>
         </section>
     );
 }

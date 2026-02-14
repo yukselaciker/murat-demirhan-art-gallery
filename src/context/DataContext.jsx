@@ -66,14 +66,17 @@ function normalizeData(rawData) {
     // from the parseSettings transformation in index.html
     // from the parseSettings transformation in index.html
     const cv = settings?.cv ? {
+        ...DEFAULT_DATA.cv,
         ...settings.cv,
-        artistPhoto: resolveImageUrl(settings.cv.artistPhoto)
+        artistPhoto: settings.cv.artistPhoto ? resolveImageUrl(settings.cv.artistPhoto) : ''
     } : DEFAULT_DATA.cv;
-    const contactInfo = settings?.contact || DEFAULT_DATA.contactInfo;
-    const featuredArtworkId = settings?.featuredArtworkId || null;
+
+    const contactInfo = settings?.contactInfo || settings?.contact || DEFAULT_DATA.contactInfo;
+    const featuredArtworkId = settings?.featuredArtworkId ? Number(settings.featuredArtworkId) : null;
 
     console.log('[normalizeData] CV:', cv);
     console.log('[normalizeData] ContactInfo:', contactInfo);
+    console.log('[normalizeData] FeaturedID:', featuredArtworkId);
 
     return {
         artworks,
@@ -108,12 +111,13 @@ export function DataProvider({ children }) {
 
                     const API_BASE = 'https://murat-demirhan-worker.yukselaciker.workers.dev';
 
-                    const [rawArtworks, rawExhibitions, settings] = await Promise.all([
+                    const [rawArtworks, settings] = await Promise.all([
                         fetch(`${API_BASE}/api/artworks`).then(r => r.ok ? r.json() : []).catch(() => []),
-                        // Exhibitions and settings are placeholders for now
-                        Promise.resolve([]),
-                        Promise.resolve({})
+                        fetch(`${API_BASE}/api/settings`).then(r => r.ok ? r.json() : {}).catch(() => ({}))
                     ]);
+                    // Exhibitions are not yet in D1, so empty array
+                    const rawExhibitions = [];
+
                     const normalized = normalizeData({ artworks: rawArtworks, exhibitions: rawExhibitions, settings });
                     setData(normalized);
                 }
