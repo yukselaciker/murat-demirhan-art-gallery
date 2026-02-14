@@ -49,8 +49,9 @@
           .then(r => r.ok ? r.json() : []).catch(() => []),
         // Exhibitions (placeholder - will be empty until populated)
         Promise.resolve([]),
-        // Settings (placeholder)
-        Promise.resolve({})
+        // Settings 
+        fetch(`${API_BASE}/api/settings`)
+          .then(r => r.ok ? r.json() : {}).catch(() => ({}))
       ]).then(([artworks, exhibitions, settings]) => {
         console.log('[Prefetch] Cloudflare Worker data loaded:', artworks.length, 'artworks');
         return { artworks, exhibitions, settings };
