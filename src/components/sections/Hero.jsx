@@ -14,7 +14,16 @@ export function Hero() {
     const siteData = useData();
 
     // Find featured artwork
-    const featuredArtwork = siteData.artworks.find(art => art.id === siteData.featuredArtworkId);
+    // DEBUG: Log values to debug visibility issue
+    console.log('[Hero] Featured ID:', siteData.featuredArtworkId, typeof siteData.featuredArtworkId);
+    console.log('[Hero] Artworks count:', siteData.artworks?.length);
+
+    // Lax equality check (==) to handle string/number mismatch
+    const featuredArtwork = siteData.artworks.find(art => art.id == siteData.featuredArtworkId);
+
+    if (siteData.featuredArtworkId && !featuredArtwork) {
+        console.warn('[Hero] Featured artwork ID set but not found in artworks list!', siteData.artworks);
+    }
 
     const handleScroll = (e, sectionId) => {
         e.preventDefault();
