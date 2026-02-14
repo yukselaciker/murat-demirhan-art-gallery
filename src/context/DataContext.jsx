@@ -103,12 +103,16 @@ export function DataProvider({ children }) {
                     console.log('[DataContext] Loaded:', normalized.artworks.length, 'artworks');
                     setData(normalized);
                 } else {
-                    // Fallback: fetch directly if prefetch failed
-                    console.log('[DataContext] Prefetch not found, fetching directly...');
+                    // Fallback: fetch directly from Cloudflare Worker
+                    console.log('[DataContext] Prefetch not found, fetching from Worker...');
+
+                    const API_BASE = 'https://murat-demirhan-worker.yukselaciker.workers.dev';
+
                     const [rawArtworks, rawExhibitions, settings] = await Promise.all([
-                        fetch('/api/artworks').then(r => r.ok ? r.json() : []).catch(() => []),
-                        fetch('/api/exhibitions').then(r => r.ok ? r.json() : []).catch(() => []),
-                        fetch('/api/settings').then(r => r.ok ? r.json() : {}).catch(() => ({}))
+                        fetch(`${API_BASE}/api/artworks`).then(r => r.ok ? r.json() : []).catch(() => []),
+                        // Exhibitions and settings are placeholders for now
+                        Promise.resolve([]),
+                        Promise.resolve({})
                     ]);
                     const normalized = normalizeData({ artworks: rawArtworks, exhibitions: rawExhibitions, settings });
                     setData(normalized);

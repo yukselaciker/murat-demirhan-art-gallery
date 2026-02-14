@@ -71,74 +71,31 @@ const STORAGE_KEY = 'md-site-data';
 // ============================================
 // 2. DATA SERVICE LAYER (Abstraction)
 // ============================================
-// API varsayılan olarak AÇIK - Vercel'de Supabase kullanılıyor
-const USE_API = import.meta.env.VITE_USE_API !== 'false';
-
 // ============================================
 // 2. DATA SERVICE LAYER (Abstraction)
 // ============================================
 
-// LocalStorage Implementation (Mevcut)
-const LocalDataService = {
-  load: () => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) {
-        console.log('[LocalDataService] No data found, using defaults.');
-        return DEFAULT_DATA;
-      }
+// Import token helper from feedApi to share authentication
+import { getAdminToken } from '../lib/feedApi';
 
-      const parsed = JSON.parse(raw);
+const API_BASE = 'https://murat-demirhan-worker.yukselaciker.workers.dev';
+const USE_API = true; // Always use D1 Worker API now
 
-      // Validation / Merging Strategy
-      if (!parsed || typeof parsed !== 'object') {
-        return DEFAULT_DATA;
-      }
+// Helper for authenticated headers
+function getAuthHeaders() {
+  const token = getAdminToken();
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+  };
+}
 
-      // Bozuk veri gelirse, uygulamanın çökmemesi için default veri ile birleştiriyoruz.
-      return {
-        artworks: Array.isArray(parsed.artworks) ? parsed.artworks : DEFAULT_DATA.artworks,
-        exhibitions: Array.isArray(parsed.exhibitions) ? parsed.exhibitions : DEFAULT_DATA.exhibitions,
-        cv: parsed.cv ? { ...DEFAULT_DATA.cv, ...parsed.cv } : DEFAULT_DATA.cv,
-        contactInfo: parsed.contactInfo ? { ...DEFAULT_DATA.contactInfo, ...parsed.contactInfo } : DEFAULT_DATA.contactInfo,
-        featuredArtworkId: parsed.featuredArtworkId !== undefined ? parsed.featuredArtworkId : DEFAULT_DATA.featuredArtworkId,
-      };
-    } catch (e) {
-      console.error('[LocalDataService] Error loading data, falling back to defaults:', e);
-      return DEFAULT_DATA;
-    }
-  },
-
-  save: (data) => {
-    try {
-      if (!data || typeof data !== 'object') throw new Error('Invalid data format');
-      const serialized = JSON.stringify(data);
-      localStorage.setItem(STORAGE_KEY, serialized);
-      window.dispatchEvent(new Event('local-data-update'));
-      return true;
-    } catch (e) {
-      console.error('[LocalDataService] Failed to save data:', e);
-      return false;
-    }
-  },
-
-  reset: () => {
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-      return true;
-    } catch (e) {
-      console.error('[LocalDataService] Reset failed:', e);
-      return false;
-    }
-  }
-};
-
-// API Implementation (Vercel Serverless + Supabase)
+// API Implementation (Cloudflare Worker D1)
 // Module-level cache to prevent duplicate requests
 let apiDataCache = null;
 let apiFetchPromise = null;
 let cacheTimestamp = null;
-const CACHE_TTL_MS = 10 * 60 * 1000; // 10 dakika cache TTL (mobil için optimize)
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes cache
 
 const ApiDataService = {
   // Invalidate cache - call after mutations
@@ -166,96 +123,54 @@ const ApiDataService = {
       return apiDataCache;
     }
 
-    // If fetch in progress, wait for existing promise (prevents duplicate requests)
+    // If fetch in progress, wait for existing promise
     if (apiFetchPromise) {
-      console.log('[ApiDataService] Fetch in progress, waiting for existing promise...');
       return apiFetchPromise;
     }
 
-    // Start new fetch and store promise
+    // Start new fetch
     apiFetchPromise = (async () => {
-      console.log('[ApiDataService] Fetching all data from API...');
+      console.log('[ApiDataService] Fetching all data from Worker API...');
 
-      // FAIL-SAFE: Fetch each independently so one failure doesn't block others
-      let rawArtworks = [];
-      let rawExhibitions = [];
-      let settings = {};
-
-      const timestamp = Date.now();
-
-      // Fetch artworks
+      // Fetch Artworks from Worker
+      let artworks = [];
       try {
-        const res = await fetch(`/api/artworks?_t=${timestamp}`);
+        const res = await fetch(`${API_BASE}/api/artworks`);
         if (res.ok) {
-          rawArtworks = await res.json();
-          console.log('[ApiDataService] Artworks loaded:', rawArtworks.length);
-        } else {
-          console.error('[ApiDataService] Artworks fetch failed:', res.status);
+          const rawArtworks = await res.json();
+          // Normalize artworks
+          artworks = Array.isArray(rawArtworks)
+            ? rawArtworks.map(a => {
+              const fullImage = a.image_url || a.image || a.imageUrl;
+              return {
+                ...a,
+                image: resolveImageUrl(fullImage),
+                thumbnail: resolveImageUrl(fullImage),
+              };
+            })
+            : [];
         }
       } catch (e) {
-        console.error('[ApiDataService] Artworks error:', e);
+        console.error('[ApiDataService] Failed to fetch artworks:', e);
       }
 
-      // Fetch exhibitions
-      try {
-        const res = await fetch(`/api/exhibitions?_t=${timestamp}`);
-        if (res.ok) {
-          rawExhibitions = await res.json();
-          console.log('[ApiDataService] Exhibitions loaded:', rawExhibitions.length);
-        } else {
-          console.error('[ApiDataService] Exhibitions fetch failed:', res.status);
-        }
-      } catch (e) {
-        console.error('[ApiDataService] Exhibitions error:', e);
-      }
-
-      // Fetch settings (most likely to fail - isolated so it doesn't break others)
-      try {
-        const res = await fetch(`/api/settings?_t=${timestamp}`);
-        if (res.ok) {
-          settings = await res.json();
-          console.log('[ApiDataService] Settings loaded:', Object.keys(settings));
-        } else {
-          console.error('[ApiDataService] Settings fetch failed:', res.status);
-        }
-      } catch (e) {
-        console.error('[ApiDataService] Settings error:', e);
-      }
-
-      // NORMALIZE: Supabase column names to frontend names
-      const artworks = Array.isArray(rawArtworks)
-        ? rawArtworks.map(a => {
-          const fullImage = a.image_url || a.image || a.imageUrl;
-          return {
-            ...a,
-            image: resolveImageUrl(fullImage),
-            thumbnail: resolveImageUrl(fullImage),
-          };
-        })
-        : [];
-
-      const exhibitions = Array.isArray(rawExhibitions) ? rawExhibitions : [];
-      const cv = settings.cv ? {
-        ...settings.cv,
-        artistPhoto: resolveImageUrl(settings.cv.artistPhoto)
-      } : DEFAULT_DATA.cv;
-      const contactInfo = settings.contact || DEFAULT_DATA.contactInfo;
-
-      console.log('[ApiDataService] Final:', artworks.length, 'artworks,', exhibitions.length, 'exhibitions');
+      // Exhibitions & Settings (Not yet in D1, returning defaults or empty)
+      // TODO: Add Exhibitions/Settings tables to D1
+      const exhibitions = [];
+      const cv = DEFAULT_DATA.cv;
+      const contactInfo = DEFAULT_DATA.contactInfo;
 
       const result = {
         artworks,
         exhibitions,
         cv,
         contactInfo,
-        featuredArtworkId: settings.featuredArtworkId || null,
+        featuredArtworkId: null,
       };
 
-      // Store in cache with timestamp
       apiDataCache = result;
       cacheTimestamp = Date.now();
       apiFetchPromise = null;
-
       return result;
     })();
 
@@ -271,102 +186,49 @@ const ApiDataService = {
 
   // ===== ARTWORKS CRUD =====
   addArtwork: async (artwork) => {
-    const res = await fetch('/api/artworks', {
+    const res = await fetch(`${API_BASE}/api/artworks`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(artwork)
     });
     if (!res.ok) {
-      const err = await res.json();
+      const err = await res.json().catch(() => ({}));
       throw new Error(err.error || 'Failed to add artwork');
     }
     return await res.json();
   },
 
   updateArtwork: async (id, artwork) => {
-    const res = await fetch(`/api/artworks?id=${id}`, {
+    const res = await fetch(`${API_BASE}/api/artworks?id=${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(artwork)
     });
     if (!res.ok) {
-      const err = await res.json();
+      const err = await res.json().catch(() => ({}));
       throw new Error(err.error || 'Failed to update artwork');
     }
     return await res.json();
   },
 
   deleteArtwork: async (id) => {
-    const res = await fetch(`/api/artworks?id=${id}`, { method: 'DELETE' });
+    const res = await fetch(`${API_BASE}/api/artworks?id=${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
     if (!res.ok) {
-      const err = await res.json();
+      const err = await res.json().catch(() => ({}));
       throw new Error(err.error || 'Failed to delete artwork');
     }
     return await res.json();
   },
 
-  // ===== EXHIBITIONS CRUD =====
-  addExhibition: async (exhibition) => {
-    const res = await fetch('/api/exhibitions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(exhibition)
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || 'Failed to add exhibition');
-    }
-    return await res.json();
-  },
-
-  updateExhibition: async (id, exhibition) => {
-    const res = await fetch(`/api/exhibitions?id=${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(exhibition)
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || 'Failed to update exhibition');
-    }
-    return await res.json();
-  },
-
-  deleteExhibition: async (id) => {
-    const res = await fetch(`/api/exhibitions?id=${id}`, { method: 'DELETE' });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || 'Failed to delete exhibition');
-    }
-    return await res.json();
-  },
-
-  // ===== SETTINGS (CV, Contact) =====
-  updateCv: async (cv) => {
-    const res = await fetch('/api/settings?key=cv', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(cv)
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || 'Failed to update CV');
-    }
-    return await res.json();
-  },
-
-  updateContactInfo: async (contact) => {
-    const res = await fetch('/api/settings?key=contact', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(contact)
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || 'Failed to update contact info');
-    }
-    return await res.json();
-  }
+  // ===== EXHIBITIONS & SETTINGS (Placeholder for now) =====
+  addExhibition: async () => { throw new Error('Exhibitions not yet migrated to D1'); },
+  updateExhibition: async () => { throw new Error('Exhibitions not yet migrated to D1'); },
+  deleteExhibition: async () => { throw new Error('Exhibitions not yet migrated to D1'); },
+  updateCv: async () => { throw new Error('CV not yet migrated to D1'); },
+  updateContactInfo: async () => { throw new Error('Contact info not yet migrated to D1'); }
 };
 
 // Aktif Servis Seçimi
