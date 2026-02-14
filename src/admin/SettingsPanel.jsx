@@ -48,8 +48,8 @@ export default function SettingsPanel() {
         <div className="panel">
             <div className="panel-header">
                 <div>
-                    <h2>Ayarlar / İlet işim Bilgileri</h2>
-                    <p className="muted">Site üzerinde görünen iletişim bilgilerini buradan düzenleyin.</p>
+                    <h2>Site Ayarları</h2>
+                    <p className="muted">E-posta, konum ve diğer site genel ayarlarını buradan yönetin.</p>
                 </div>
                 {message && <div className="alert alert-success">{message}</div>}
             </div>
