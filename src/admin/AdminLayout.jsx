@@ -28,7 +28,7 @@ export default function AdminLayout({ tabs, activeTab, onSelectTab, onLogout, ch
 
       <aside className={`admin-sidebar ${isMenuOpen ? 'open' : ''}`}>
         <nav className="admin-nav">
-          {tabs.map((tab) => (
+          {tabs.filter(t => t.key !== 'settings').map((tab) => (
             <button
               key={tab.key}
               className={`nav-btn ${activeTab === tab.key ? 'active' : ''}`}
@@ -39,6 +39,18 @@ export default function AdminLayout({ tabs, activeTab, onSelectTab, onLogout, ch
           ))}
         </nav>
         <div className="spacer"></div>
+
+        {/* Settings Tab - Pushed to bottom */}
+        {tabs.find(t => t.key === 'settings') && (
+          <button
+            className={`nav-btn ${activeTab === 'settings' ? 'active' : ''}`}
+            onClick={() => onSelectTab('settings')}
+            style={{ marginBottom: '0.5rem' }}
+          >
+            {tabs.find(t => t.key === 'settings').label}
+          </button>
+        )}
+
         <button className="btn ghost logout-btn" onClick={onLogout}>
           Çıkış
         </button>
