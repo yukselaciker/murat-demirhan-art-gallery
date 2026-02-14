@@ -154,18 +154,32 @@ const ApiDataService = {
         console.error('[ApiDataService] Failed to fetch artworks:', e);
       }
 
-      // Exhibitions & Settings (Not yet in D1, returning defaults or empty)
-      // TODO: Add Exhibitions/Settings tables to D1
+      // Exhibitions (Not yet in D1)
       const exhibitions = [];
-      const cv = DEFAULT_DATA.cv;
-      const contactInfo = DEFAULT_DATA.contactInfo;
+
+      // Settings (CV, Contact, Featured)
+      let cv = DEFAULT_DATA.cv;
+      let contactInfo = DEFAULT_DATA.contactInfo;
+      let featuredArtworkId = null;
+
+      try {
+        const settingsRes = await fetch(`${API_BASE}/api/settings`);
+        if (settingsRes.ok) {
+          const settings = await settingsRes.json();
+          if (settings.cv) cv = { ...DEFAULT_DATA.cv, ...settings.cv };
+          if (settings.contactInfo) contactInfo = { ...DEFAULT_DATA.contactInfo, ...settings.contactInfo };
+          if (settings.featuredArtworkId) featuredArtworkId = Number(settings.featuredArtworkId);
+        }
+      } catch (e) {
+        console.error('[ApiDataService] Failed to fetch settings:', e);
+      }
 
       const result = {
         artworks,
         exhibitions,
         cv,
         contactInfo,
-        featuredArtworkId: null,
+        featuredArtworkId,
       };
 
       apiDataCache = result;
@@ -227,8 +241,34 @@ const ApiDataService = {
   addExhibition: async () => { throw new Error('Exhibitions not yet migrated to D1'); },
   updateExhibition: async () => { throw new Error('Exhibitions not yet migrated to D1'); },
   deleteExhibition: async () => { throw new Error('Exhibitions not yet migrated to D1'); },
-  updateCv: async () => { throw new Error('CV not yet migrated to D1'); },
-  updateContactInfo: async () => { throw new Error('Contact info not yet migrated to D1'); }
+  updateCv: async (cvData) => {
+    const res = await fetch(`${API_BASE}/api/settings?key=cv`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(cvData)
+    });
+    if (!res.ok) throw new Error('Failed to update CV');
+    return await res.json();
+  },
+  updateContactInfo: async (info) => {
+    const res = await fetch(`${API_BASE}/api/settings?key=contactInfo`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(info)
+    });
+    if (!res.ok) throw new Error('Failed to update contact info');
+    return await res.json();
+  },
+
+  setFeaturedArtwork: async (id) => {
+    const res = await fetch(`${API_BASE}/api/settings?key=featuredArtworkId`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(id)
+    });
+    if (!res.ok) throw new Error('Failed to update featured artwork');
+    return await res.json();
+  }
 };
 
 // Aktif Servis Seçimi
@@ -436,6 +476,8 @@ export function useSiteData() {
             // Merge with current CV data
             const newCv = { ...data.cv, ...payload };
             await ApiDataService.updateCv(newCv);
+
+            // Force refresh
             ApiDataService.invalidateCache();
             const freshData = await ApiDataService.load();
             setData(freshData);
@@ -478,14 +520,11 @@ export function useSiteData() {
           ...prev,
           featuredArtworkId: artworkId,
         }));
-        // API modunda Supabase'e kaydet
+        // API modunda Supabase'e kaydet (Şimdi Worker'a)
         if (USE_API) {
           try {
-            await fetch('/api/settings?key=featuredArtworkId', {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(artworkId)
-            });
+            await ApiDataService.setFeaturedArtwork(artworkId);
+            ApiDataService.invalidateCache();
           } catch (e) {
             console.error('Failed to save featured artwork:', e);
           }

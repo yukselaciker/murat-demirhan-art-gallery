@@ -14,6 +14,11 @@ interface Env {
 
 // ============ TYPES ============
 
+interface Settings {
+    key: string;
+    value: string;
+}
+
 interface Artwork {
     id: number;
     title: string;
@@ -138,6 +143,11 @@ export default {
             // ============ ARTWORKS API ============
             if (path.startsWith('/api/artworks')) {
                 return await handleArtworks(request, env, url, origin);
+            }
+
+            // ============ SETTINGS API ============
+            if (path.startsWith('/api/settings')) {
+                return await handleSettings(request, env, url, origin);
             }
 
             // ============ FEED/POSTS API ============
@@ -582,6 +592,73 @@ async function handleImages(
         });
 
         return jsonResponse({ key: imageKey, url: `/images/${imageKey}` }, 201, origin);
+    }
+
+    return errorResponse('Method not allowed', 405, origin);
+}
+
+// ============ SETTINGS HANDLER ============
+
+async function handleSettings(
+    request: Request,
+    env: Env,
+    url: URL,
+    origin: string | null
+): Promise<Response> {
+    const method = request.method;
+
+    // GET - List all settings or specific key
+    if (method === 'GET') {
+        const key = url.searchParams.get('key');
+
+        if (key) {
+            const result = await env.DB.prepare('SELECT value FROM settings WHERE key = ?')
+                .bind(key)
+                .first<{ value: string }>();
+
+            // Return raw value (could be JSON string) or null
+            return jsonResponse(result ? JSON.parse(result.value) : null, 200, origin);
+        }
+
+        // Get all settings
+        const { results } = await env.DB.prepare('SELECT * FROM settings').all<Settings>();
+
+        // Convert array to object { key: value }
+        const settingsMap: Record<string, any> = {};
+        if (results) {
+            results.forEach(item => {
+                try {
+                    settingsMap[item.key] = JSON.parse(item.value);
+                } catch {
+                    settingsMap[item.key] = item.value;
+                }
+            });
+        }
+
+        return jsonResponse(settingsMap, 200, origin);
+    }
+
+    // PUT - Update setting (ADMIN ONLY)
+    if (method === 'PUT') {
+        if (!isAdminAuthorized(request, env)) {
+            return errorResponse('Unauthorized', 401, origin);
+        }
+
+        const key = url.searchParams.get('key');
+        if (!key) {
+            return errorResponse('Key parameter required', 400, origin);
+        }
+
+        const body = await request.json<any>();
+        const valueStr = JSON.stringify(body);
+
+        // Upsert logic for D1 (SQLite)
+        await env.DB.prepare(
+            `INSERT INTO settings (key, value) VALUES (?, ?)
+             ON CONFLICT(key) DO UPDATE SET value = excluded.value`
+        ).bind(key, valueStr).run();
+
+        return jsonResponse({ success: true, key, value: body }, 200, origin);
     }
 
     return errorResponse('Method not allowed', 405, origin);
