@@ -23,11 +23,7 @@
   <link rel="icon" type="image/svg+xml"
     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
 
-  <!-- API Preload Hints -->
-  <link rel="preconnect" href="https://api.supabase.co" crossorigin>
-  <link rel="dns-prefetch" href="https://api.supabase.co">
-
-  <!-- Cloudflare Worker Preconnect - Critical for Mobile Networks -->
+  <!-- Cloudflare Worker Preconnect - Primary API -->
   <link rel="preconnect" href="https://murat-demirhan-worker.yukselaciker.workers.dev" crossorigin>
   <link rel="preconnect" href="https://r2-images-proxy.yukselaciker.workers.dev" crossorigin>
   <link rel="dns-prefetch" href="https://murat-demirhan-worker.yukselaciker.workers.dev">
@@ -38,64 +34,26 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <!-- ============================================
-       CRITICAL: Query Supabase DIRECTLY from client
-       Bypasses Vercel cold starts entirely!
+       CRITICAL: Prefetch data from Cloudflare Worker API
+       Starts before React bundle downloads!
        ============================================ -->
   <script>
-    // Supabase credentials (injected at build time by Vite)
     (async function () {
-      const SUPABASE_URL = '%VITE_SUPABASE_URL%';
-      const SUPABASE_KEY = '%VITE_SUPABASE_ANON_KEY%';
+      const API_BASE = 'https://murat-demirhan-worker.yukselaciker.workers.dev';
+      console.log('[Prefetch] Fetching from Cloudflare Worker API...');
 
-      // Check if we have direct Supabase access
-      const hasDirectAccess = SUPABASE_URL && !SUPABASE_URL.includes('VITE_') && SUPABASE_KEY && !SUPABASE_KEY.includes('VITE_');
-
-      // Helper: Parse site_settings array to object {cv: {...}, contact: {...}, ...}
-      function parseSettings(rows) {
-        if (!Array.isArray(rows)) return {};
-        const result = {};
-        rows.forEach(row => {
-          if (row.key && row.value !== undefined) {
-            result[row.key] = row.value;
-          }
-        });
-        return result;
-      }
-
-      if (hasDirectAccess) {
-        // DIRECT SUPABASE QUERY - instant, no cold start!
-        console.log('[Prefetch] Querying Supabase directly...');
-        const headers = {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`
-        };
-
-        window.__PREFETCH_DATA__ = Promise.all([
-          // Artworks - optimized columns
-          fetch(`${SUPABASE_URL}/rest/v1/artworks?select=id,title,image_url,year,technique,size,category,created_at&order=created_at.desc&limit=50`, { headers })
-            .then(r => r.ok ? r.json() : []).catch(() => []),
-          // Exhibitions
-          fetch(`${SUPABASE_URL}/rest/v1/exhibitions?select=id,title,year,city,venue,type,description&order=year.desc&limit=30`, { headers })
-            .then(r => r.ok ? r.json() : []).catch(() => []),
-          // Settings - CORRECT table name: site_settings
-          fetch(`${SUPABASE_URL}/rest/v1/site_settings?select=key,value`, { headers })
-            .then(r => r.ok ? r.json() : []).then(parseSettings).catch(() => ({}))
-        ]).then(([artworks, exhibitions, settings]) => {
-          console.log('[Prefetch] Direct query complete:', artworks.length, 'artworks,', Object.keys(settings).length, 'settings');
-          return { artworks, exhibitions, settings };
-        });
-      } else {
-        // Fallback to API routes (has cold start delay)
-        console.log('[Prefetch] Using API routes...');
-        window.__PREFETCH_DATA__ = Promise.all([
-          fetch('/api/artworks').then(r => r.ok ? r.json() : []).catch(() => []),
-          fetch('/api/exhibitions').then(r => r.ok ? r.json() : []).catch(() => []),
-          fetch('/api/settings').then(r => r.ok ? r.json() : {}).catch(() => ({}))
-        ]).then(([artworks, exhibitions, settings]) => {
-          console.log('[Prefetch] API fetch complete');
-          return { artworks, exhibitions, settings };
-        });
-      }
+      window.__PREFETCH_DATA__ = Promise.all([
+        // Artworks from D1
+        fetch(`${API_BASE}/api/artworks`)
+          .then(r => r.ok ? r.json() : []).catch(() => []),
+        // Exhibitions (placeholder - will be empty until populated)
+        Promise.resolve([]),
+        // Settings (placeholder)
+        Promise.resolve({})
+      ]).then(([artworks, exhibitions, settings]) => {
+        console.log('[Prefetch] Cloudflare Worker data loaded:', artworks.length, 'artworks');
+        return { artworks, exhibitions, settings };
+      });
     })();
   </script>
 </head>
