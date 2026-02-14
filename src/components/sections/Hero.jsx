@@ -14,16 +14,9 @@ export function Hero() {
     const siteData = useData();
 
     // Find featured artwork
-    // DEBUG: Log values to debug visibility issue
-    console.log('[Hero] Featured ID:', siteData.featuredArtworkId, typeof siteData.featuredArtworkId);
-    console.log('[Hero] Artworks count:', siteData.artworks?.length);
-
+    // Find featured artwork
     // Lax equality check (==) to handle string/number mismatch
     const featuredArtwork = siteData.artworks.find(art => art.id == siteData.featuredArtworkId);
-
-    if (siteData.featuredArtworkId && !featuredArtwork) {
-        console.warn('[Hero] Featured artwork ID set but not found in artworks list!', siteData.artworks);
-    }
 
     const handleScroll = (e, sectionId) => {
         e.preventDefault();
@@ -105,22 +98,6 @@ export function Hero() {
 
             {/* Dekoratif Arka Plan */}
             <div className="hero__decoration" aria-hidden="true"></div>
-
-            {/* DEBUG INFO - REMOVE BEFORE PRODUCTION */}
-            <div style={{
-                position: 'fixed',
-                bottom: 10,
-                left: 10,
-                background: 'rgba(0,0,0,0.8)',
-                color: '#0f0',
-                padding: '10px',
-                zIndex: 9999,
-                fontSize: '12px',
-                fontFamily: 'monospace',
-                pointerEvents: 'none'
-            }}>
-                DEBUG: FeaturedID={String(siteData.featuredArtworkId)} | Count={siteData.artworks?.length} | Match={featuredArtwork ? 'YES' : 'NO'}
-            </div>
         </section>
     );
 }

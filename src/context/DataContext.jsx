@@ -74,10 +74,6 @@ function normalizeData(rawData) {
     const contactInfo = settings?.contactInfo || settings?.contact || DEFAULT_DATA.contactInfo;
     const featuredArtworkId = settings?.featuredArtworkId ? Number(settings.featuredArtworkId) : null;
 
-    console.log('[normalizeData] CV:', cv);
-    console.log('[normalizeData] ContactInfo:', contactInfo);
-    console.log('[normalizeData] FeaturedID:', featuredArtworkId);
-
     return {
         artworks,
         exhibitions,
