@@ -72,12 +72,12 @@ export default function AdminApp() {
 
   const tabs = useMemo(
     () => [
+      { key: 'settings', label: 'AYARLAR (BURADA!)' },
       { key: 'artworks', label: 'Eserler' },
       { key: 'updates', label: 'Güncellemeler' },
       { key: 'exhibitions', label: 'Sergiler' },
       { key: 'cv', label: 'Özgeçmiş / CV' },
       { key: 'messages', label: 'Mesajlar' },
-      { key: 'settings', label: 'Site Ayarları (YENİ)' },
     ],
     []
   );
