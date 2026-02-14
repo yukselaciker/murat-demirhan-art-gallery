@@ -77,7 +77,7 @@ export default function AdminApp() {
       { key: 'exhibitions', label: 'Sergiler' },
       { key: 'cv', label: 'Özgeçmiş / CV' },
       { key: 'messages', label: 'Mesajlar' },
-      { key: 'settings', label: 'Ayarlar' },
+      { key: 'settings', label: 'Site Ayarları (YENİ)' },
     ],
     []
   );
